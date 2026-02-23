@@ -1,0 +1,232 @@
+---
+title: "Save and Load"
+description: Save Automerge documents to binary format and load them back, with error handling and best practices
+---
+
+# Overview
+
+Automerge documents can be saved to a compact binary format and loaded later. The binary representation includes all data and complete change history. This enables persistent storage in files, databases, or any system that supports byte arrays.
+
+# Saving Documents
+
+Use `Save` to serialize a complete document to bytes:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "title", "My Document");
+doc.PutString(root, "content", "Document content here");
+doc.Commit("Initial version");
+
+// Save to bytes
+var bytes = doc.Save();
+Console.WriteLine($"Document size: {bytes.Length} bytes");
+
+// Save to file
+File.WriteAllBytes("document.automerge", bytes);
+```
+
+`Save` returns a DEFLATE-compressed byte array containing the complete document with all history. The result is deterministic — saving the same document state always produces the same bytes.
+
+:::note
+Only committed changes are included in the save. Call `Commit` before `Save` to ensure all pending operations are persisted.
+:::
+
+# Loading Documents
+
+Use `Load` to restore a document from saved bytes:
+
+```csharp
+// Load from file
+var bytes = File.ReadAllBytes("document.automerge");
+
+// Restore the document
+using var doc = AutomergeDocument.Load(bytes);
+
+// Verify the content
+var json = doc.HydrateJson();
+Console.WriteLine(json);
+// {"title": "My Document", "content": "Document content here"}
+```
+
+The loaded document contains all data and change history from the saved state. It is fully functional — you can read values, make changes, commit, and save again.
+
+# Error Handling
+
+Invalid or corrupted data throws an `AutomergeException`. Always handle load failures:
+
+```csharp
+try
+{
+    var bytes = File.ReadAllBytes("document.automerge");
+    using var doc = AutomergeDocument.Load(bytes);
+    Console.WriteLine("Document loaded successfully");
+}
+catch(AutomergeException ex)
+{
+    Console.WriteLine($"Failed to load document: {ex.Message}");
+    // Handle corrupted or invalid data
+}
+catch(FileNotFoundException)
+{
+    Console.WriteLine("Document file not found");
+    // Create a new document instead
+    using var doc = AutomergeDocument.Create();
+}
+```
+
+Common causes of `AutomergeException` during load:
+- Corrupted bytes (incomplete write, disk error)
+- Data from an incompatible format version
+- Truncated files (partial download or write)
+
+# Checking Pending Operations
+
+Before saving, verify there are no uncommitted changes:
+
+```csharp
+var pendingOps = doc.PendingOperations;
+
+if(pendingOps > 0)
+{
+    Console.WriteLine($"Warning: {pendingOps} pending operation(s)");
+    doc.Commit("Auto-commit before save");
+}
+
+var bytes = doc.Save();
+```
+
+Uncommitted operations are not included in saves until you commit them.
+
+# Save-Load Round Trip
+
+A saved document can be loaded and re-saved indefinitely:
+
+```csharp
+// Create and save
+using var original = AutomergeDocument.Create();
+original.PutString(original.RootId, "key", "value");
+original.Commit("init");
+var bytes1 = original.Save();
+
+// Load, modify, save again
+using var loaded = AutomergeDocument.Load(bytes1);
+loaded.PutString(loaded.RootId, "key", "updated");
+loaded.Commit("update");
+var bytes2 = loaded.Save();
+
+// bytes2 contains both the original and updated history
+```
+
+# Complete Example
+
+A document store class with save and load:
+
+```csharp
+class DocumentStore
+{
+    readonly string _basePath;
+
+    public DocumentStore(string basePath)
+    {
+        _basePath = basePath;
+        Directory.CreateDirectory(basePath);
+    }
+
+    public AutomergeDocument CreateDocument(string id)
+    {
+        var doc = AutomergeDocument.Create();
+        var root = doc.RootId;
+
+        doc.PutString(root, "id", id);
+        doc.PutTimestamp(root, "created_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+        doc.Commit("Create document");
+
+        SaveDocument(id, doc);
+        return doc;
+    }
+
+    public AutomergeDocument LoadDocument(string id)
+    {
+        var path = GetDocumentPath(id);
+
+        if(!File.Exists(path))
+        {
+            throw new FileNotFoundException($"Document not found: {id}");
+        }
+
+        var bytes = File.ReadAllBytes(path);
+        return AutomergeDocument.Load(bytes);
+    }
+
+    public void SaveDocument(string id, AutomergeDocument doc)
+    {
+        var path = GetDocumentPath(id);
+        var bytes = doc.Save();
+        File.WriteAllBytes(path, bytes);
+
+        Console.WriteLine($"Saved document {id} ({bytes.Length} bytes)");
+    }
+
+    string GetDocumentPath(string id) => Path.Combine(_basePath, $"{id}.automerge");
+}
+
+// Usage
+var store = new DocumentStore("./documents");
+
+using(var doc = store.CreateDocument("doc-001"))
+{
+    doc.PutString(doc.RootId, "title", "Project Plan");
+    doc.PutString(doc.RootId, "author", "Alice");
+    doc.Commit("Initial content");
+
+    store.SaveDocument("doc-001", doc);
+}
+
+using(var doc = store.LoadDocument("doc-001"))
+{
+    Console.WriteLine(doc.HydrateJson());
+}
+```
+
+# Validate Loaded Documents
+
+Check loaded documents for expected structure:
+
+```csharp
+using var doc = AutomergeDocument.Load(bytes);
+var json = doc.HydrateJson();
+using var parsed = JsonDocument.Parse(json);
+
+if(!parsed.RootElement.TryGetProperty("id", out var id))
+{
+    throw new Exception("Invalid document: missing id field");
+}
+
+Console.WriteLine($"Loaded document: {id.GetString()}");
+```
+
+# Best Practices
+
+- **Commit before saving** — Uncommitted changes are not included in saves
+- **Handle load failures** — Always catch `AutomergeException` for corrupted data
+- **Use the `.automerge` extension** — Convention for Automerge binary files
+- **Implement backups** — Save creates a complete snapshot, making backup straightforward
+
+```csharp
+void BackupDocument(string id, AutomergeDocument doc)
+{
+    var timestamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
+    var backupPath = $"backups/{id}-{timestamp}.automerge";
+
+    var bytes = doc.Save();
+    File.WriteAllBytes(backupPath, bytes);
+}
+```
+
+# Next Steps
+
+- [Incremental Saves](/Six.Automerge/guides/persistence/incremental-saves/) — Save only changes since last save for efficiency
+- [Save Options](/Six.Automerge/guides/persistence/save-options/) — Control compression, verification, and orphan retention
+- [Storage Strategies](/Six.Automerge/guides/persistence/storage-strategies/) — Choose between full, incremental, and hybrid persistence patterns

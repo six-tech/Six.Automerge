@@ -1,0 +1,434 @@
+{
+  "tasks": [
+    {
+      "id": "sprint-1-task-1",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060FileSystemStorageAdapter.GetChunkInfo()\u0060 (line 286-325), add an early check: if \u0060keyPrefix.Components.Count == 0\u0060, scan all subdirectories of \u0060_baseDirectory\u0060 instead of calling \u0060GetFilePath(keyPrefix)\u0060. Enumerate all 2-char shard directories, walk each recursively, parse file paths back to \u0060StorageKey\u0060 via \u0060ParseFilePathToKey\u0060, and collect \u0060ChunkInfo\u0060 results. Keep the existing logic for non-empty prefixes unchanged.",
+      "description": "In \u0060FileSystemStorageAdapter.GetChunkInfo()\u0060 (line 286-325), add an early check: if \u0060keyPrefix.Components.Count == 0\u0060, scan all subdirectories of \u0060_baseDirectory\u0060 instead of calling \u0060GetFilePath(keyPrefix)\u0060. Enumerate all 2-char shard directories, walk each recursively, parse file paths back to \u0060StorageKey\u0060 via \u0060ParseFilePathToKey\u0060, and collect \u0060ChunkInfo\u0060 results. Keep the existing logic for non-empty prefixes unchanged.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-2",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Similarly update the base \u0060LoadRange()\u0060 behavior \u2014 check if \u0060FileSystemStorageAdapter\u0060 overrides \u0060LoadRange\u0060. If \u0060LoadRange\u0060 also goes through \u0060GetFilePath\u0060, add the same empty-prefix handling. If it uses the \u0060StorageAdapterBase.LoadRange()\u0060 which calls \u0060GetChunkInfo()\u0060 \u2192 \u0060Load()\u0060, then \u0060Load()\u0060 with a real key should be fine once \u0060GetChunkInfo\u0060 returns correct results.",
+      "description": "Similarly update the base \u0060LoadRange()\u0060 behavior \u2014 check if \u0060FileSystemStorageAdapter\u0060 overrides \u0060LoadRange\u0060. If \u0060LoadRange\u0060 also goes through \u0060GetFilePath\u0060, add the same empty-prefix handling. If it uses the \u0060StorageAdapterBase.LoadRange()\u0060 which calls \u0060GetChunkInfo()\u0060 \u2192 \u0060Load()\u0060, then \u0060Load()\u0060 with a real key should be fine once \u0060GetChunkInfo\u0060 returns correct results.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-3",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Add unit tests in \u0060tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit/\u0060: (a) \u0060GetChunkInfo_EmptyPrefix_ReturnsAllStoredChunks\u0060 \u2014 store 3 documents, call \u0060GetChunkInfo(empty)\u0060, assert all chunk keys returned. (b) \u0060LoadRange_EmptyPrefix_ReturnsAllStoredData\u0060 \u2014 same setup, verify data is returned.",
+      "description": "Add unit tests in \u0060tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit/\u0060: (a) \u0060GetChunkInfo_EmptyPrefix_ReturnsAllStoredChunks\u0060 \u2014 store 3 documents, call \u0060GetChunkInfo(empty)\u0060, assert all chunk keys returned. (b) \u0060LoadRange_EmptyPrefix_ReturnsAllStoredData\u0060 \u2014 same setup, verify data is returned.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-4",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Run existing FileSystem storage tests (\u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060) and ensure all 20 existing tests still pass plus the new tests.",
+      "description": "Run existing FileSystem storage tests (\u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060) and ensure all 20 existing tests still pass plus the new tests.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-2-task-1",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060SyncServer.cs\u0060, add a \u0060ConcurrentDictionary\u003Cstring, byte\u003E _knownDocumentIds\u0060 field. In \u0060OnMessageReceivedAsync()\u0060 (line 104-119), after the null-check on \u0060message.DocumentId\u0060, add \u0060_knownDocumentIds.TryAdd(documentId.Value, 0)\u0060. In \u0060OnDocumentLoaded()\u0060 (line 172-175), add \u0060_knownDocumentIds.TryAdd(e.DocumentId.Value, 0)\u0060.",
+      "description": "In \u0060SyncServer.cs\u0060, add a \u0060ConcurrentDictionary\u003Cstring, byte\u003E _knownDocumentIds\u0060 field. In \u0060OnMessageReceivedAsync()\u0060 (line 104-119), after the null-check on \u0060message.DocumentId\u0060, add \u0060_knownDocumentIds.TryAdd(documentId.Value, 0)\u0060. In \u0060OnDocumentLoaded()\u0060 (line 172-175), add \u0060_knownDocumentIds.TryAdd(e.DocumentId.Value, 0)\u0060.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-2",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060ListDocumentsAsync()\u0060 (line 127-145), change the implementation to: (1) start with \u0060new HashSet\u003Cstring\u003E(_knownDocumentIds.Keys)\u0060, (2) also scan storage via \u0060GetChunkInfo(emptyPrefix)\u0060 to catch documents from previous server runs, (3) union the two sets. Wrap the storage scan in a try/catch so that if storage is empty/unavailable, the in-memory set is still returned.",
+      "description": "In \u0060ListDocumentsAsync()\u0060 (line 127-145), change the implementation to: (1) start with \u0060new HashSet\u003Cstring\u003E(_knownDocumentIds.Keys)\u0060, (2) also scan storage via \u0060GetChunkInfo(emptyPrefix)\u0060 to catch documents from previous server runs, (3) union the two sets. Wrap the storage scan in a try/catch so that if storage is empty/unavailable, the in-memory set is still returned.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-3",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060DeleteDocumentAsync()\u0060 (line 162-170), add \u0060_knownDocumentIds.TryRemove(documentId, out _)\u0060 before the storage cleanup.",
+      "description": "In \u0060DeleteDocumentAsync()\u0060 (line 162-170), add \u0060_knownDocumentIds.TryRemove(documentId, out _)\u0060 before the storage cleanup.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-4",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Add unit tests in \u0060tests/Six.Automerge.SyncServer.Tests.Unit/\u0060: (a) \u0060ListDocumentsAsync_AfterReceivingMessage_ReturnsDocumentId\u0060 \u2014 send a sync message for a document, verify \u0060ListDocumentsAsync\u0060 returns it immediately without waiting for persistence. (b) \u0060ListDocumentsAsync_CombinesInMemoryAndStorage\u0060 \u2014 pre-populate storage with one doc, send message for another, verify both returned.",
+      "description": "Add unit tests in \u0060tests/Six.Automerge.SyncServer.Tests.Unit/\u0060: (a) \u0060ListDocumentsAsync_AfterReceivingMessage_ReturnsDocumentId\u0060 \u2014 send a sync message for a document, verify \u0060ListDocumentsAsync\u0060 returns it immediately without waiting for persistence. (b) \u0060ListDocumentsAsync_CombinesInMemoryAndStorage\u0060 \u2014 pre-populate storage with one doc, send message for another, verify both returned.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-5",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Run existing SyncServer tests (\u0060dotnet test tests/Six.Automerge.SyncServer.Tests.Unit\u0060) \u2014 all 23 existing tests must pass plus new tests.",
+      "description": "Run existing SyncServer tests (\u0060dotnet test tests/Six.Automerge.SyncServer.Tests.Unit\u0060) \u2014 all 23 existing tests must pass plus new tests.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-3-task-1",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060TextDocument.cs\u0060, add a nested abstract record \u0060TextOperation\u0060 with two variants: \u0060LocalTextChange(string NewText)\u0060 and \u0060RemoteRefresh\u0060. Add fields: \u0060Channel\u003CTextOperation\u003E _operationQueue\u0060 (unbounded), \u0060CancellationTokenSource _queueCts\u0060, \u0060Task? _processingTask\u0060. Remove the \u0060_isLocalChange\u0060 field and \u0060ChangeDebouncer? _debouncer\u0060 field.",
+      "description": "In \u0060TextDocument.cs\u0060, add a nested abstract record \u0060TextOperation\u0060 with two variants: \u0060LocalTextChange(string NewText)\u0060 and \u0060RemoteRefresh\u0060. Add fields: \u0060Channel\u003CTextOperation\u003E _operationQueue\u0060 (unbounded), \u0060CancellationTokenSource _queueCts\u0060, \u0060Task? _processingTask\u0060. Remove the \u0060_isLocalChange\u0060 field and \u0060ChangeDebouncer? _debouncer\u0060 field.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-2",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Implement \u0060ProcessOperationQueueAsync()\u0060 as an async method that reads from the channel in a loop (\u0060await foreach\u0060). For \u0060LocalTextChange\u0060: drain/coalesce additional pending \u0060LocalTextChange\u0060 items from the queue, then call a new \u0060FlushLocalChangeAsync(string)\u0060 method. For \u0060RemoteRefresh\u0060: call \u0060RefreshFromDocumentAsync\u0060 and fire \u0060TextChanged\u0060/\u0060FormattedTextChanged\u0060 events with \u0060isLocal=false\u0060. Handle \u0060ObjectDisposedException\u0060 and \u0060OperationCanceledException\u0060 for graceful shutdown.",
+      "description": "Implement \u0060ProcessOperationQueueAsync()\u0060 as an async method that reads from the channel in a loop (\u0060await foreach\u0060). For \u0060LocalTextChange\u0060: drain/coalesce additional pending \u0060LocalTextChange\u0060 items from the queue, then call a new \u0060FlushLocalChangeAsync(string)\u0060 method. For \u0060RemoteRefresh\u0060: call \u0060RefreshFromDocumentAsync\u0060 and fire \u0060TextChanged\u0060/\u0060FormattedTextChanged\u0060 events with \u0060isLocal=false\u0060. Handle \u0060ObjectDisposedException\u0060 and \u0060OperationCanceledException\u0060 for graceful shutdown.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-3",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Refactor \u0060FlushLocalChangeAsync(string newText)\u0060 from the existing \u0060FlushTextChangeAsync\u0060: compute splice against \u0060_cachedText\u0060, apply via \u0060_handle.ChangeAsync(doc =\u003E doc.SpliceText(...))\u0060, then call \u0060RefreshFromDocumentAsync\u0060 and fire \u0060TextChanged\u0060 with \u0060isLocal=true\u0060. No need for \u0060_isLocalChange\u0060 flag since queue serialization guarantees exclusion.",
+      "description": "Refactor \u0060FlushLocalChangeAsync(string newText)\u0060 from the existing \u0060FlushTextChangeAsync\u0060: compute splice against \u0060_cachedText\u0060, apply via \u0060_handle.ChangeAsync(doc =\u003E doc.SpliceText(...))\u0060, then call \u0060RefreshFromDocumentAsync\u0060 and fire \u0060TextChanged\u0060 with \u0060isLocal=true\u0060. No need for \u0060_isLocalChange\u0060 flag since queue serialization guarantees exclusion.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-4",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Update \u0060ApplyTextChangeAsync()\u0060 to simply write \u0060new LocalTextChange(newText)\u0060 to the channel writer. Remove the debouncer creation logic.",
+      "description": "Update \u0060ApplyTextChangeAsync()\u0060 to simply write \u0060new LocalTextChange(newText)\u0060 to the channel writer. Remove the debouncer creation logic.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-5",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Update \u0060OnDocHandleChanged()\u0060 to write \u0060new RemoteRefresh()\u0060 to the channel writer instead of fire-and-forget \u0060HandleRemoteChangeAsync()\u0060. Remove the \u0060_isLocalChange\u0060 check.",
+      "description": "Update \u0060OnDocHandleChanged()\u0060 to write \u0060new RemoteRefresh()\u0060 to the channel writer instead of fire-and-forget \u0060HandleRemoteChangeAsync()\u0060. Remove the \u0060_isLocalChange\u0060 check.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-6",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Start the processing task in \u0060InitializeAsync()\u0060 after subscribing to \u0060Changed\u0060: \u0060_processingTask = Task.Run(() =\u003E ProcessOperationQueueAsync())\u0060.",
+      "description": "Start the processing task in \u0060InitializeAsync()\u0060 after subscribing to \u0060Changed\u0060: \u0060_processingTask = Task.Run(() =\u003E ProcessOperationQueueAsync())\u0060.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-7",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Update \u0060Dispose()\u0060: cancel \u0060_queueCts\u0060, complete the channel writer, await \u0060_processingTask\u0060 (with timeout). Remove debouncer disposal.",
+      "description": "Update \u0060Dispose()\u0060: cancel \u0060_queueCts\u0060, complete the channel writer, await \u0060_processingTask\u0060 (with timeout). Remove debouncer disposal.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-8",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Update \u0060ApplyMarkAsync\u0060 and \u0060RemoveMarkAsync\u0060 methods: these currently set \u0060_isLocalChange = true/false\u0060 directly. Instead, they should flush any pending queue items first (complete channel, await, restart), apply the mark change, refresh, then restart the queue. Alternative: send a special \u0060MarkOperation\u0060 through the queue. Choose the simpler approach: since marks are infrequent, flush the queue, apply mark directly, then restart.",
+      "description": "Update \u0060ApplyMarkAsync\u0060 and \u0060RemoveMarkAsync\u0060 methods: these currently set \u0060_isLocalChange = true/false\u0060 directly. Instead, they should flush any pending queue items first (complete channel, await, restart), apply the mark change, refresh, then restart the queue. Alternative: send a special \u0060MarkOperation\u0060 through the queue. Choose the simpler approach: since marks are infrequent, flush the queue, apply mark directly, then restart.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-9",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Run existing TextEdit tests (\u0060dotnet test tests/Six.Automerge.TextEdit.Tests.Unit\u0060) \u2014 all 102 existing tests must pass. Fix any tests that depend on the old debouncer or \u0060_isLocalChange\u0060 flag behavior.",
+      "description": "Run existing TextEdit tests (\u0060dotnet test tests/Six.Automerge.TextEdit.Tests.Unit\u0060) \u2014 all 102 existing tests must pass. Fix any tests that depend on the old debouncer or \u0060_isLocalChange\u0060 flag behavior.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-4-task-1",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Add new unit tests in \u0060tests/Six.Automerge.TextEdit.Tests.Unit/\u0060 for the queue behavior: (a) \u0060ApplyTextChangeAsync_RapidChanges_CoalescesCorrectly\u0060 \u2014 schedule 10 rapid changes, verify only the final text is committed. (b) \u0060RemoteRefresh_DuringPendingLocalChange_IsDeferred\u0060 \u2014 enqueue a local change then a remote refresh, verify local processes first. (c) \u0060ConcurrentLocalAndRemote_DoesNotCrash\u0060 \u2014 simulate rapid alternating local/remote operations. (d) \u0060Dispose_FlushesQueueGracefully\u0060 \u2014 verify pending changes are flushed on dispose.",
+      "description": "Add new unit tests in \u0060tests/Six.Automerge.TextEdit.Tests.Unit/\u0060 for the queue behavior: (a) \u0060ApplyTextChangeAsync_RapidChanges_CoalescesCorrectly\u0060 \u2014 schedule 10 rapid changes, verify only the final text is committed. (b) \u0060RemoteRefresh_DuringPendingLocalChange_IsDeferred\u0060 \u2014 enqueue a local change then a remote refresh, verify local processes first. (c) \u0060ConcurrentLocalAndRemote_DoesNotCrash\u0060 \u2014 simulate rapid alternating local/remote operations. (d) \u0060Dispose_FlushesQueueGracefully\u0060 \u2014 verify pending changes are flushed on dispose.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-2",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Review \u0060ChangeDebouncer.cs\u0060 usage: if it\u0027s only used by \u0060TextDocument\u0060, and \u0060TextDocument\u0060 no longer uses it, check if any other code references it. If unused, leave it in place (don\u0027t delete unless confirmed unused) but remove the internal reference from \u0060TextDocument\u0060.",
+      "description": "Review \u0060ChangeDebouncer.cs\u0060 usage: if it\u0027s only used by \u0060TextDocument\u0060, and \u0060TextDocument\u0060 no longer uses it, check if any other code references it. If unused, leave it in place (don\u0027t delete unless confirmed unused) but remove the internal reference from \u0060TextDocument\u0060.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-3",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Remove the \u0060Console.Error.WriteLine\u0060 debug output from \u0060EditorViewModel.FormattedText\u0060 setter (line 87 of \u0060EditorViewModel.cs\u0060).",
+      "description": "Remove the \u0060Console.Error.WriteLine\u0060 debug output from \u0060EditorViewModel.FormattedText\u0060 setter (line 87 of \u0060EditorViewModel.cs\u0060).",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-4",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Run all CollaborativeEditor tests (\u0060dotnet test tests/DemoApp.CollaborativeEditor.Tests\u0060) \u2014 all 82 tests must pass. Fix any that rely on the old \u0060TextDocument\u0060 internals.",
+      "description": "Run all CollaborativeEditor tests (\u0060dotnet test tests/DemoApp.CollaborativeEditor.Tests\u0060) \u2014 all 82 tests must pass. Fix any that rely on the old \u0060TextDocument\u0060 internals.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-5",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Run all DemoApp.Shared tests (\u0060dotnet test tests/DemoApp.Shared.Tests\u0060) \u2014 all 86 tests must pass.",
+      "description": "Run all DemoApp.Shared tests (\u0060dotnet test tests/DemoApp.Shared.Tests\u0060) \u2014 all 86 tests must pass.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-5-task-1",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060SyncServer.cs\u0060, add a public event: \u0060event EventHandler\u003CDocumentAvailableEventArgs\u003E? DocumentAvailable\u0060 with \u0060DocumentAvailableEventArgs { string DocumentId }\u0060. Fire this event in \u0060OnMessageReceivedAsync\u0060 when \u0060_knownDocumentIds.TryAdd\u0060 returns true (first time seeing this document ID).",
+      "description": "In \u0060SyncServer.cs\u0060, add a public event: \u0060event EventHandler\u003CDocumentAvailableEventArgs\u003E? DocumentAvailable\u0060 with \u0060DocumentAvailableEventArgs { string DocumentId }\u0060. Fire this event in \u0060OnMessageReceivedAsync\u0060 when \u0060_knownDocumentIds.TryAdd\u0060 returns true (first time seeing this document ID).",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-2",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060IDocumentsHubClient\u0060 interface (in \u0060Six.Automerge.Repo.Network.SignalR.Abstractions\u0060), add: \u0060Task OnDocumentAvailable(string documentId)\u0060.",
+      "description": "In \u0060IDocumentsHubClient\u0060 interface (in \u0060Six.Automerge.Repo.Network.SignalR.Abstractions\u0060), add: \u0060Task OnDocumentAvailable(string documentId)\u0060.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-3",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060DocumentsHub.cs\u0060 (or the service startup), subscribe to \u0060SyncServer.DocumentAvailable\u0060. When fired, call \u0060Clients.All.OnDocumentAvailable(documentId)\u0060 to notify all connected clients. Consider using \u0060Clients.Others\u0060 if the originating client shouldn\u0027t be notified (but it\u0027s harmless to notify them too).",
+      "description": "In \u0060DocumentsHub.cs\u0060 (or the service startup), subscribe to \u0060SyncServer.DocumentAvailable\u0060. When fired, call \u0060Clients.All.OnDocumentAvailable(documentId)\u0060 to notify all connected clients. Consider using \u0060Clients.Others\u0060 if the originating client shouldn\u0027t be notified (but it\u0027s harmless to notify them too).",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-4",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060SignalRNetworkAdapter.cs\u0060, register a callback for \u0060OnDocumentAvailable\u0060 in \u0060ConnectAsyncInternal()\u0060. Add a public event \u0060DocumentAvailable\u0060 and raise it when the callback fires. Implement \u0060IDocumentsHubClient.OnDocumentAvailable\u0060.",
+      "description": "In \u0060SignalRNetworkAdapter.cs\u0060, register a callback for \u0060OnDocumentAvailable\u0060 in \u0060ConnectAsyncInternal()\u0060. Add a public event \u0060DocumentAvailable\u0060 and raise it when the callback fires. Implement \u0060IDocumentsHubClient.OnDocumentAvailable\u0060.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-5",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060RepoService.cs\u0060, subscribe to the adapter\u0027s \u0060DocumentAvailable\u0060 event. Maintain a list of known document IDs and add the new one. Fire a new event \u0060DocumentsChanged\u0060 that the UI can subscribe to.",
+      "description": "In \u0060RepoService.cs\u0060, subscribe to the adapter\u0027s \u0060DocumentAvailable\u0060 event. Maintain a list of known document IDs and add the new one. Fire a new event \u0060DocumentsChanged\u0060 that the UI can subscribe to.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-6",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "In \u0060DocumentSessionDialogViewModel.cs\u0060, subscribe to \u0060RepoService.DocumentsChanged\u0060. When fired, auto-refresh the available documents list (call \u0060LoadServerDocumentsAsync\u0060).",
+      "description": "In \u0060DocumentSessionDialogViewModel.cs\u0060, subscribe to \u0060RepoService.DocumentsChanged\u0060. When fired, auto-refresh the available documents list (call \u0060LoadServerDocumentsAsync\u0060).",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-7",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Run existing SignalR adapter tests and Server.Api tests to ensure no regressions. Add a unit test for \u0060SyncServer.DocumentAvailable\u0060 event firing.",
+      "description": "Run existing SignalR adapter tests and Server.Api tests to ensure no regressions. Add a unit test for \u0060SyncServer.DocumentAvailable\u0060 event firing.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-6-task-1",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Build the full solution (\u0060dotnet build\u0060) and verify zero errors/warnings.",
+      "description": "Build the full solution (\u0060dotnet build\u0060) and verify zero errors/warnings.",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-2",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Run ALL test projects (\u0060dotnet test\u0060 from repo root or use \u0060tests-run.cs\u0060 script) \u2014 target: all 1,083\u002B tests passing (including new tests from previous sprints).",
+      "description": "Run ALL test projects (\u0060dotnet test\u0060 from repo root or use \u0060tests-run.cs\u0060 script) \u2014 target: all 1,083\u002B tests passing (including new tests from previous sprints).",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-3",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Start Aspire AppHost (\u0060dotnet run --project apps/Infra.AppHost\u0060) and verify the dashboard shows all resources healthy.",
+      "description": "Start Aspire AppHost (\u0060dotnet run --project apps/Infra.AppHost\u0060) and verify the dashboard shows all resources healthy.",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-4",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Use \u0060six-avalonia-mcp\u0060 to launch a CollaborativeEditor client (replica-1). Create a new document. Verify no crash, text displays correctly.",
+      "description": "Use \u0060six-avalonia-mcp\u0060 to launch a CollaborativeEditor client (replica-1). Create a new document. Verify no crash, text displays correctly.",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-5",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Verify the server console shows NO \u0060StorageKey must have at least one component\u0060 errors.",
+      "description": "Verify the server console shows NO \u0060StorageKey must have at least one component\u0060 errors.",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-6",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "From a second client (replica-2), verify the document session dialog shows the document created by replica-1 (either via auto-refresh notification or manual refresh).",
+      "description": "From a second client (replica-2), verify the document session dialog shows the document created by replica-1 (either via auto-refresh notification or manual refresh).",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-7",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Open the document on replica-2. Type several sentences on replica-1. Verify: (a) no crash, (b) no garbled text on replica-1, (c) text appears correctly on replica-2.",
+      "description": "Open the document on replica-2. Type several sentences on replica-1. Verify: (a) no crash, (b) no garbled text on replica-1, (c) text appears correctly on replica-2.",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-8",
+      "specFile": ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md",
+      "title": "Type on both clients simultaneously. Verify collaborative editing works without crashes or text corruption.",
+      "description": "Type on both clients simultaneously. Verify collaborative editing works without crashes or text corruption.",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "sprint-1",
+      "title": "Fix FileSystemStorageAdapter Empty Prefix (Storage Layer)",
+      "description": "This sprint fixes the lowest layer \u2014 the storage adapter that causes \u0060ListDocuments\u0060 to fail on the server.\r\n\r\n- [ ] In \u0060FileSystemStorageAdapter.GetChunkInfo()\u0060 (line 286-325), add an early check: if \u0060keyPrefix.Components.Count == 0\u0060, scan all subdirectories of \u0060_baseDirectory\u0060 instead of calling \u0060GetFilePath(keyPrefix)\u0060. Enumerate all 2-char shard directories, walk each recursively, parse file paths back to \u0060StorageKey\u0060 via \u0060ParseFilePathToKey\u0060, and collect \u0060ChunkInfo\u0060 results. Keep the existing logic for non-empty prefixes unchanged.\r\n- [ ] Similarly update the base \u0060LoadRange()\u0060 behavior \u2014 check if \u0060FileSystemStorageAdapter\u0060 overrides \u0060LoadRange\u0060. If \u0060LoadRange\u0060 also goes through \u0060GetFilePath\u0060, add the same empty-prefix handling. If it uses the \u0060StorageAdapterBase.LoadRange()\u0060 which calls \u0060GetChunkInfo()\u0060 \u2192 \u0060Load()\u0060, then \u0060Load()\u0060 with a real key should be fine once \u0060GetChunkInfo\u0060 returns correct results.\r\n- [ ] Add unit tests in \u0060tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit/\u0060: (a) \u0060GetChunkInfo_EmptyPrefix_ReturnsAllStoredChunks\u0060 \u2014 store 3 documents, call \u0060GetChunkInfo(empty)\u0060, assert all chunk keys returned. (b) \u0060LoadRange_EmptyPrefix_ReturnsAllStoredData\u0060 \u2014 same setup, verify data is returned.\r\n- [ ] Run existing FileSystem storage tests (\u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060) and ensure all 20 existing tests still pass plus the new tests.",
+      "taskIds": [
+        "sprint-1-task-1",
+        "sprint-1-task-2",
+        "sprint-1-task-3",
+        "sprint-1-task-4"
+      ]
+    },
+    {
+      "id": "sprint-2",
+      "title": "Fix SyncServer Document Tracking \u0026 Listing",
+      "description": "This sprint makes \u0060ListDocumentsAsync()\u0060 work correctly by combining in-memory tracking with storage scanning.\r\n\r\n- [ ] In \u0060SyncServer.cs\u0060, add a \u0060ConcurrentDictionary\u003Cstring, byte\u003E _knownDocumentIds\u0060 field. In \u0060OnMessageReceivedAsync()\u0060 (line 104-119), after the null-check on \u0060message.DocumentId\u0060, add \u0060_knownDocumentIds.TryAdd(documentId.Value, 0)\u0060. In \u0060OnDocumentLoaded()\u0060 (line 172-175), add \u0060_knownDocumentIds.TryAdd(e.DocumentId.Value, 0)\u0060.\r\n- [ ] In \u0060ListDocumentsAsync()\u0060 (line 127-145), change the implementation to: (1) start with \u0060new HashSet\u003Cstring\u003E(_knownDocumentIds.Keys)\u0060, (2) also scan storage via \u0060GetChunkInfo(emptyPrefix)\u0060 to catch documents from previous server runs, (3) union the two sets. Wrap the storage scan in a try/catch so that if storage is empty/unavailable, the in-memory set is still returned.\r\n- [ ] In \u0060DeleteDocumentAsync()\u0060 (line 162-170), add \u0060_knownDocumentIds.TryRemove(documentId, out _)\u0060 before the storage cleanup.\r\n- [ ] Add unit tests in \u0060tests/Six.Automerge.SyncServer.Tests.Unit/\u0060: (a) \u0060ListDocumentsAsync_AfterReceivingMessage_ReturnsDocumentId\u0060 \u2014 send a sync message for a document, verify \u0060ListDocumentsAsync\u0060 returns it immediately without waiting for persistence. (b) \u0060ListDocumentsAsync_CombinesInMemoryAndStorage\u0060 \u2014 pre-populate storage with one doc, send message for another, verify both returned.\r\n- [ ] Run existing SyncServer tests (\u0060dotnet test tests/Six.Automerge.SyncServer.Tests.Unit\u0060) \u2014 all 23 existing tests must pass plus new tests.",
+      "taskIds": [
+        "sprint-2-task-1",
+        "sprint-2-task-2",
+        "sprint-2-task-3",
+        "sprint-2-task-4",
+        "sprint-2-task-5"
+      ]
+    },
+    {
+      "id": "sprint-3",
+      "title": "Fix TextDocument Operation Serialization (Critical Crash Fix)",
+      "description": "This sprint replaces the race-prone \u0060_isLocalChange\u0060 flag with a serialized \u0060Channel\u003CT\u003E\u0060 operation queue in \u0060TextDocument\u0060, eliminating the Rust panic.\r\n\r\n- [ ] In \u0060TextDocument.cs\u0060, add a nested abstract record \u0060TextOperation\u0060 with two variants: \u0060LocalTextChange(string NewText)\u0060 and \u0060RemoteRefresh\u0060. Add fields: \u0060Channel\u003CTextOperation\u003E _operationQueue\u0060 (unbounded), \u0060CancellationTokenSource _queueCts\u0060, \u0060Task? _processingTask\u0060. Remove the \u0060_isLocalChange\u0060 field and \u0060ChangeDebouncer? _debouncer\u0060 field.\r\n- [ ] Implement \u0060ProcessOperationQueueAsync()\u0060 as an async method that reads from the channel in a loop (\u0060await foreach\u0060). For \u0060LocalTextChange\u0060: drain/coalesce additional pending \u0060LocalTextChange\u0060 items from the queue, then call a new \u0060FlushLocalChangeAsync(string)\u0060 method. For \u0060RemoteRefresh\u0060: call \u0060RefreshFromDocumentAsync\u0060 and fire \u0060TextChanged\u0060/\u0060FormattedTextChanged\u0060 events with \u0060isLocal=false\u0060. Handle \u0060ObjectDisposedException\u0060 and \u0060OperationCanceledException\u0060 for graceful shutdown.\r\n- [ ] Refactor \u0060FlushLocalChangeAsync(string newText)\u0060 from the existing \u0060FlushTextChangeAsync\u0060: compute splice against \u0060_cachedText\u0060, apply via \u0060_handle.ChangeAsync(doc =\u003E doc.SpliceText(...))\u0060, then call \u0060RefreshFromDocumentAsync\u0060 and fire \u0060TextChanged\u0060 with \u0060isLocal=true\u0060. No need for \u0060_isLocalChange\u0060 flag since queue serialization guarantees exclusion.\r\n- [ ] Update \u0060ApplyTextChangeAsync()\u0060 to simply write \u0060new LocalTextChange(newText)\u0060 to the channel writer. Remove the debouncer creation logic.\r\n- [ ] Update \u0060OnDocHandleChanged()\u0060 to write \u0060new RemoteRefresh()\u0060 to the channel writer instead of fire-and-forget \u0060HandleRemoteChangeAsync()\u0060. Remove the \u0060_isLocalChange\u0060 check.\r\n- [ ] Start the processing task in \u0060InitializeAsync()\u0060 after subscribing to \u0060Changed\u0060: \u0060_processingTask = Task.Run(() =\u003E ProcessOperationQueueAsync())\u0060.\r\n- [ ] Update \u0060Dispose()\u0060: cancel \u0060_queueCts\u0060, complete the channel writer, await \u0060_processingTask\u0060 (with timeout). Remove debouncer disposal.\r\n- [ ] Update \u0060ApplyMarkAsync\u0060 and \u0060RemoveMarkAsync\u0060 methods: these currently set \u0060_isLocalChange = true/false\u0060 directly. Instead, they should flush any pending queue items first (complete channel, await, restart), apply the mark change, refresh, then restart the queue. Alternative: send a special \u0060MarkOperation\u0060 through the queue. Choose the simpler approach: since marks are infrequent, flush the queue, apply mark directly, then restart.\r\n- [ ] Run existing TextEdit tests (\u0060dotnet test tests/Six.Automerge.TextEdit.Tests.Unit\u0060) \u2014 all 102 existing tests must pass. Fix any tests that depend on the old debouncer or \u0060_isLocalChange\u0060 flag behavior.",
+      "taskIds": [
+        "sprint-3-task-1",
+        "sprint-3-task-2",
+        "sprint-3-task-3",
+        "sprint-3-task-4",
+        "sprint-3-task-5",
+        "sprint-3-task-6",
+        "sprint-3-task-7",
+        "sprint-3-task-8",
+        "sprint-3-task-9"
+      ]
+    },
+    {
+      "id": "sprint-4",
+      "title": "Update Tests for TextDocument Queue \u002B Fix ChangeDebouncer",
+      "description": "This sprint updates/adds tests for the new queue-based TextDocument and cleans up the debouncer.\r\n\r\n- [ ] Add new unit tests in \u0060tests/Six.Automerge.TextEdit.Tests.Unit/\u0060 for the queue behavior: (a) \u0060ApplyTextChangeAsync_RapidChanges_CoalescesCorrectly\u0060 \u2014 schedule 10 rapid changes, verify only the final text is committed. (b) \u0060RemoteRefresh_DuringPendingLocalChange_IsDeferred\u0060 \u2014 enqueue a local change then a remote refresh, verify local processes first. (c) \u0060ConcurrentLocalAndRemote_DoesNotCrash\u0060 \u2014 simulate rapid alternating local/remote operations. (d) \u0060Dispose_FlushesQueueGracefully\u0060 \u2014 verify pending changes are flushed on dispose.\r\n- [ ] Review \u0060ChangeDebouncer.cs\u0060 usage: if it\u0027s only used by \u0060TextDocument\u0060, and \u0060TextDocument\u0060 no longer uses it, check if any other code references it. If unused, leave it in place (don\u0027t delete unless confirmed unused) but remove the internal reference from \u0060TextDocument\u0060.\r\n- [ ] Remove the \u0060Console.Error.WriteLine\u0060 debug output from \u0060EditorViewModel.FormattedText\u0060 setter (line 87 of \u0060EditorViewModel.cs\u0060).\r\n- [ ] Run all CollaborativeEditor tests (\u0060dotnet test tests/DemoApp.CollaborativeEditor.Tests\u0060) \u2014 all 82 tests must pass. Fix any that rely on the old \u0060TextDocument\u0060 internals.\r\n- [ ] Run all DemoApp.Shared tests (\u0060dotnet test tests/DemoApp.Shared.Tests\u0060) \u2014 all 86 tests must pass.",
+      "taskIds": [
+        "sprint-4-task-1",
+        "sprint-4-task-2",
+        "sprint-4-task-3",
+        "sprint-4-task-4",
+        "sprint-4-task-5"
+      ]
+    },
+    {
+      "id": "sprint-5",
+      "title": "Document Discovery Notification (SignalR Layer)",
+      "description": "This sprint adds the server-to-client notification when new documents become available.\r\n\r\n- [ ] In \u0060SyncServer.cs\u0060, add a public event: \u0060event EventHandler\u003CDocumentAvailableEventArgs\u003E? DocumentAvailable\u0060 with \u0060DocumentAvailableEventArgs { string DocumentId }\u0060. Fire this event in \u0060OnMessageReceivedAsync\u0060 when \u0060_knownDocumentIds.TryAdd\u0060 returns true (first time seeing this document ID).\r\n- [ ] In \u0060IDocumentsHubClient\u0060 interface (in \u0060Six.Automerge.Repo.Network.SignalR.Abstractions\u0060), add: \u0060Task OnDocumentAvailable(string documentId)\u0060.\r\n- [ ] In \u0060DocumentsHub.cs\u0060 (or the service startup), subscribe to \u0060SyncServer.DocumentAvailable\u0060. When fired, call \u0060Clients.All.OnDocumentAvailable(documentId)\u0060 to notify all connected clients. Consider using \u0060Clients.Others\u0060 if the originating client shouldn\u0027t be notified (but it\u0027s harmless to notify them too).\r\n- [ ] In \u0060SignalRNetworkAdapter.cs\u0060, register a callback for \u0060OnDocumentAvailable\u0060 in \u0060ConnectAsyncInternal()\u0060. Add a public event \u0060DocumentAvailable\u0060 and raise it when the callback fires. Implement \u0060IDocumentsHubClient.OnDocumentAvailable\u0060.\r\n- [ ] In \u0060RepoService.cs\u0060, subscribe to the adapter\u0027s \u0060DocumentAvailable\u0060 event. Maintain a list of known document IDs and add the new one. Fire a new event \u0060DocumentsChanged\u0060 that the UI can subscribe to.\r\n- [ ] In \u0060DocumentSessionDialogViewModel.cs\u0060, subscribe to \u0060RepoService.DocumentsChanged\u0060. When fired, auto-refresh the available documents list (call \u0060LoadServerDocumentsAsync\u0060).\r\n- [ ] Run existing SignalR adapter tests and Server.Api tests to ensure no regressions. Add a unit test for \u0060SyncServer.DocumentAvailable\u0060 event firing.",
+      "taskIds": [
+        "sprint-5-task-1",
+        "sprint-5-task-2",
+        "sprint-5-task-3",
+        "sprint-5-task-4",
+        "sprint-5-task-5",
+        "sprint-5-task-6",
+        "sprint-5-task-7"
+      ]
+    },
+    {
+      "id": "sprint-6",
+      "title": "Integration Testing \u0026 End-to-End Validation",
+      "description": "This sprint validates the complete fix with the Aspire stack and running clients.\r\n\r\n- [ ] Build the full solution (\u0060dotnet build\u0060) and verify zero errors/warnings.\r\n- [ ] Run ALL test projects (\u0060dotnet test\u0060 from repo root or use \u0060tests-run.cs\u0060 script) \u2014 target: all 1,083\u002B tests passing (including new tests from previous sprints).\r\n- [ ] Start Aspire AppHost (\u0060dotnet run --project apps/Infra.AppHost\u0060) and verify the dashboard shows all resources healthy.\r\n- [ ] Use \u0060six-avalonia-mcp\u0060 to launch a CollaborativeEditor client (replica-1). Create a new document. Verify no crash, text displays correctly.\r\n- [ ] Verify the server console shows NO \u0060StorageKey must have at least one component\u0060 errors.\r\n- [ ] From a second client (replica-2), verify the document session dialog shows the document created by replica-1 (either via auto-refresh notification or manual refresh).\r\n- [ ] Open the document on replica-2. Type several sentences on replica-1. Verify: (a) no crash, (b) no garbled text on replica-1, (c) text appears correctly on replica-2.\r\n- [ ] Type on both clients simultaneously. Verify collaborative editing works without crashes or text corruption.",
+      "taskIds": [
+        "sprint-6-task-1",
+        "sprint-6-task-2",
+        "sprint-6-task-3",
+        "sprint-6-task-4",
+        "sprint-6-task-5",
+        "sprint-6-task-6",
+        "sprint-6-task-7",
+        "sprint-6-task-8"
+      ]
+    }
+  ],
+  "currentSprintIndex": 6,
+  "currentTaskId": "sprint-6-task-8",
+  "completedCount": 38,
+  "totalCount": 38,
+  "completionPercent": 100,
+  "hasSprints": true
+}

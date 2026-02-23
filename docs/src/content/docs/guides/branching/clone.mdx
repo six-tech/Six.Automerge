@@ -1,0 +1,106 @@
+---
+title: "Clone"
+description: Create exact duplicates of Automerge documents and understand when to use Clone vs Fork
+---
+
+# Overview
+
+`Clone` creates an exact byte-for-byte duplicate of a document. Unlike `Fork`, which creates a new actor identity for collaborative branching, `Clone` produces an identical copy by saving and reloading the document. Both the content and actor ID are preserved.
+
+# Basic Usage
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "title", "My Document");
+doc.PutInt64(root, "version", 1);
+doc.Commit("initial");
+
+using var cloned = doc.Clone();
+
+var originalJson = doc.HydrateJson();
+var clonedJson = cloned.HydrateJson();
+// Both are identical
+```
+
+# How Clone Works
+
+Clone works by serializing the document with `Save` and deserializing with `Load`:
+
+```csharp
+// Clone is equivalent to:
+var data = doc.Save();
+var clone = AutomergeDocument.Load(data);
+```
+
+This means the clone has:
+- The same content
+- The same history
+- The same actor ID
+- The same heads
+
+The clone is a completely independent object — changes to one do not affect the other.
+
+# Clone vs Fork
+
+| Feature | Clone | Fork |
+|---------|-------|------|
+| Content | Identical | Identical |
+| History | Identical | Identical |
+| Actor ID | **Same** | **Different** |
+| Use case | Backup, snapshots, testing | Collaborative branches |
+| Can merge back? | Not recommended (same actor) | Yes (different actors) |
+
+The key difference is the **actor ID**. Automerge uses actor IDs to track who made each change. Two documents with the same actor ID making independent changes can cause confusion in the CRDT merge logic.
+
+## When to Use Clone
+
+- **Backups** — Save a snapshot before a risky operation
+- **Testing** — Create a copy to test changes without affecting the original
+- **Serialization** — Clone is effectively save + load
+- **Read-only views** — Create a copy for display purposes
+
+## When to Use Fork
+
+- **Collaborative branches** — Multiple actors working independently
+- **Branch and merge** — Create a branch, make changes, merge back
+- **What-if scenarios** — Explore alternatives that might be merged later
+- **Any time you plan to merge** — Fork ensures distinct actor IDs
+
+# Complete Example
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "title", "Important Document");
+doc.PutString(root, "status", "draft");
+doc.Commit("Create document");
+
+// Clone for backup before making risky changes
+using var backup = doc.Clone();
+
+// Make risky changes
+doc.PutString(root, "status", "experimental");
+doc.Delete(root, "title");
+doc.Commit("Risky change");
+
+// If something went wrong, backup still has the original state
+var backupJson = backup.HydrateJson();
+// Contains "title" and "status: draft"
+
+// For collaborative branching, use Fork instead
+using var branch = doc.Fork();
+branch.PutString(branch.RootId, "status", "reviewed");
+branch.Commit("Review change");
+
+// Fork can be safely merged back
+doc.Merge(branch);
+```
+
+# Next Steps
+
+- [Fork and Merge](/Six.Automerge/guides/branching/fork-and-merge/) — Create branches with independent actor IDs
+- [Fork at Heads](/Six.Automerge/guides/branching/fork-at-heads/) — Branch from specific historical points
+- [Commits and Heads](/Six.Automerge/guides/history/commits-and-heads/) — Understand the commit model

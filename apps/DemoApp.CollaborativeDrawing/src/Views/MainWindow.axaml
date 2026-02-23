@@ -1,0 +1,143 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DemoApp.CollaborativeDrawing.ViewModels"
+        xmlns:shared="using:DemoApp.Shared.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="DemoApp.CollaborativeDrawing.Views.MainWindow"
+        x:DataType="vm:CanvasViewModel"
+        Title="Collaborative Drawing — Automerge Demo"
+        Width="1200" Height="800">
+
+    <Design.DataContext>
+        <vm:CanvasViewModel/>
+    </Design.DataContext>
+
+    <Panel>
+        <!-- Document Session Dialog (shown on startup) -->
+        <Border Name="SessionPanel" 
+                VerticalAlignment="Center" HorizontalAlignment="Center"
+                MaxWidth="500" MaxHeight="600">
+            <shared:DocumentSessionDialog Name="SessionDialog" DataContext="{x:Null}"/>
+        </Border>
+
+        <!-- Canvas Panel (hidden until document is loaded) -->
+        <DockPanel Name="CanvasPanel" IsVisible="False">
+            <!-- Bottom bar: connection status + canvas info -->
+            <Border DockPanel.Dock="Bottom">
+                <DockPanel>
+                    <!-- Right side: status text and shape/layer counts -->
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="12"
+                                Margin="8,4" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center"
+                                   FontSize="11" Name="StatusBar"/>
+                        <TextBlock VerticalAlignment="Center" FontSize="11">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Shapes: {0} | Layers: {1}">
+                                    <Binding Path="Shapes.Count"/>
+                                    <Binding Path="Layers.Count"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    <!-- Left side: connection status bar -->
+                    <shared:ConnectionStatusBar Name="ConnectionStatusBar" DataContext="{x:Null}"/>
+                </DockPanel>
+            </Border>
+
+            <!-- Toolbar at top -->
+            <Border DockPanel.Dock="Top" Padding="8" >
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Figma CloneAsync" FontWeight="Bold" FontSize="16"
+                               VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+                    <!-- Shape tools -->
+                    <TextBlock Text="Tools:" VerticalAlignment="Center" />
+                    <ToggleButton Content="Rect" IsChecked="True"
+                                  Click="OnRectangleToolClick"
+                                  Name="RectangleTool"
+                                  Width="70" Height="32"
+                                  HorizontalContentAlignment="Center"/>
+                    <ToggleButton Content="Ellipse"
+                                  Click="OnEllipseToolClick"
+                                  Name="EllipseTool"
+                                  Width="80" Height="32"
+                                  HorizontalContentAlignment="Center"/>
+
+                    <Border Width="1" Margin="4,4"/>
+
+                    <!-- Color picker (simple preset buttons) -->
+                    <TextBlock Text="Color:" VerticalAlignment="Center" />
+                    <Button Content="  " Background="#4A90D9" Width="28" Height="28"
+                            Click="OnColorClick" Tag="#4A90D9" Name="ColorBlue"/>
+                    <Button Content="  " Background="#E74C3C" Width="28" Height="28"
+                            Click="OnColorClick" Tag="#E74C3C" Name="ColorRed"/>
+                    <Button Content="  " Background="#2ECC71" Width="28" Height="28"
+                            Click="OnColorClick" Tag="#2ECC71" Name="ColorGreen"/>
+                    <Button Content="  " Background="#F39C12" Width="28" Height="28"
+                            Click="OnColorClick" Tag="#F39C12" Name="ColorOrange"/>
+                    <Button Content="  " Background="#9B59B6" Width="28" Height="28"
+                            Click="OnColorClick" Tag="#9B59B6" Name="ColorPurple"/>
+                    <Button Content="  " Background="#1ABC9C" Width="28" Height="28"
+                            Click="OnColorClick" Tag="#1ABC9C" Name="ColorTeal"/>
+
+                    <Border Width="1" Margin="4,4"/>
+
+                    <!-- Actions -->
+                    <Button Content="DeleteAsync" Command="{Binding DeleteCommand}" Name="DeleteButton"/>
+                    <Button Content="Save" Command="{Binding SaveCommand}" Name="SaveButton"/>
+                    <Button Content="+ Layer" Command="{Binding AddLayerCommand}" Name="AddLayerButton"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Layer panel on the right -->
+            <Border DockPanel.Dock="Right" Width="200" Padding="8">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Layers" FontWeight="SemiBold"
+                               FontSize="14" Margin="0,0,0,8"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Layers}" Name="LayersPanel">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:LayerViewModel">
+                                    <Border CornerRadius="4" Padding="8,6" Margin="0,0,0,4" BorderThickness="1">
+                                        <DockPanel>
+                                            <CheckBox DockPanel.Dock="Left"
+                                                      IsChecked="{Binding IsVisible}"
+                                                      Margin="0,0,8,0"
+                                                      VerticalAlignment="Center"/>
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       FontSize="11"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Right">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="({0})">
+                                                        <Binding Path="Shapes.Count"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Name}"
+                                                       VerticalAlignment="Center"/>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!-- Canvas area -->
+            <Border ClipToBounds="True" Background="White">
+                <Canvas Name="DrawingCanvas"
+                        Margin="20"
+                        Background="Transparent"
+                        PointerPressed="OnCanvasPointerPressed"
+                        PointerMoved="OnCanvasPointerMoved"
+                        PointerReleased="OnCanvasPointerReleased">
+                </Canvas>
+            </Border>
+        </DockPanel>
+    </Panel>
+
+</Window>

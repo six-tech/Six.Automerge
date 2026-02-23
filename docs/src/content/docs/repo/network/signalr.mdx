@@ -1,0 +1,348 @@
+---
+title: SignalR Adapter
+description: Real-time network adapter for Automerge document synchronization over ASP.NET Core SignalR with MessagePack compression
+---
+
+# Overview
+
+The SignalR network adapter provides real-time document synchronization over ASP.NET Core SignalR.
+It consists of three NuGet packages:
+
+- **Six.Automerge.Repo.Network.SignalR.Abstractions** — hub interfaces and DTOs
+- **Six.Automerge.Repo.Network.SignalR.Client** — `SignalRNetworkAdapter` and `SignalRConnectionService`
+- **Six.Automerge.Repo.Network.SignalR.Server** — `DocumentsHub` implementation
+
+Key features:
+
+- MessagePack serialization with LZ4 compression (60-80% bandwidth reduction)
+- Document-based group routing (one SignalR group per document)
+- Echo prevention (senders never receive their own messages)
+- Auto-subscription on first message send
+- Keyed DI for multiple named connections
+- Automatic reconnection support
+
+# Server Setup
+
+## Register Services
+
+Call `AddSignalRDocumentsHub` to configure SignalR with MessagePack and LZ4 compression:
+
+```csharp
+using Six.Automerge.Repository.Network.SignalR.Server.Extensions;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSignalRDocumentsHub();
+```
+
+Map the hub endpoint:
+
+```csharp
+var app = builder.Build();
+
+app.MapHub<DocumentsHub>("/hubs/documents");
+
+app.Run();
+```
+
+## Additional Hub Options
+
+Chain `AddHubOptions` for further configuration:
+
+```csharp
+builder.Services.AddSignalRDocumentsHub()
+  .AddHubOptions<DocumentsHub>(options =>
+  {
+    options.MaximumReceiveMessageSize = 10 * 1024 * 1024; // 10 MB
+    options.EnableDetailedErrors = true;
+  });
+```
+
+## JSON-Only Mode
+
+For debugging or browser-only scenarios, use JSON instead of MessagePack:
+
+```csharp
+builder.Services.AddSignalRDocumentsHubWithJson();
+```
+
+This uses more bandwidth but produces human-readable wire traffic.
+
+# Client Setup
+
+## Register the Connection Service
+
+The client uses keyed DI to manage named SignalR connections. Register with `AddSignalRConnectionService`:
+
+**Desktop / Console apps (IHostBuilder):**
+
+```csharp
+using Six.Automerge.Repo.Network.SignalR.Client.Extensions;
+
+builder.AddSignalRConnectionService("DocumentHub", options =>
+{
+  options.HubUrl = "https://localhost:5001/hubs/documents";
+  options.AutoStart = true;
+  options.EnableAutomaticReconnect = true;
+  options.UseMessagePackProtocol = true;
+});
+```
+
+**Blazor WebAssembly:**
+
+```csharp
+wasmBuilder.AddSignalRConnectionService("DocumentHub", options =>
+{
+  options.HubUrl = "https://api.example.com/hubs/documents";
+});
+```
+
+## Connection Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `HubUrl` | `""` | SignalR hub endpoint URL |
+| `AutoStart` | `true` | Automatically start the connection |
+| `EnableAutomaticReconnect` | `true` | Reconnect on connection loss |
+| `UseMessagePackProtocol` | `true` | Use MessagePack with LZ4 (false for JSON) |
+
+## Inject and Use the Adapter
+
+Inject the connection service by its keyed name:
+
+```csharp
+public class MyService
+{
+  readonly SignalRNetworkAdapter _adapter;
+
+  public MyService(
+    [FromKeyedServices("DocumentHub")] ISignalRConnectionService connectionService,
+    ILoggerFactory loggerFactory)
+  {
+    _adapter = new SignalRNetworkAdapter(connectionService, loggerFactory);
+  }
+}
+```
+
+Wire the adapter into a Repo:
+
+```csharp
+var repo = new Repo(new RepoConfig
+{
+  Storage = new InMemoryStorageAdapter(),
+  NetworkAdapters = [adapter]
+});
+```
+
+# How It Works
+
+## Connection Flow
+
+```
+Client                          Server (DocumentsHub)
+  │                                    │
+  │  Connect(peerId, metadata)         │
+  │  ─────────────────────────────────>│
+  │     GetConnection()                │
+  │     Register hub callbacks         │
+  │     Handshake(PeerHandshakeDto)    │
+  │  ─────────────────────────────────>│
+  │                                    │  Store PeerId in Context.Items
+  │                                    │  Broadcast OnPeerJoined to Others
+  │  <─────────────────────────────────│
+  │     Mark adapter ready             │
+  │     Raise PeerCandidate event      │
+```
+
+1. The Repo calls `Connect` on the adapter with a `PeerId`
+2. The adapter lazily creates the SignalR connection
+3. It registers hub callbacks (`OnReceiveMessage`, `OnPeerJoined`, `OnPeerLeft`)
+4. It sends a `Handshake` to the server with peer identity and metadata
+5. The server stores the peer ID and broadcasts `OnPeerJoined` to all other connected clients
+6. The adapter marks itself ready and raises `PeerCandidate`
+
+## Message Flow
+
+```
+Sender                          Server                          Receiver
+  │                                │                                │
+  │  Send(SyncMessage)             │                                │
+  │  ─────────────────────────────>│                                │
+  │   auto-subscribe to group      │                                │
+  │   SendMessage(MessageDto)      │                                │
+  │  ─────────────────────────────>│                                │
+  │                                │  AddToGroupAsync (auto-sub)    │
+  │                                │  OthersInGroup.OnReceiveMessage│
+  │                                │  ─────────────────────────────>│
+  │                                │                                │  Deserialize
+  │                                │                                │  Raise MessageReceived
+```
+
+1. The adapter serializes the `IRepoMessage` into a `MessageDto`
+2. Auto-subscribes to the document group if not already subscribed
+3. The server adds the sender to the group (idempotent) and broadcasts to `OthersInGroup`
+4. Receiving clients deserialize the `MessageDto` back to the original message type
+5. The `MessageReceived` event fires on a background thread to avoid blocking SignalR
+
+## Document Groups
+
+The server organizes connections into SignalR groups by document ID. When a client sends a sync message
+for document `abc123`, the server:
+
+1. Adds the sender to group `abc123` (auto-subscription)
+2. Broadcasts the message to all other members of group `abc123`
+
+This ensures only peers interested in a specific document receive its sync traffic.
+
+## Peer Lifecycle
+
+| Event | Trigger | Effect |
+|-------|---------|--------|
+| `OnPeerJoined` | Client sends `Handshake` | Server broadcasts to `Clients.Others` |
+| `OnPeerLeft` | Client disconnects | Server broadcasts to `Clients.Others` |
+| `OnReceiveMessage` | Client sends `SendMessage` | Server routes to `OthersInGroup` |
+
+# Hub Interfaces
+
+## IDocumentsHub (Server-Side)
+
+Methods that clients invoke on the server:
+
+```csharp
+public interface IDocumentsHub
+{
+  Task Handshake(PeerHandshakeDto handshake);
+  Task SubscribeToDocument(string documentId);
+  Task UnsubscribeFromDocument(string documentId);
+  Task SendMessage(MessageDto message);
+}
+```
+
+| Method | Description |
+|--------|-------------|
+| `Handshake` | Establishes peer identity during connection |
+| `SubscribeToDocument` | Explicitly joins a document group |
+| `UnsubscribeFromDocument` | Leaves a document group |
+| `SendMessage` | Sends a sync message to all peers in the document group |
+
+## IDocumentsHubClient (Client-Side)
+
+Callbacks that the server invokes on clients:
+
+```csharp
+public interface IDocumentsHubClient
+{
+  Task OnReceiveMessage(MessageDto message);
+  Task OnPeerJoined(PeerHandshakeDto handshake);
+  Task OnPeerLeft(string peerId);
+}
+```
+
+| Callback | Description |
+|----------|-------------|
+| `OnReceiveMessage` | Delivers a sync message from another peer |
+| `OnPeerJoined` | Notifies that a new peer connected |
+| `OnPeerLeft` | Notifies that a peer disconnected |
+
+# Wire Protocol
+
+## MessageDto
+
+All messages are serialized as `MessageDto` using MessagePack:
+
+```csharp
+[MessagePackObject]
+public readonly record struct MessageDto
+{
+  [Key(0)] public required string MessageType { get; init; }
+  [Key(1)] public string? DocumentId { get; init; }
+  [Key(2)] public required string SenderId { get; init; }
+  [Key(3)] public required byte[] Data { get; init; }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `MessageType` | One of: `"sync"`, `"request"`, `"doc-unavailable"`, `"doc-snapshot"` |
+| `DocumentId` | Target document (used for group routing) |
+| `SenderId` | Peer ID of the sender (prevents echo-back) |
+| `Data` | Serialized Automerge sync protocol payload |
+
+## PeerHandshakeDto
+
+Sent during the initial `Handshake` call:
+
+```csharp
+[MessagePackObject]
+public readonly record struct PeerHandshakeDto
+{
+  [Key(0)] public required string PeerId { get; init; }
+  [Key(1)] public PeerMetadataDto? Metadata { get; init; }
+}
+```
+
+## Supported Message Types
+
+The adapter deserializes incoming `MessageDto` into these `IRepoMessage` subtypes:
+
+| Wire Type | C# Type | Description |
+|-----------|---------|-------------|
+| `"sync"` | `SyncMessage` | Incremental document changes |
+| `"request"` | `RequestMessage` | Request a document from a peer |
+| `"doc-unavailable"` | `DocumentUnavailableMessage` | Peer does not have the document |
+| `"doc-snapshot"` | `DocumentSnapshotMessage` | Full document snapshot |
+| `"ephemeral"` | (not yet supported) | Transient data (presence, cursors) |
+
+# SignalRNetworkAdapter API
+
+| Member | Description |
+|--------|-------------|
+| `SignalRNetworkAdapter(connectionService, loggerFactory)` | Constructor |
+| `AdapterId` | `"signalr-{guid}"` |
+| `IsReady` | `true` after successful handshake |
+| `WhenReady()` | Completes when handshake succeeds |
+| `Connect(peerId, metadata?)` | Initiates connection and handshake |
+| `Send(message)` | Serializes and sends through the hub |
+| `SubscribeToDocumentAsync(documentId)` | Explicitly joins a document group |
+| `UnsubscribeFromDocumentAsync(documentId)` | Leaves a document group |
+| `Disconnect()` | Unsubscribes all documents, stops connection, raises events |
+
+# Thread Safety
+
+- All adapter methods are protected by a `SemaphoreSlim(1,1)`
+- Hub callbacks (`OnReceiveMessage`, `OnPeerJoined`, `OnPeerLeft`) dispatch events on background threads via `Task.Run` to avoid blocking SignalR
+- Document subscriptions use `ConcurrentDictionary` for lock-free tracking
+- The `SignalRConnectionService` lazily creates connections and reuses them
+
+# Integration Testing
+
+The `tests/Six.SignalR.TestServer/` project hosts a minimal DocumentsHub for integration tests:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSignalRDocumentsHub();
+builder.Services.AddHealthChecks();
+
+var app = builder.Build();
+
+app.MapHub<DocumentsHub>("/hubs/documents");
+app.MapHealthChecks("/health");
+
+app.Run();
+```
+
+This server is orchestrated by the test AppHost (`tests/Six.Tests.AppHost/`) via .NET Aspire,
+providing a fixed HTTP endpoint on port 8080 with health checks.
+
+Run integration tests:
+
+```bash
+dotnet test tests/Six.Automerge.Repo.Network.SignalR.Tests.Integration
+```
+
+# Next Steps
+
+- [Network Adapters](/Six.Automerge/repo/network/) — INetworkAdapter interface and custom implementations
+- [InMemory Adapter](/Six.Automerge/repo/network/in-memory/) — in-process testing adapter
+- [Getting Started](/Six.Automerge/repo/getting-started/) — full Repo setup walkthrough

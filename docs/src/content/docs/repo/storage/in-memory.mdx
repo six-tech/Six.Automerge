@@ -1,0 +1,143 @@
+---
+title: InMemoryStorageAdapter
+description: In-memory storage for testing and ephemeral Automerge repositories
+---
+
+# Overview
+
+`InMemoryStorageAdapter` stores all document data in a dictionary in memory. Data is lost when the
+adapter is disposed or the application exits. This adapter is included in the core
+`Six.Automerge.Repo` package — no additional packages are needed.
+
+# When to Use
+
+- **Unit and integration testing** — fast, predictable, no filesystem side effects
+- **Prototyping** — get started without configuring a storage backend
+- **Ephemeral sessions** — documents that intentionally do not persist between runs
+- **Demos and samples** — minimal setup for example code
+
+For production applications that need data to survive restarts, use
+[FileSystemStorageAdapter](/Six.Automerge/repo/storage/file-system/) or a custom adapter.
+
+# Basic Usage
+
+```csharp
+using Six.Automerge.Repository;
+using Six.Automerge.Repository.Storage;
+
+using var storage = new InMemoryStorageAdapter();
+
+var repo = new Repo(new RepoConfig
+{
+  Storage = storage
+});
+
+var handle = repo.Create<AutomergeDocument>();
+await handle.ChangeAsync(doc =>
+{
+  doc.PutString(doc.RootId, "title", "Test Document");
+});
+
+// Data is in memory — survives for the lifetime of the adapter
+```
+
+# Testing Patterns
+
+## Verifying Storage Content
+
+The adapter exposes a `Count` property for asserting that data was persisted:
+
+```csharp
+using var storage = new InMemoryStorageAdapter();
+var repo = new Repo(new RepoConfig { Storage = storage });
+
+var handle = repo.Create<AutomergeDocument>();
+await handle.ChangeAsync(doc =>
+{
+  doc.PutString(doc.RootId, "key", "value");
+});
+
+await repo.Flush();
+Assert.True(storage.Count > 0);
+```
+
+## Resetting State Between Tests
+
+Use `Clear()` to remove all stored data without disposing the adapter:
+
+```csharp
+await storage.Clear();
+Assert.Equal(0, storage.Count);
+```
+
+## Loading and Saving Directly
+
+You can interact with the adapter directly for low-level tests:
+
+```csharp
+var key = StorageKey.DocumentSnapshot("doc-1", "hash-abc");
+
+await storage.Save(key, new byte[] { 1, 2, 3 });
+var data = await storage.Load(key);
+Assert.NotNull(data);
+Assert.Equal(3, data.Length);
+
+await storage.Remove(key);
+var removed = await storage.Load(key);
+Assert.Null(removed);
+```
+
+## Range Operations
+
+Test loading and removing all chunks for a document:
+
+```csharp
+var snapshot = StorageKey.DocumentSnapshot("doc-1", "hash-1");
+var incremental = StorageKey.DocumentIncremental("doc-1", "hash-2");
+
+await storage.Save(snapshot, snapshotBytes);
+await storage.Save(incremental, incrementalBytes);
+
+var prefix = new StorageKey(["doc-1"]);
+var chunks = await storage.LoadRange(prefix);
+Assert.Equal(2, chunks.Count);
+
+await storage.RemoveRange(prefix);
+var remaining = await storage.LoadRange(prefix);
+Assert.Equal(0, remaining.Count);
+```
+
+# Thread Safety
+
+The adapter uses a `SemaphoreSlim(1, 1)` to serialize access. All operations are safe to call from
+multiple threads concurrently.
+
+# Data Isolation
+
+The adapter copies byte arrays on both save and load operations. Modifying a byte array after saving
+it does not affect the stored data, and modifying returned data does not affect the adapter's internal
+state.
+
+# Disposal
+
+Disposing the adapter clears all stored data and releases the semaphore. Any subsequent calls throw
+`ObjectDisposedException`:
+
+```csharp
+storage.Dispose();
+// All future operations throw ObjectDisposedException
+```
+
+# API Summary
+
+| Member | Description |
+|--------|-------------|
+| `Count` | Number of keys currently stored |
+| `Load(key)` | Load data for a key (returns null if missing) |
+| `Save(key, data)` | Store data for a key |
+| `Remove(key)` | Delete a key |
+| `LoadRange(prefix)` | Load all chunks matching a prefix |
+| `RemoveRange(prefix)` | Remove all keys matching a prefix |
+| `GetChunkInfo(prefix)` | Get metadata for matching chunks |
+| `Clear()` | Remove all stored data |
+| `Dispose()` | Clear data and release resources |

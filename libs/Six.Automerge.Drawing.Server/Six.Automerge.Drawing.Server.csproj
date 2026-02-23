@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <RootNamespace>Six.Automerge.Drawing.Server</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Six.Automerge.SyncServer\Six.Automerge.SyncServer.csproj" />
+    </ItemGroup>
+
+</Project>

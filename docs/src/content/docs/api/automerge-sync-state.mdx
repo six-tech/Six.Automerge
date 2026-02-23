@@ -1,0 +1,170 @@
+---
+title: AutomergeSyncState
+description: API reference for AutomergeSyncState — manages synchronization state between two peers
+---
+
+# Overview
+
+`AutomergeSyncState` tracks the synchronization state between two peers during the Automerge sync protocol. Each peer connection needs its own sync state instance.
+
+The class implements `IDisposable` because it holds a native Rust resource. Always use a `using` statement.
+
+```csharp
+using Six.Automerge;
+
+using var syncState = AutomergeSyncState.Create();
+```
+
+# Lifecycle
+
+A sync state is created when you start synchronizing with a peer and should be kept alive for the duration of the connection. If the connection is lost and re-established, you can either resume with a decoded state or create a fresh one.
+
+```
+Create() ──> GenerateSyncMessage / ReceiveSyncMessage ──> Encode() ──> (persist)
+                                                                          │
+(reconnect) ──> Decode(encoded) ──> GenerateSyncMessage / ReceiveSyncMessage
+```
+
+# Methods and Properties
+
+## Create
+
+```csharp
+public static AutomergeSyncState Create()
+```
+
+Creates a new sync state with no knowledge of the remote peer. This is the starting point for synchronization.
+
+**Returns:** A new `AutomergeSyncState`.
+
+```csharp
+using var syncState = AutomergeSyncState.Create();
+```
+
+## Decode
+
+```csharp
+public static AutomergeSyncState Decode(byte[] encoded)
+```
+
+Restores a sync state from binary data previously produced by `Encode`. Use this to resume synchronization after a connection drop without restarting from scratch.
+
+**Parameters:**
+- `encoded` — Binary sync state data from a previous `Encode` call.
+
+**Returns:** A restored `AutomergeSyncState`.
+
+```csharp
+byte[] saved = File.ReadAllBytes("sync-state-peer-a.bin");
+using var restored = AutomergeSyncState.Decode(saved);
+```
+
+## Encode
+
+```csharp
+public byte[] Encode()
+```
+
+Serializes the sync state to binary data. The result can be persisted and later restored with `Decode`.
+
+**Returns:** Binary data representing the current sync state.
+
+```csharp
+byte[] data = syncState.Encode();
+File.WriteAllBytes("sync-state-peer-a.bin", data);
+```
+
+## Reset
+
+```csharp
+public void Reset()
+```
+
+Resets the sync state to its initial state, as if `Create` had just been called. This forces a full re-synchronization on the next `GenerateSyncMessage` call.
+
+Use this when you suspect the sync state has become corrupted or when you want to force a full resync.
+
+```csharp
+syncState.Reset();
+// Next GenerateSyncMessage will start from scratch
+```
+
+## SharedHeads
+
+```csharp
+public IReadOnlyList<string> SharedHeads { get; }
+```
+
+Gets the change hashes that both peers are known to have in common. This represents the last confirmed point of agreement between the two peers.
+
+**Returns:** A list of change hashes as lowercase hex strings. Empty if no synchronization has occurred yet.
+
+```csharp
+var shared = syncState.SharedHeads;
+Console.WriteLine($"Peers share {shared.Count} heads");
+```
+
+## Dispose
+
+```csharp
+public void Dispose()
+```
+
+Releases the native sync state resource.
+
+# Usage with AutomergeDocument
+
+Sync states are used with `AutomergeDocument.GenerateSyncMessage` and `AutomergeDocument.ReceiveSyncMessage`:
+
+```csharp
+using var docA = AutomergeDocument.Create();
+using var docB = AutomergeDocument.Create();
+
+// Set up data on docA
+docA.PutString(docA.RootId, "greeting", "hello");
+docA.Commit("initial");
+
+// Create sync states for the A-B connection
+using var syncAB = AutomergeSyncState.Create();
+using var syncBA = AutomergeSyncState.Create();
+
+// Sync loop
+for(int i = 0; i < 10; i++)
+{
+  var msgA = docA.GenerateSyncMessage(syncAB);
+  var msgB = docB.GenerateSyncMessage(syncBA);
+
+  if(msgA == null && msgB == null)
+    break; // Fully synchronized
+
+  if(msgA != null)
+    docB.ReceiveSyncMessage(syncBA, msgA);
+  if(msgB != null)
+    docA.ReceiveSyncMessage(syncAB, msgB);
+}
+
+// After sync, both documents have the same content
+var textB = docB.GetString(docB.RootId, "greeting"); // "hello"
+```
+
+# Persisting Sync State
+
+For long-lived connections, you can persist the sync state to avoid re-syncing from scratch:
+
+```csharp
+// Save sync state when connection closes
+byte[] encoded = syncState.Encode();
+await File.WriteAllBytesAsync($"sync-{peerId}.bin", encoded);
+
+// Restore when reconnecting
+byte[] saved = await File.ReadAllBytesAsync($"sync-{peerId}.bin");
+using var restored = AutomergeSyncState.Decode(saved);
+// Continue syncing from where you left off
+var msg = doc.GenerateSyncMessage(restored);
+```
+
+# See Also
+
+- [AutomergeDocument — Synchronization](/Six.Automerge/api/automerge-document/#synchronization) — `GenerateSyncMessage`, `ReceiveSyncMessage`, `CreateSyncState`
+- [Sync Protocol Guide](/Six.Automerge/guides/sync/sync-protocol/) — Conceptual guide to the sync protocol
+- [Sync State Management Guide](/Six.Automerge/guides/sync/sync-state-management/) — Patterns for managing sync state across connections

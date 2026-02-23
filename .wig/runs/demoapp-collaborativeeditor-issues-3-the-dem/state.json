@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "runSlug": "demoapp-collaborativeeditor-issues-3-the-dem",
+  "status": "completed",
+  "currentIteration": 4,
+  "sessionId": "4af983c5-51ea-4c70-8dbe-45d6c0210c28",
+  "specFiles": [
+    ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md"
+  ],
+  "startedAt": "2026-02-22T12:44:46.0505762Z",
+  "lastIterationAt": "2026-02-22T13:59:14.7519856Z",
+  "lastError": "Failed after 3 retries",
+  "stopReason": "All sprints completed"
+}

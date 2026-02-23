@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "runSlug": "introduction-you-have-written-example-applicati",
+  "status": "completed",
+  "currentIteration": 7,
+  "sessionId": "c56abd4e-e77e-4c05-9247-2b1647c83468",
+  "specFiles": [
+    ".wig/specs/introduction-you-have-written-example-applicati/implementation-plan.md"
+  ],
+  "startedAt": "2026-02-20T11:17:24.5155758Z",
+  "lastIterationAt": "2026-02-20T14:06:23.5634963Z",
+  "stopReason": "All sprints completed"
+}

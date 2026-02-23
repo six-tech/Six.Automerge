@@ -1,0 +1,252 @@
+---
+title: "Advanced Sync"
+description: Bundles, differential changes, dependency tracking, and sync completion checking for advanced synchronization scenarios
+---
+
+# Overview
+
+Beyond the basic sync protocol, Automerge provides advanced APIs for specific synchronization scenarios: creating bundles for targeted change transfer, computing differential changes between documents, tracking missing dependencies, and checking sync completion status.
+
+# Bundle
+
+`Bundle` creates a compact binary representation of changes up to specific heads. Unlike `Save`, a bundle is designed to be loaded incrementally into another document.
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+doc.PutString(root, "key", "value");
+doc.Commit("init");
+
+var heads = doc.GetHeads();
+var bundled = doc.Bundle(heads);
+
+// Load the bundle into another document
+using var doc2 = AutomergeDocument.Create();
+var loaded = doc2.LoadIncremental(bundled);
+// doc2 now has the same content as doc
+```
+
+Bundles are useful for:
+- **Bootstrapping new peers** — Send a bundle of the current state rather than replaying the full sync protocol
+- **Snapshot transfer** — Create a point-in-time snapshot that can be applied incrementally
+- **Selective sync** — Bundle changes up to a specific version rather than the full history
+
+## Bundling at Specific Versions
+
+Bundle changes up to a particular point in history:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "version", "1.0");
+doc.Commit("v1.0");
+var v1Heads = doc.GetHeads();
+
+doc.PutString(root, "version", "2.0");
+doc.Commit("v2.0");
+
+// Bundle only up to v1.0
+var v1Bundle = doc.Bundle(v1Heads);
+
+using var receiver = AutomergeDocument.Create();
+receiver.LoadIncremental(v1Bundle);
+// receiver has version 1.0, not 2.0
+```
+
+# GetChangesAdded
+
+`GetChangesAdded` returns the changes that another document has but this document does not. This is the differential between two documents.
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+doc1.PutString(root, "shared", "base");
+doc1.Commit("base");
+
+// Fork doc2 from doc1
+var saved = doc1.Save();
+using var doc2 = AutomergeDocument.Load(saved);
+
+// Make changes only in doc2
+doc2.PutString(root, "extra", "from-doc2");
+doc2.Commit("doc2-change");
+
+// Get changes that doc2 has but doc1 doesn't
+var added = doc1.GetChangesAdded(doc2);
+Console.WriteLine($"doc2 has {added.Count} change(s) that doc1 doesn't");
+// Output: doc2 has 1 change(s) that doc1 doesn't
+```
+
+## Multiple Changes
+
+When the other document has made several commits since diverging:
+
+```csharp
+var saved = doc1.Save();
+using var doc2 = AutomergeDocument.Load(saved);
+
+doc2.PutString(root, "a", "1");
+doc2.Commit("change1");
+doc2.PutString(root, "b", "2");
+doc2.Commit("change2");
+doc2.PutString(root, "c", "3");
+doc2.Commit("change3");
+
+var added = doc1.GetChangesAdded(doc2);
+Console.WriteLine($"Changes to apply: {added.Count}"); // 3
+```
+
+## Identical Documents
+
+When both documents are identical, no changes are returned:
+
+```csharp
+var saved = doc1.Save();
+using var doc2 = AutomergeDocument.Load(saved);
+
+var added = doc1.GetChangesAdded(doc2);
+Console.WriteLine($"Changes: {added.Count}"); // 0
+```
+
+`GetChangesAdded` is useful for:
+- **Auditing** — See exactly what changes a peer has made
+- **Selective sync** — Choose which changes to apply based on inspection
+- **Change counting** — Determine how far behind one document is
+
+# GetMissingDeps
+
+`GetMissingDeps` identifies which change hashes a document needs to satisfy dependencies for a set of heads. This helps diagnose incomplete synchronization.
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+doc.PutString(root, "key", "value");
+doc.Commit("init");
+
+// Check if the document has all dependencies for its own heads
+var heads = doc.GetHeads();
+var missing = doc.GetMissingDeps(heads);
+Console.WriteLine($"Missing deps: {missing.Count}"); // 0 - document is complete
+```
+
+When a document has all its own heads, there are no missing dependencies. Missing dependencies occur when you have change hashes (heads) from another document that reference changes this document does not yet have.
+
+## Checking for Completeness
+
+```csharp
+// After receiving heads from a remote peer
+var remoteHeads = GetHeadsFromPeer();
+var missing = doc.GetMissingDeps(remoteHeads);
+
+if(missing.Count > 0)
+{
+    Console.WriteLine($"Need {missing.Count} change(s) to catch up with peer");
+    // Request the missing changes from the peer
+}
+else
+{
+    Console.WriteLine("Document is up to date with peer");
+}
+```
+
+# HasOurChanges
+
+`HasOurChanges` checks whether the peer (as tracked by the sync state) has acknowledged all of our local changes. This is the sync completion indicator.
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+doc.PutString(root, "key", "value");
+doc.Commit("init");
+
+using var syncState = doc.CreateSyncState();
+
+// Before any sync, the peer hasn't acknowledged our changes
+Console.WriteLine(doc.HasOurChanges(syncState)); // False
+```
+
+## After Full Sync
+
+After a complete sync, the peer has all our changes:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+doc1.PutString(root, "key", "value");
+doc1.Commit("init");
+
+var saved = doc1.Save();
+using var doc2 = AutomergeDocument.Load(saved);
+
+using var sync12 = doc1.CreateSyncState();
+using var sync21 = doc2.CreateSyncState();
+
+// Perform sync
+for(int i = 0; i < 10; i++)
+{
+    var msg1 = doc1.GenerateSyncMessage(sync12);
+    var msg2 = doc2.GenerateSyncMessage(sync21);
+    if(msg1 == null && msg2 == null) break;
+    if(msg1 != null) doc2.ReceiveSyncMessage(sync21, msg1);
+    if(msg2 != null) doc1.ReceiveSyncMessage(sync12, msg2);
+}
+
+Console.WriteLine(doc1.HasOurChanges(sync12)); // True
+```
+
+## After New Local Changes
+
+Making new local changes after sync means the peer has not yet seen them:
+
+```csharp
+// After a successful sync
+Console.WriteLine(doc1.HasOurChanges(sync12)); // True
+
+// Make a new local change
+doc1.PutString(root, "new", "change");
+doc1.Commit("after-sync");
+
+// Peer hasn't seen this yet
+Console.WriteLine(doc1.HasOurChanges(sync12)); // False
+
+// Sync again to share the new change
+```
+
+`HasOurChanges` is useful for:
+- **UI indicators** — Show a "synced" badge when the peer has all changes
+- **Sync completion callbacks** — Trigger actions after sync completes
+- **Connection management** — Decide when it is safe to disconnect
+
+# Combining Advanced APIs
+
+These APIs work together for sophisticated sync workflows:
+
+```csharp
+// Check if we need to sync
+if(!doc.HasOurChanges(syncState))
+{
+    Console.WriteLine("Local changes pending - need to sync");
+}
+
+// Check what the other peer has that we don't
+var theirNewChanges = doc.GetChangesAdded(otherDoc);
+if(theirNewChanges.Count > 0)
+{
+    Console.WriteLine($"Peer has {theirNewChanges.Count} new change(s)");
+}
+
+// After partial sync, check for missing dependencies
+var peerHeads = GetPeerHeads();
+var missing = doc.GetMissingDeps(peerHeads);
+if(missing.Count > 0)
+{
+    Console.WriteLine($"Still need {missing.Count} change(s)");
+}
+```
+
+# Next Steps
+
+- [Sync Protocol](/Six.Automerge/guides/sync/sync-protocol/) — Basics of the two-peer sync protocol
+- [Multi-Peer Sync](/Six.Automerge/guides/sync/multi-peer-sync/) — Sync documents across three or more peers
+- [Sync State Management](/Six.Automerge/guides/sync/sync-state-management/) — Persist and manage sync state across sessions

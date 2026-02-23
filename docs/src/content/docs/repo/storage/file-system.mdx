@@ -1,0 +1,198 @@
+---
+title: FileSystemStorageAdapter
+description: Persist Automerge documents to local disk with directory sharding and in-memory caching
+---
+
+# Overview
+
+`FileSystemStorageAdapter` persists document data to the local file system with an in-memory cache layer
+for fast repeated reads. It uses directory sharding to prevent any single directory from accumulating too
+many entries.
+
+This adapter is in a separate package:
+
+```bash
+dotnet add package Six.Automerge.Repo.Storage.FileSystem
+```
+
+# Basic Setup
+
+```csharp
+using Six.Automerge.Repository;
+using Six.Automerge.Repository.Storage.FileSystem;
+
+var storage = new FileSystemStorageAdapter("./data/automerge");
+
+var repo = new Repo(new RepoConfig
+{
+  Storage = storage
+});
+```
+
+The base directory is created automatically if it does not exist.
+
+# Configuration Options
+
+Pass `FileSystemStorageOptions` to customize caching behavior:
+
+```csharp
+var storage = new FileSystemStorageAdapter(
+  "./data/automerge",
+  new FileSystemStorageOptions
+  {
+    CacheSizeLimit = 200 * 1024 * 1024,          // 200 MB (default: 100 MB)
+    CacheSlidingExpiration = TimeSpan.FromMinutes(10) // 10 min (default: 5 min)
+  });
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `CacheSizeLimit` | `long` | 100 MB | Maximum total size of cached data in bytes |
+| `CacheSlidingExpiration` | `TimeSpan` | 5 minutes | How long cached entries live without being accessed |
+
+# Directory Structure
+
+The adapter uses a sharding scheme to distribute files across directories. The first two characters
+of the document ID become a parent directory, and the rest becomes a subdirectory:
+
+```
+StorageKey: ["abc123def", "snapshot", "hash456"]
+File path:  baseDir/ab/c123def/snapshot/hash456
+
+StorageKey: ["abc123def", "incremental", "hash789"]
+File path:  baseDir/ab/c123def/incremental/hash789
+
+StorageKey: ["abc123def", "sync-state", "peer-1"]
+File path:  baseDir/ab/c123def/sync-state/peer-1
+```
+
+This sharding prevents file system performance degradation from too many entries in a single directory.
+A typical directory tree looks like:
+
+```
+data/automerge/
+├── ab/
+│   └── c123def/
+│       ├── snapshot/
+│       │   └── hash456
+│       ├── incremental/
+│       │   ├── hash789
+│       │   └── hash012
+│       └── sync-state/
+│           └── peer-1
+├── xy/
+│   └── z789ghi/
+│       └── snapshot/
+│           └── hash345
+```
+
+# Caching Behavior
+
+The adapter wraps `Microsoft.Extensions.Caching.Memory.MemoryCache` for read performance:
+
+1. **On Load** — checks the cache first. If the key is cached, returns immediately without disk I/O.
+   On cache miss, reads from disk and populates the cache.
+2. **On Save** — writes to disk and updates the cache simultaneously.
+3. **On Remove** — removes from both the cache and disk.
+4. **Cache eviction** — entries expire after `CacheSlidingExpiration` of inactivity. The total cache
+   size is bounded by `CacheSizeLimit`.
+
+## Cache Size Accounting
+
+Each cached entry's size is set to the byte length of the stored data. The `MemoryCache` uses these
+sizes to enforce the `CacheSizeLimit`. When the limit is reached, least-recently-used entries are
+evicted.
+
+# Thread Safety
+
+The adapter uses a `SemaphoreSlim(1, 1)` to serialize file system operations. While the cache itself
+is thread-safe, file system operations are serialized to prevent concurrent writes to the same file.
+
+# Known Limitations
+
+## RemoveRange Cache Behavior
+
+When `RemoveRange` deletes a directory tree, it does not explicitly clear individual cache entries.
+The `MemoryCache` API does not expose key enumeration, so cached entries for removed files remain
+until they expire naturally via the sliding expiration window.
+
+This means that after a `RemoveRange`, subsequent `Load` calls may return stale data from the cache
+until the entries expire. If this is a concern, consider using a shorter `CacheSlidingExpiration` or
+disposing and recreating the adapter.
+
+## First Key Component Length
+
+The first component of every `StorageKey` must be at least 2 characters long (for the shard split).
+In practice, `DocumentId` values are always long enough, but custom keys should respect this constraint.
+
+# Usage with Repo
+
+```csharp
+using Six.Automerge.Repository;
+using Six.Automerge.Repository.Storage.FileSystem;
+
+using var storage = new FileSystemStorageAdapter("./data/automerge");
+
+var repo = new Repo(new RepoConfig
+{
+  Storage = storage,
+  SaveDebounceRate = 200 // increase debounce to reduce disk writes
+});
+
+// Create and modify documents
+var handle = repo.Create<AutomergeDocument>();
+await handle.ChangeAsync(doc =>
+{
+  doc.PutString(doc.RootId, "title", "Persisted Document");
+});
+
+// Flush ensures data is on disk
+await repo.Flush();
+
+// Later, find the document (loads from disk on first access)
+var found = await repo.Find<AutomergeDocument>(handle.DocumentId);
+```
+
+# Direct Usage
+
+You can also use the adapter directly without a Repo, for low-level storage operations:
+
+```csharp
+using var storage = new FileSystemStorageAdapter("./data/test");
+
+var key = StorageKey.DocumentSnapshot("doc-abc123", "hash-1");
+await storage.Save(key, documentBytes);
+
+var loaded = await storage.Load(key);
+Assert.NotNull(loaded);
+
+// Get chunk metadata without loading data
+var prefix = new StorageKey(["doc-abc123"]);
+var info = await storage.GetChunkInfo(prefix);
+foreach(var chunk in info)
+{
+  Console.WriteLine($"{chunk.Key}: {chunk.Size} bytes");
+}
+```
+
+# Disposal
+
+Disposing the adapter releases the cache and semaphore. Files on disk are not deleted:
+
+```csharp
+storage.Dispose();
+// Cache cleared, disk data remains
+// Future operations throw ObjectDisposedException
+```
+
+# API Summary
+
+| Member | Description |
+|--------|-------------|
+| `Load(key)` | Load from cache or disk (returns null if missing) |
+| `Save(key, data)` | Write to disk and update cache |
+| `Remove(key)` | Delete from disk and cache |
+| `LoadRange(prefix)` | Load all matching chunks from disk |
+| `RemoveRange(prefix)` | Delete directory tree for prefix |
+| `GetChunkInfo(prefix)` | Get file metadata without loading data |
+| `Dispose()` | Release cache and semaphore (keeps files) |

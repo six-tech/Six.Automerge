@@ -1,0 +1,15 @@
+{
+  "id": "20260220054555-539ecc23",
+  "created": "2026-02-20T05:45:55.8452671Z",
+  "runSlug": "we-have-documentation-in-docs-src-content-docs",
+  "contentHash": "5153C7ACD562FCB2",
+  "type": "observation",
+  "tags": [
+    "automerge",
+    "synchronization",
+    "fork",
+    "objects",
+    "schema",
+    "api-behavior"
+  ]
+}

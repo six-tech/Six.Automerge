@@ -1,0 +1,13 @@
+{
+  "id": "20260222165638-5a2ede8d",
+  "created": "2026-02-22T16:56:38.6589201Z",
+  "runSlug": "document-sync-issues-now-when-i-run-aspire-ho",
+  "contentHash": "7575BA33A3F88B10",
+  "type": "observation",
+  "tags": [
+    "filesystem-storage",
+    "error-handling",
+    "prefix-handling",
+    "fixed-bug"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "20260222165639-1543bf9f",
+  "created": "2026-02-22T16:56:39.0033461Z",
+  "runSlug": "document-sync-issues-now-when-i-run-aspire-ho",
+  "contentHash": "B02482EDCEF9C41B",
+  "type": "observation",
+  "tags": [
+    "testing",
+    "refactoring",
+    "dead-code",
+    "backwards-compat"
+  ]
+}

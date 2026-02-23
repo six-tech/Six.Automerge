@@ -1,0 +1,233 @@
+{
+  "tasks": [
+    {
+      "id": "sprint-1-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Replace \u0060RichTextEditor\u0060 with a plain \u0060TextBox\u0060 in \u0060EditorWindow.axaml\u0060. Remove the \u0060xmlns:controls\u0060 namespace import. Set \u0060Name=\u0022LocalEditor\u0022\u0060, \u0060AcceptsReturn=\u0022True\u0022\u0060, \u0060AcceptsTab=\u0022True\u0022\u0060, \u0060TextWrapping=\u0022Wrap\u0022\u0060, bind \u0060Text=\u0022{Binding DocumentText, Mode=TwoWay}\u0022\u0060, add \u0060Watermark=\u0022Start typing here...\u0022\u0060. Keep the same \u0060Margin=\u00228\u0022\u0060 and \u0060DockPanel\u0060 positioning.",
+      "description": "Replace \u0060RichTextEditor\u0060 with a plain \u0060TextBox\u0060 in \u0060EditorWindow.axaml\u0060. Remove the \u0060xmlns:controls\u0060 namespace import. Set \u0060Name=\u0022LocalEditor\u0022\u0060, \u0060AcceptsReturn=\u0022True\u0022\u0060, \u0060AcceptsTab=\u0022True\u0022\u0060, \u0060TextWrapping=\u0022Wrap\u0022\u0060, bind \u0060Text=\u0022{Binding DocumentText, Mode=TwoWay}\u0022\u0060, add \u0060Watermark=\u0022Start typing here...\u0022\u0060. Keep the same \u0060Margin=\u00228\u0022\u0060 and \u0060DockPanel\u0060 positioning.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Hide the formatting toolbar buttons in \u0060EditorWindow.axaml\u0060: wrap Bold, Italic, Underline ToggleButtons and their adjacent Separator in a \u0060StackPanel\u0060 with \u0060IsVisible=\u0022False\u0022\u0060. Remove the \u0060Window.KeyBindings\u0060 section (Ctrl\u002BB/I/U). Keep the Save and Export JSON buttons visible.",
+      "description": "Hide the formatting toolbar buttons in \u0060EditorWindow.axaml\u0060: wrap Bold, Italic, Underline ToggleButtons and their adjacent Separator in a \u0060StackPanel\u0060 with \u0060IsVisible=\u0022False\u0022\u0060. Remove the \u0060Window.KeyBindings\u0060 section (Ctrl\u002BB/I/U). Keep the Save and Export JSON buttons visible.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Update \u0060EditorWindow.axaml.cs\u0060 to work with plain TextBox: change \u0060LocalEditor.PropertyChanged\u0060 handler to use \u0060TextBox.CaretIndexProperty\u0060, \u0060TextBox.SelectionStartProperty\u0060, \u0060TextBox.SelectionEndProperty\u0060 (these are the same Avalonia properties \u2014 just remove the \u0060RichTextEditor.\u0060 prefix and \u0060IsEditorFocused\u0060 check). Remove \u0060BoldButton.Click\u0060, \u0060ItalicButton.Click\u0060, \u0060UnderlineButton.Click\u0060 handlers. Remove \u0060LocalEditor.AddHandler(KeyDownEvent, OnEditorKeyDown, ...)\u0060. Remove \u0060OnEditorKeyDown\u0060 and \u0060ExecuteFormatCommand\u0060 methods.",
+      "description": "Update \u0060EditorWindow.axaml.cs\u0060 to work with plain TextBox: change \u0060LocalEditor.PropertyChanged\u0060 handler to use \u0060TextBox.CaretIndexProperty\u0060, \u0060TextBox.SelectionStartProperty\u0060, \u0060TextBox.SelectionEndProperty\u0060 (these are the same Avalonia properties \u2014 just remove the \u0060RichTextEditor.\u0060 prefix and \u0060IsEditorFocused\u0060 check). Remove \u0060BoldButton.Click\u0060, \u0060ItalicButton.Click\u0060, \u0060UnderlineButton.Click\u0060 handlers. Remove \u0060LocalEditor.AddHandler(KeyDownEvent, OnEditorKeyDown, ...)\u0060. Remove \u0060OnEditorKeyDown\u0060 and \u0060ExecuteFormatCommand\u0060 methods.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Modify \u0060RepoService.StorageDirectory\u0060 property to read \u0060REPLICA_INDEX\u0060 env var. When set, append \u0060/replica-{index}\u0060 to the base storage path. When not set, use the default path (unchanged behavior for standalone runs).",
+      "description": "Modify \u0060RepoService.StorageDirectory\u0060 property to read \u0060REPLICA_INDEX\u0060 env var. When set, append \u0060/replica-{index}\u0060 to the base storage path. When not set, use the default path (unchanged behavior for standalone runs).",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Update \u0060infra/Infra.AppHost/AppHost.cs\u0060: replace the CollaborativeEditor \u0060.WithReplicas(4)\u0060 line with an explicit loop creating 3 individual project resources (\u0060collaborative-editor-0\u0060, \u0060collaborative-editor-1\u0060, \u0060collaborative-editor-2\u0060), each with \u0060.WithEnvironment(\u0022REPLICA_INDEX\u0022, i.ToString())\u0060. Apply the same pattern to CollaborativeDrawing and CollaborativeTaskBoard entries.",
+      "description": "Update \u0060infra/Infra.AppHost/AppHost.cs\u0060: replace the CollaborativeEditor \u0060.WithReplicas(4)\u0060 line with an explicit loop creating 3 individual project resources (\u0060collaborative-editor-0\u0060, \u0060collaborative-editor-1\u0060, \u0060collaborative-editor-2\u0060), each with \u0060.WithEnvironment(\u0022REPLICA_INDEX\u0022, i.ToString())\u0060. Apply the same pattern to CollaborativeDrawing and CollaborativeTaskBoard entries.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Update existing unit tests in \u0060tests/DemoApp.Shared.Tests/\u0060 for \u0060RepoService.StorageDirectory\u0060 to cover the \u0060REPLICA_INDEX\u0060 env var scenarios (with and without the env var set). Run \u0060dotnet test\u0060 on affected test projects to verify all tests pass.",
+      "description": "Update existing unit tests in \u0060tests/DemoApp.Shared.Tests/\u0060 for \u0060RepoService.StorageDirectory\u0060 to cover the \u0060REPLICA_INDEX\u0060 env var scenarios (with and without the env var set). Run \u0060dotnet test\u0060 on affected test projects to verify all tests pass.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-7",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Build and run the application via Aspire AppHost (\u0060dotnet run --project infra/Infra.AppHost\u0060). Use \u0060six-avalonia-mcp\u0060 to verify: (a) plain TextBox renders and accepts input, (b) formatting buttons are hidden, (c) status bar still works, (d) each replica has its own storage directory.",
+      "description": "Build and run the application via Aspire AppHost (\u0060dotnet run --project infra/Infra.AppHost\u0060). Use \u0060six-avalonia-mcp\u0060 to verify: (a) plain TextBox renders and accepts input, (b) formatting buttons are hidden, (c) status bar still works, (d) each replica has its own storage directory.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-2-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Create \u0060PeerInfoDto\u0060 in \u0060libs/Six.Automerge.Repo.Network.SignalR.Abstractions/src/Models/PeerInfoDto.cs\u0060 as a MessagePack-serializable DTO with \u0060PeerId\u0060 (string, Key 0) and \u0060Metadata\u0060 (PeerMetadataDto?, Key 1). Follow the same MessagePack patterns as existing DTOs (MessageDto, PeerHandshakeDto).",
+      "description": "Create \u0060PeerInfoDto\u0060 in \u0060libs/Six.Automerge.Repo.Network.SignalR.Abstractions/src/Models/PeerInfoDto.cs\u0060 as a MessagePack-serializable DTO with \u0060PeerId\u0060 (string, Key 0) and \u0060Metadata\u0060 (PeerMetadataDto?, Key 1). Follow the same MessagePack patterns as existing DTOs (MessageDto, PeerHandshakeDto).",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Add \u0060OnDocumentPeersChanged(string documentId, List\u003CPeerInfoDto\u003E peers)\u0060 method to \u0060IDocumentsHubClient\u0060 interface. This is the server-to-client callback for real-time peer list updates.",
+      "description": "Add \u0060OnDocumentPeersChanged(string documentId, List\u003CPeerInfoDto\u003E peers)\u0060 method to \u0060IDocumentsHubClient\u0060 interface. This is the server-to-client callback for real-time peer list updates.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Add \u0060GetDocumentPeers(string documentId)\u0060 returning \u0060Task\u003CList\u003CPeerInfoDto\u003E\u003E\u0060 and \u0060GetDocumentPeerCount(string documentId)\u0060 returning \u0060Task\u003Cint\u003E\u0060 to the \u0060IDocumentsHub\u0060 interface. These are client-to-server RPC methods.",
+      "description": "Add \u0060GetDocumentPeers(string documentId)\u0060 returning \u0060Task\u003CList\u003CPeerInfoDto\u003E\u003E\u0060 and \u0060GetDocumentPeerCount(string documentId)\u0060 returning \u0060Task\u003Cint\u003E\u0060 to the \u0060IDocumentsHub\u0060 interface. These are client-to-server RPC methods.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Create \u0060DocumentPeerTracker\u0060 service in \u0060apps/Server.Api/src/Services/DocumentPeerTracker.cs\u0060. Use \u0060ConcurrentDictionary\u003Cstring, ConcurrentDictionary\u003Cstring, PeerInfoDto\u003E\u003E\u0060 for document\u2192peers and \u0060ConcurrentDictionary\u003Cstring, HashSet\u003Cstring\u003E\u003E\u0060 for peer\u2192documents (reverse index for disconnect cleanup). Implement: \u0060AddPeerToDocument\u0060, \u0060RemovePeerFromDocument\u0060, \u0060RemovePeerFromAllDocuments\u0060, \u0060GetDocumentPeers(docId, excludePeerId)\u0060, \u0060GetDocumentPeerCount(docId, excludePeerId)\u0060. Register as singleton in \u0060ServiceCollectionExtensions.AddSyncServer()\u0060.",
+      "description": "Create \u0060DocumentPeerTracker\u0060 service in \u0060apps/Server.Api/src/Services/DocumentPeerTracker.cs\u0060. Use \u0060ConcurrentDictionary\u003Cstring, ConcurrentDictionary\u003Cstring, PeerInfoDto\u003E\u003E\u0060 for document\u2192peers and \u0060ConcurrentDictionary\u003Cstring, HashSet\u003Cstring\u003E\u003E\u0060 for peer\u2192documents (reverse index for disconnect cleanup). Implement: \u0060AddPeerToDocument\u0060, \u0060RemovePeerFromDocument\u0060, \u0060RemovePeerFromAllDocuments\u0060, \u0060GetDocumentPeers(docId, excludePeerId)\u0060, \u0060GetDocumentPeerCount(docId, excludePeerId)\u0060. Register as singleton in \u0060ServiceCollectionExtensions.AddSyncServer()\u0060.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Update \u0060DocumentsHub\u0060 in \u0060apps/Server.Api/src/Hubs/DocumentsHub.cs\u0060: (a) Inject \u0060DocumentPeerTracker\u0060. (b) In \u0060SendMessage\u0060, after auto-subscribing, call \u0060tracker.AddPeerToDocument(documentId, peerInfo)\u0060 and broadcast \u0060OnDocumentPeersChanged\u0060 to the group via \u0060Clients.Group(documentId).OnDocumentPeersChanged(documentId, tracker.GetDocumentPeers(documentId, callerPeerId))\u0060. Use \u0060Clients.Client(connectionId)\u0060 for per-client peer lists that exclude that client\u0027s own entry. (c) In \u0060SubscribeToDocument\u0060, do the same tracking. (d) In \u0060OnDisconnectedAsync\u0060, call \u0060tracker.RemovePeerFromAllDocuments(peerId)\u0060 and broadcast updated peer lists to each affected document group. (e) Implement \u0060GetDocumentPeers\u0060 and \u0060GetDocumentPeerCount\u0060 hub methods using the tracker (exclude calling peer).",
+      "description": "Update \u0060DocumentsHub\u0060 in \u0060apps/Server.Api/src/Hubs/DocumentsHub.cs\u0060: (a) Inject \u0060DocumentPeerTracker\u0060. (b) In \u0060SendMessage\u0060, after auto-subscribing, call \u0060tracker.AddPeerToDocument(documentId, peerInfo)\u0060 and broadcast \u0060OnDocumentPeersChanged\u0060 to the group via \u0060Clients.Group(documentId).OnDocumentPeersChanged(documentId, tracker.GetDocumentPeers(documentId, callerPeerId))\u0060. Use \u0060Clients.Client(connectionId)\u0060 for per-client peer lists that exclude that client\u0027s own entry. (c) In \u0060SubscribeToDocument\u0060, do the same tracking. (d) In \u0060OnDisconnectedAsync\u0060, call \u0060tracker.RemovePeerFromAllDocuments(peerId)\u0060 and broadcast updated peer lists to each affected document group. (e) Implement \u0060GetDocumentPeers\u0060 and \u0060GetDocumentPeerCount\u0060 hub methods using the tracker (exclude calling peer).",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Write unit tests for \u0060DocumentPeerTracker\u0060: add/remove peers, concurrent operations, disconnect cleanup, peer exclusion. Add to \u0060tests/Server.Api.Tests.Unit/\u0060.",
+      "description": "Write unit tests for \u0060DocumentPeerTracker\u0060: add/remove peers, concurrent operations, disconnect cleanup, peer exclusion. Add to \u0060tests/Server.Api.Tests.Unit/\u0060.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-7",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Build Server.Api and run \u0060dotnet test tests/Server.Api.Tests.Unit\u0060 to verify all tests pass (existing \u002B new).",
+      "description": "Build Server.Api and run \u0060dotnet test tests/Server.Api.Tests.Unit\u0060 to verify all tests pass (existing \u002B new).",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-3-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Update \u0060SignalRNetworkAdapter\u0060 in \u0060libs/Six.Automerge.Repo.Network.SignalR.Client/src/SignalRNetworkAdapter.cs\u0060: (a) Add \u0060DocumentPeersChanged\u0060 event of type \u0060EventHandler\u003CDocumentPeersChangedEventArgs\u003E\u0060. (b) In \u0060ConnectAsyncInternal\u0060, register handler for \u0060OnDocumentPeersChanged\u0060 callback \u2014 deserialize and raise the event. (c) Add \u0060GetDocumentPeersAsync(string documentId)\u0060 method that invokes the \u0060GetDocumentPeers\u0060 hub method via the connection.",
+      "description": "Update \u0060SignalRNetworkAdapter\u0060 in \u0060libs/Six.Automerge.Repo.Network.SignalR.Client/src/SignalRNetworkAdapter.cs\u0060: (a) Add \u0060DocumentPeersChanged\u0060 event of type \u0060EventHandler\u003CDocumentPeersChangedEventArgs\u003E\u0060. (b) In \u0060ConnectAsyncInternal\u0060, register handler for \u0060OnDocumentPeersChanged\u0060 callback \u2014 deserialize and raise the event. (c) Add \u0060GetDocumentPeersAsync(string documentId)\u0060 method that invokes the \u0060GetDocumentPeers\u0060 hub method via the connection.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Create \u0060DocumentPeersChangedEventArgs\u0060 in \u0060libs/Six.Automerge.Repo.Network.SignalR.Client/src/\u0060 (or in Abstractions if shared) with \u0060DocumentId\u0060 (string) and \u0060Peers\u0060 (List\u003CPeerInfoDto\u003E) properties.",
+      "description": "Create \u0060DocumentPeersChangedEventArgs\u0060 in \u0060libs/Six.Automerge.Repo.Network.SignalR.Client/src/\u0060 (or in Abstractions if shared) with \u0060DocumentId\u0060 (string) and \u0060Peers\u0060 (List\u003CPeerInfoDto\u003E) properties.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Update \u0060RepoService\u0060 in \u0060apps/DemoApp.Shared/src/RepoService.cs\u0060: (a) Add \u0060DocumentPeerCount\u0060 property (int, with change notification via \u0060DocumentPeerCountChanged\u0060 event). (b) Subscribe to \u0060_networkAdapter.DocumentPeersChanged\u0060 in \u0060InitializeAsync\u0060 and update \u0060DocumentPeerCount\u0060 from the event. (c) Add \u0060GetDocumentPeersAsync(string documentId)\u0060 method that delegates to the network adapter. (d) Change \u0060PeerCountChanged\u0060 event dispatch to use \u0060DocumentPeerCount\u0060 for the count rather than the Repo-level \u0060_peerCount\u0060 (or add a separate event \u2014 keep \u0060_peerCount\u0060 for Repo-level tracking if useful for diagnostics).",
+      "description": "Update \u0060RepoService\u0060 in \u0060apps/DemoApp.Shared/src/RepoService.cs\u0060: (a) Add \u0060DocumentPeerCount\u0060 property (int, with change notification via \u0060DocumentPeerCountChanged\u0060 event). (b) Subscribe to \u0060_networkAdapter.DocumentPeersChanged\u0060 in \u0060InitializeAsync\u0060 and update \u0060DocumentPeerCount\u0060 from the event. (c) Add \u0060GetDocumentPeersAsync(string documentId)\u0060 method that delegates to the network adapter. (d) Change \u0060PeerCountChanged\u0060 event dispatch to use \u0060DocumentPeerCount\u0060 for the count rather than the Repo-level \u0060_peerCount\u0060 (or add a separate event \u2014 keep \u0060_peerCount\u0060 for Repo-level tracking if useful for diagnostics).",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Update \u0060EditorWindow.axaml.cs\u0060: After \u0060SetTextDocument\u0060 \u002B \u0060ShowEditorAsync\u0060, call \u0060repoService.GetDocumentPeersAsync(documentId)\u0060 to get the initial peer count and update both \u0060_statusBarVm.PeerCount\u0060 and \u0060vm.UpdateConnectionStatus(...)\u0060. Wire \u0060repoService.DocumentPeerCountChanged\u0060 to update the status bar and sync status when peers change.",
+      "description": "Update \u0060EditorWindow.axaml.cs\u0060: After \u0060SetTextDocument\u0060 \u002B \u0060ShowEditorAsync\u0060, call \u0060repoService.GetDocumentPeersAsync(documentId)\u0060 to get the initial peer count and update both \u0060_statusBarVm.PeerCount\u0060 and \u0060vm.UpdateConnectionStatus(...)\u0060. Wire \u0060repoService.DocumentPeerCountChanged\u0060 to update the status bar and sync status when peers change.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Update existing tests to account for the new peer count flow. Ensure \u0060EditorViewModelTests\u0060 for \u0060UpdateConnectionStatus\u0060 still pass. Add tests for \u0060RepoService.DocumentPeerCount\u0060 and the new event. Run \u0060dotnet test\u0060 on all affected test projects.",
+      "description": "Update existing tests to account for the new peer count flow. Ensure \u0060EditorViewModelTests\u0060 for \u0060UpdateConnectionStatus\u0060 still pass. Add tests for \u0060RepoService.DocumentPeerCount\u0060 and the new event. Run \u0060dotnet test\u0060 on all affected test projects.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md",
+      "title": "Build and run the full stack via Aspire AppHost. Use \u0060six-avalonia-mcp\u0060 to verify end-to-end: start 3 replicas, create a document on replica-0, join from replica-1 and replica-2. Verify that all clients show correct peer counts (replica-0 shows \u0022Syncing (2 peers)\u0022, etc.). Verify typing syncs correctly across all replicas. Verify that when a replica is closed, other replicas\u0027 peer counts decrease.",
+      "description": "Build and run the full stack via Aspire AppHost. Use \u0060six-avalonia-mcp\u0060 to verify end-to-end: start 3 replicas, create a document on replica-0, join from replica-1 and replica-2. Verify that all clients show correct peer counts (replica-0 shows \u0022Syncing (2 peers)\u0022, etc.). Verify typing syncs correctly across all replicas. Verify that when a replica is closed, other replicas\u0027 peer counts decrease.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-3"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "sprint-1",
+      "title": "Replace RichTextEditor with Plain TextBox \u002B Storage Isolation",
+      "description": "This sprint fixes the two simpler issues: broken selection rendering and storage file contention between replicas.\r\n\r\n- [ ] Replace \u0060RichTextEditor\u0060 with a plain \u0060TextBox\u0060 in \u0060EditorWindow.axaml\u0060. Remove the \u0060xmlns:controls\u0060 namespace import. Set \u0060Name=\u0022LocalEditor\u0022\u0060, \u0060AcceptsReturn=\u0022True\u0022\u0060, \u0060AcceptsTab=\u0022True\u0022\u0060, \u0060TextWrapping=\u0022Wrap\u0022\u0060, bind \u0060Text=\u0022{Binding DocumentText, Mode=TwoWay}\u0022\u0060, add \u0060Watermark=\u0022Start typing here...\u0022\u0060. Keep the same \u0060Margin=\u00228\u0022\u0060 and \u0060DockPanel\u0060 positioning.\r\n- [ ] Hide the formatting toolbar buttons in \u0060EditorWindow.axaml\u0060: wrap Bold, Italic, Underline ToggleButtons and their adjacent Separator in a \u0060StackPanel\u0060 with \u0060IsVisible=\u0022False\u0022\u0060. Remove the \u0060Window.KeyBindings\u0060 section (Ctrl\u002BB/I/U). Keep the Save and Export JSON buttons visible.\r\n- [ ] Update \u0060EditorWindow.axaml.cs\u0060 to work with plain TextBox: change \u0060LocalEditor.PropertyChanged\u0060 handler to use \u0060TextBox.CaretIndexProperty\u0060, \u0060TextBox.SelectionStartProperty\u0060, \u0060TextBox.SelectionEndProperty\u0060 (these are the same Avalonia properties \u2014 just remove the \u0060RichTextEditor.\u0060 prefix and \u0060IsEditorFocused\u0060 check). Remove \u0060BoldButton.Click\u0060, \u0060ItalicButton.Click\u0060, \u0060UnderlineButton.Click\u0060 handlers. Remove \u0060LocalEditor.AddHandler(KeyDownEvent, OnEditorKeyDown, ...)\u0060. Remove \u0060OnEditorKeyDown\u0060 and \u0060ExecuteFormatCommand\u0060 methods.\r\n- [ ] Modify \u0060RepoService.StorageDirectory\u0060 property to read \u0060REPLICA_INDEX\u0060 env var. When set, append \u0060/replica-{index}\u0060 to the base storage path. When not set, use the default path (unchanged behavior for standalone runs).\r\n- [ ] Update \u0060infra/Infra.AppHost/AppHost.cs\u0060: replace the CollaborativeEditor \u0060.WithReplicas(4)\u0060 line with an explicit loop creating 3 individual project resources (\u0060collaborative-editor-0\u0060, \u0060collaborative-editor-1\u0060, \u0060collaborative-editor-2\u0060), each with \u0060.WithEnvironment(\u0022REPLICA_INDEX\u0022, i.ToString())\u0060. Apply the same pattern to CollaborativeDrawing and CollaborativeTaskBoard entries.\r\n- [ ] Update existing unit tests in \u0060tests/DemoApp.Shared.Tests/\u0060 for \u0060RepoService.StorageDirectory\u0060 to cover the \u0060REPLICA_INDEX\u0060 env var scenarios (with and without the env var set). Run \u0060dotnet test\u0060 on affected test projects to verify all tests pass.\r\n- [ ] Build and run the application via Aspire AppHost (\u0060dotnet run --project infra/Infra.AppHost\u0060). Use \u0060six-avalonia-mcp\u0060 to verify: (a) plain TextBox renders and accepts input, (b) formatting buttons are hidden, (c) status bar still works, (d) each replica has its own storage directory.",
+      "taskIds": [
+        "sprint-1-task-1",
+        "sprint-1-task-2",
+        "sprint-1-task-3",
+        "sprint-1-task-4",
+        "sprint-1-task-5",
+        "sprint-1-task-6",
+        "sprint-1-task-7"
+      ]
+    },
+    {
+      "id": "sprint-2",
+      "title": "Server-Side Document Peer Tracking",
+      "description": "This sprint adds the server infrastructure for tracking which clients are editing which documents, and exposes this data via SignalR hub methods and callbacks.\r\n\r\n- [ ] Create \u0060PeerInfoDto\u0060 in \u0060libs/Six.Automerge.Repo.Network.SignalR.Abstractions/src/Models/PeerInfoDto.cs\u0060 as a MessagePack-serializable DTO with \u0060PeerId\u0060 (string, Key 0) and \u0060Metadata\u0060 (PeerMetadataDto?, Key 1). Follow the same MessagePack patterns as existing DTOs (MessageDto, PeerHandshakeDto).\r\n- [ ] Add \u0060OnDocumentPeersChanged(string documentId, List\u003CPeerInfoDto\u003E peers)\u0060 method to \u0060IDocumentsHubClient\u0060 interface. This is the server-to-client callback for real-time peer list updates.\r\n- [ ] Add \u0060GetDocumentPeers(string documentId)\u0060 returning \u0060Task\u003CList\u003CPeerInfoDto\u003E\u003E\u0060 and \u0060GetDocumentPeerCount(string documentId)\u0060 returning \u0060Task\u003Cint\u003E\u0060 to the \u0060IDocumentsHub\u0060 interface. These are client-to-server RPC methods.\r\n- [ ] Create \u0060DocumentPeerTracker\u0060 service in \u0060apps/Server.Api/src/Services/DocumentPeerTracker.cs\u0060. Use \u0060ConcurrentDictionary\u003Cstring, ConcurrentDictionary\u003Cstring, PeerInfoDto\u003E\u003E\u0060 for document\u2192peers and \u0060ConcurrentDictionary\u003Cstring, HashSet\u003Cstring\u003E\u003E\u0060 for peer\u2192documents (reverse index for disconnect cleanup). Implement: \u0060AddPeerToDocument\u0060, \u0060RemovePeerFromDocument\u0060, \u0060RemovePeerFromAllDocuments\u0060, \u0060GetDocumentPeers(docId, excludePeerId)\u0060, \u0060GetDocumentPeerCount(docId, excludePeerId)\u0060. Register as singleton in \u0060ServiceCollectionExtensions.AddSyncServer()\u0060.\r\n- [ ] Update \u0060DocumentsHub\u0060 in \u0060apps/Server.Api/src/Hubs/DocumentsHub.cs\u0060: (a) Inject \u0060DocumentPeerTracker\u0060. (b) In \u0060SendMessage\u0060, after auto-subscribing, call \u0060tracker.AddPeerToDocument(documentId, peerInfo)\u0060 and broadcast \u0060OnDocumentPeersChanged\u0060 to the group via \u0060Clients.Group(documentId).OnDocumentPeersChanged(documentId, tracker.GetDocumentPeers(documentId, callerPeerId))\u0060. Use \u0060Clients.Client(connectionId)\u0060 for per-client peer lists that exclude that client\u0027s own entry. (c) In \u0060SubscribeToDocument\u0060, do the same tracking. (d) In \u0060OnDisconnectedAsync\u0060, call \u0060tracker.RemovePeerFromAllDocuments(peerId)\u0060 and broadcast updated peer lists to each affected document group. (e) Implement \u0060GetDocumentPeers\u0060 and \u0060GetDocumentPeerCount\u0060 hub methods using the tracker (exclude calling peer).\r\n- [ ] Write unit tests for \u0060DocumentPeerTracker\u0060: add/remove peers, concurrent operations, disconnect cleanup, peer exclusion. Add to \u0060tests/Server.Api.Tests.Unit/\u0060.\r\n- [ ] Build Server.Api and run \u0060dotnet test tests/Server.Api.Tests.Unit\u0060 to verify all tests pass (existing \u002B new).",
+      "taskIds": [
+        "sprint-2-task-1",
+        "sprint-2-task-2",
+        "sprint-2-task-3",
+        "sprint-2-task-4",
+        "sprint-2-task-5",
+        "sprint-2-task-6",
+        "sprint-2-task-7"
+      ]
+    },
+    {
+      "id": "sprint-3",
+      "title": "Client-Side Peer Count Integration \u002B End-to-End Testing",
+      "description": "This sprint wires up the client to receive and display real document peer counts from the server.\r\n\r\n- [ ] Update \u0060SignalRNetworkAdapter\u0060 in \u0060libs/Six.Automerge.Repo.Network.SignalR.Client/src/SignalRNetworkAdapter.cs\u0060: (a) Add \u0060DocumentPeersChanged\u0060 event of type \u0060EventHandler\u003CDocumentPeersChangedEventArgs\u003E\u0060. (b) In \u0060ConnectAsyncInternal\u0060, register handler for \u0060OnDocumentPeersChanged\u0060 callback \u2014 deserialize and raise the event. (c) Add \u0060GetDocumentPeersAsync(string documentId)\u0060 method that invokes the \u0060GetDocumentPeers\u0060 hub method via the connection.\r\n- [ ] Create \u0060DocumentPeersChangedEventArgs\u0060 in \u0060libs/Six.Automerge.Repo.Network.SignalR.Client/src/\u0060 (or in Abstractions if shared) with \u0060DocumentId\u0060 (string) and \u0060Peers\u0060 (List\u003CPeerInfoDto\u003E) properties.\r\n- [ ] Update \u0060RepoService\u0060 in \u0060apps/DemoApp.Shared/src/RepoService.cs\u0060: (a) Add \u0060DocumentPeerCount\u0060 property (int, with change notification via \u0060DocumentPeerCountChanged\u0060 event). (b) Subscribe to \u0060_networkAdapter.DocumentPeersChanged\u0060 in \u0060InitializeAsync\u0060 and update \u0060DocumentPeerCount\u0060 from the event. (c) Add \u0060GetDocumentPeersAsync(string documentId)\u0060 method that delegates to the network adapter. (d) Change \u0060PeerCountChanged\u0060 event dispatch to use \u0060DocumentPeerCount\u0060 for the count rather than the Repo-level \u0060_peerCount\u0060 (or add a separate event \u2014 keep \u0060_peerCount\u0060 for Repo-level tracking if useful for diagnostics).\r\n- [ ] Update \u0060EditorWindow.axaml.cs\u0060: After \u0060SetTextDocument\u0060 \u002B \u0060ShowEditorAsync\u0060, call \u0060repoService.GetDocumentPeersAsync(documentId)\u0060 to get the initial peer count and update both \u0060_statusBarVm.PeerCount\u0060 and \u0060vm.UpdateConnectionStatus(...)\u0060. Wire \u0060repoService.DocumentPeerCountChanged\u0060 to update the status bar and sync status when peers change.\r\n- [ ] Update existing tests to account for the new peer count flow. Ensure \u0060EditorViewModelTests\u0060 for \u0060UpdateConnectionStatus\u0060 still pass. Add tests for \u0060RepoService.DocumentPeerCount\u0060 and the new event. Run \u0060dotnet test\u0060 on all affected test projects.\r\n- [ ] Build and run the full stack via Aspire AppHost. Use \u0060six-avalonia-mcp\u0060 to verify end-to-end: start 3 replicas, create a document on replica-0, join from replica-1 and replica-2. Verify that all clients show correct peer counts (replica-0 shows \u0022Syncing (2 peers)\u0022, etc.). Verify typing syncs correctly across all replicas. Verify that when a replica is closed, other replicas\u0027 peer counts decrease.",
+      "taskIds": [
+        "sprint-3-task-1",
+        "sprint-3-task-2",
+        "sprint-3-task-3",
+        "sprint-3-task-4",
+        "sprint-3-task-5",
+        "sprint-3-task-6"
+      ]
+    }
+  ],
+  "currentSprintIndex": 3,
+  "currentTaskId": "sprint-3-task-6",
+  "completedCount": 20,
+  "totalCount": 20,
+  "completionPercent": 100,
+  "hasSprints": true
+}

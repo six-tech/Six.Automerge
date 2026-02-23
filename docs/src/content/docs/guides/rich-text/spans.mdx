@@ -1,0 +1,269 @@
+---
+title: "Rich Text: Spans"
+description: Understand the AutomergeSpan type hierarchy — AutomergeTextSpan and AutomergeBlockSpan — and how spans represent rendered rich text with formatting
+---
+
+# Overview
+
+When you call `GetSpans`, Automerge returns a list of **spans** — segments of content split at mark and block boundaries. Each span is either a **text span** (characters with formatting) or a **block span** (a structural marker like a paragraph break or heading).
+
+Spans are the primary data structure for rendering rich text. Instead of querying individual marks and computing overlaps yourself, `GetSpans` does the work for you: it splits text exactly where formatting changes, so you can iterate through spans and render each one directly.
+
+# The Span Type Hierarchy
+
+```
+AutomergeSpan (abstract base)
+├── AutomergeTextSpan    — text content with marks
+└── AutomergeBlockSpan   — block-level structural marker
+```
+
+All spans returned by `GetSpans` are one of these two concrete types. Use pattern matching to process them:
+
+```csharp
+var spans = doc.GetSpans(textId);
+
+foreach (var span in spans)
+{
+    switch (span)
+    {
+        case AutomergeTextSpan textSpan:
+            // Render text with formatting
+            RenderText(textSpan.Text, textSpan.Marks);
+            break;
+
+        case AutomergeBlockSpan blockSpan:
+            // Start a new block (paragraph, heading, etc.)
+            StartBlock(blockSpan.BlockType, blockSpan.Parents);
+            break;
+    }
+}
+```
+
+# AutomergeTextSpan
+
+A text span contains a segment of characters and the marks that apply to every character in the segment:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Text` | `string` | The character content of this span |
+| `Marks` | `IReadOnlyList<AutomergeMarkInfo>` | All active marks on this text segment |
+
+Each `AutomergeMarkInfo` carries:
+- `Name` — Mark identifier (e.g., `"bold"`, `"italic"`, `"link"`)
+- `Value` — An `AutomergeScalarValue` (boolean, string, or integer)
+- `Start` / `End` — The original character positions of the mark in the text container
+
+## How Text Splits Into Spans
+
+Text is split at every point where the set of active marks changes. Consider this example:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Bold and Italic");
+doc.Mark(textId, 0, 4, "bold", true);      // "Bold"
+doc.Mark(textId, 9, 15, "italic", true);    // "Italic"
+doc.Commit("mark regions");
+
+var spans = doc.GetSpans(textId);
+// Span 1: AutomergeTextSpan("Bold", marks: [bold=true])
+// Span 2: AutomergeTextSpan(" and ", marks: [])
+// Span 3: AutomergeTextSpan("Italic", marks: [italic=true])
+```
+
+Three spans are produced because there are three distinct formatting regions. The unmarked text `" and "` between the two marks becomes its own span with an empty marks list.
+
+## Overlapping Marks
+
+When marks overlap, the overlapping region appears as a span carrying both marks:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "ABCDEF");
+doc.Mark(textId, 0, 4, "bold", true);     // ABCD bold
+doc.Mark(textId, 2, 6, "italic", true);   // CDEF italic
+doc.Commit("overlapping marks");
+
+var spans = doc.GetSpans(textId);
+// Span 1: "AB"  — marks: [bold=true]
+// Span 2: "CD"  — marks: [bold=true, italic=true]
+// Span 3: "EF"  — marks: [italic=true]
+```
+
+The "CD" span has both `bold` and `italic` because both marks cover those characters. This is the key advantage of spans over raw marks — you never need to compute intersections yourself.
+
+## Plain Text Returns a Single Span
+
+Unmarked text returns a single text span with no marks:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Commit("write text");
+
+var spans = doc.GetSpans(textId);
+// Single span: AutomergeTextSpan("Hello World", marks: [])
+```
+
+## Empty Text
+
+An empty text container returns either an empty list or a single span with an empty string:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.Commit("empty text");
+
+var spans = doc.GetSpans(textId);
+// spans.Count == 0, or a single span with Text == ""
+```
+
+# AutomergeBlockSpan
+
+A block span is a structural marker inserted by `SplitBlock`. It represents a boundary between block-level elements like paragraphs, headings, or list items.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `BlockType` | `string` | The block kind (e.g., `"paragraph"`, `"heading"`, `"ordered-list-item"`) |
+| `Parents` | `IReadOnlyList<string>` | Parent block types for nesting (e.g., `["ordered-list"]` for list items) |
+| `AttributesJson` | `string` | Additional block attributes as a JSON string |
+
+Block spans appear in the span list at the position where `SplitBlock` was called. They interleave with text spans:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "HelloWorld");
+var blockId = doc.SplitBlock(textId, 5);
+doc.PutString(blockId, "type", "paragraph");
+doc.Commit("split at middle");
+
+var spans = doc.GetSpans(textId);
+// Span 1: AutomergeTextSpan("Hello", marks: [])
+// Span 2: AutomergeBlockSpan(type: "paragraph", parents: [], attrs: "{}")
+// Span 3: AutomergeTextSpan("World", marks: [])
+```
+
+For more on creating and managing blocks, see [Blocks](/Six.Automerge/guides/rich-text/blocks/).
+
+# Processing Mixed Spans
+
+A rich text container with both marks and blocks produces a mixed list of text and block spans. Here is a rendering pattern that handles both:
+
+```csharp
+var spans = doc.GetSpans(textId);
+
+foreach (var span in spans)
+{
+    switch (span)
+    {
+        case AutomergeBlockSpan block:
+            // Close the current block and start a new one
+            CloseCurrentBlock();
+            OpenBlock(block.BlockType, block.Parents);
+            break;
+
+        case AutomergeTextSpan text:
+            var isBold = text.Marks.Any(m => m.Name == "bold" && m.Value.BoolValue);
+            var isItalic = text.Marks.Any(m => m.Name == "italic" && m.Value.BoolValue);
+            var link = text.Marks.FirstOrDefault(m => m.Name == "link")?.Value.StringValue;
+            var fontSize = text.Marks.FirstOrDefault(m => m.Name == "fontSize")?.Value.IntValue;
+
+            RenderText(text.Text, isBold, isItalic, link, fontSize);
+            break;
+    }
+}
+```
+
+# Historical Spans with GetSpansAtHeads
+
+`GetSpansAtHeads` returns the span list as it existed at a specific point in history. This is useful for:
+
+- **Diff computation** — Compare spans at two points to find what changed
+- **Undo preview** — Show the user what the document looked like before a change
+- **Audit trails** — Inspect formatting state at any prior commit
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Commit("mark bold");
+
+var headsWithBold = doc.GetHeads();
+
+doc.Mark(textId, 6, 11, "italic", true);
+doc.Commit("mark italic");
+
+// Current spans have both bold and italic
+var currentSpans = doc.GetSpans(textId);
+
+// Historical spans have only bold
+var historicalSpans = doc.GetSpansAtHeads(textId, headsWithBold);
+var allMarks = historicalSpans
+    .OfType<AutomergeTextSpan>()
+    .SelectMany(s => s.Marks)
+    .ToList();
+// Contains "bold" but not "italic"
+```
+
+## Spans at a Plain-Text Point
+
+Querying at a point before any marks were applied returns text spans with no marks:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Commit("write text");
+
+var headsPlain = doc.GetHeads();
+
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Commit("mark bold");
+
+var historicalSpans = doc.GetSpansAtHeads(textId, headsPlain);
+var allMarks = historicalSpans
+    .OfType<AutomergeTextSpan>()
+    .SelectMany(s => s.Marks)
+    .ToList();
+// allMarks is empty
+```
+
+# Spans Survive Sync
+
+Span structure transfers correctly between peers. After syncing, both documents produce identical span lists:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+var textId = doc1.PutObject(root, "content", AutomergeContainerType.Text);
+doc1.SpliceText(textId, 0, 0, "Hello World");
+doc1.Mark(textId, 0, 5, "bold", true);
+doc1.Commit("write and mark");
+
+using var doc2 = doc1.Fork();
+
+var spans1 = doc1.GetSpans(textId);
+var spans2 = doc2.GetSpans(textId);
+
+// Both have the same number of spans
+// Each span pair has the same type, text, and mark count
+for (var i = 0; i < spans1.Count; i++)
+{
+    if (spans1[i] is AutomergeTextSpan t1 && spans2[i] is AutomergeTextSpan t2)
+    {
+        // t1.Text == t2.Text
+        // t1.Marks.Count == t2.Marks.Count
+    }
+}
+```
+
+# API Reference
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `doc.GetSpans(textId)` | `IReadOnlyList<AutomergeSpan>` | Text split by mark and block boundaries |
+| `doc.GetSpansAtHeads(textId, heads)` | `IReadOnlyList<AutomergeSpan>` | Spans at a historical point |
+
+| Type | Properties | Description |
+|------|-----------|-------------|
+| `AutomergeTextSpan` | `Text`, `Marks` | Text content with formatting annotations |
+| `AutomergeBlockSpan` | `BlockType`, `Parents`, `AttributesJson` | Block-level structural marker |
+| `AutomergeMarkInfo` | `Name`, `Value`, `Start`, `End` | Mark metadata within a span |
+
+# Next Steps
+
+- [Blocks](/Six.Automerge/guides/rich-text/blocks/) — Create and manage block-level structure with `SplitBlock` and `JoinBlock`.
+- [Update Spans](/Six.Automerge/guides/rich-text/update-spans/) — Modify document content through the read-modify-write span pattern.
+- [Concurrent Rich Text](/Six.Automerge/guides/rich-text/concurrent-rich-text/) — How marks merge across multiple peers.
+- [Reading Marks](/Six.Automerge/guides/rich-text/reading-marks/) — Query marks directly with `GetMarks` and `GetMarksAtHeads`.

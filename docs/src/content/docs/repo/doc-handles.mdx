@@ -1,0 +1,426 @@
+---
+title: Doc Handles
+description: Manage repository-backed Automerge documents with the DocHandle state machine, events, and mutation API
+---
+
+# Overview
+
+`DocHandle<T>` wraps an Automerge document that lives inside a `Repo`. It provides a single coordination
+point for reading, mutating, and synchronizing document state while tracking locally generated changes
+that still need to be sent to peers.
+
+Unlike working with `AutomergeDocument` directly, a handle:
+
+- **Serializes access** through an internal semaphore, preventing concurrent mutation bugs
+- **Tracks local changes** in a queue that the sync layer can drain
+- **Emits events** so the Repo, UI, and sync layers can react to changes
+- **Manages state transitions** through a well-defined state machine
+
+# Handle State Machine
+
+Every DocHandle progresses through a lifecycle represented by the `HandleState` enum:
+
+```
+            ┌──────────────────────────┐
+            │          Idle            │
+            │   (just constructed)     │
+            └────────────┬─────────────┘
+                         │ Begin()
+                         ▼
+            ┌──────────────────────────┐
+            │        Loading           │
+            │  (checking storage)      │
+            └──────┬──────────┬────────┘
+          found in │          │ not found
+          storage  │          │
+                   ▼          ▼
+    ┌──────────────────┐  ┌──────────────────────┐
+    │      Ready       │  │     Requesting       │
+    │ (doc available)  │  │ (waiting for network) │
+    └──────────────────┘  └──────────┬────────────┘
+                                     │ sync message arrives
+                                     ▼
+                          ┌──────────────────────┐
+                          │       Ready          │
+                          │  (doc available)     │
+                          └──────────────────────┘
+
+    From Ready, the handle can transition to:
+    ┌──────────┐  ┌──────────┐  ┌──────────────┐
+    │ Unloaded │  │ Deleted  │  │ Unavailable  │
+    └──────────┘  └──────────┘  └──────────────┘
+```
+
+| State | Description |
+|-------|-------------|
+| `Idle` | Handle just created, no operations started |
+| `Loading` | Checking storage for existing document data |
+| `Requesting` | Document not in storage, requesting from network peers |
+| `Ready` | Document is loaded and available for read/write operations |
+| `Unloaded` | Document evicted from memory (can be reloaded) |
+| `Deleted` | Document permanently deleted |
+| `Unavailable` | Document could not be found from any source |
+
+You can check the current state through properties:
+
+```csharp
+handle.State       // HandleState enum
+handle.IsReady     // true when State == Ready
+handle.IsDeleted   // true when State == Deleted
+handle.IsUnloaded  // true when State == Unloaded
+handle.IsUnavailable // true when State == Unavailable
+handle.IsReadOnly  // true when fixed at specific heads (view mode)
+```
+
+# Creating Handles
+
+Handles are normally created by the Repo when you call `Create` or `Find`. For testing, you can create
+them directly:
+
+```csharp
+using Six.Automerge;
+using Six.Automerge.Repository;
+
+var document = AutomergeDocument.Create();
+
+var options = new DocHandleOptions<AutomergeDocument> { IsNew = true };
+using var handle = new DocHandle<AutomergeDocument>("tasks/alice", options, document);
+```
+
+A handle only becomes usable once the underlying document is attached. If you construct it without a
+document, call `Initialize` later:
+
+```csharp
+var handle = new DocHandle<AutomergeDocument>("tasks/alice");
+// ...load an AutomergeDocument from disk...
+handle.Initialize(loadedDocument, isNewDocument: false);
+```
+
+# Waiting for Ready
+
+Use `WhenReadyAsync` to suspend work until the document is available:
+
+```csharp
+await handle.WhenReadyAsync();
+var doc = handle.Doc();
+```
+
+With a cancellation token:
+
+```csharp
+using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+try
+{
+  await handle.WhenReadyAsync(cts.Token);
+}
+catch(OperationCanceledException)
+{
+  Console.WriteLine("Document not available within timeout");
+}
+```
+
+# Accessing the Document
+
+Once the handle is ready, access the document through `Doc()` or `DocAsync()`:
+
+```csharp
+// Synchronous (throws if not ready)
+var doc = handle.Doc();
+
+// Asynchronous (waits for ready)
+var doc = await handle.DocAsync();
+
+// DocSync() is an alias for Doc(), mirroring the TypeScript API
+var doc = handle.DocSync();
+```
+
+For safe, lock-protected reads:
+
+```csharp
+var json = await handle.ReadAsync(doc => doc.HydrateJson());
+var heads = handle.Heads;
+```
+
+Read delegates should avoid mutating the document — use `ChangeAsync` for writes so that change
+metadata stays consistent.
+
+# Applying Local Changes
+
+`ChangeAsync` wraps mutations in a critical section, commits them, and records the generated change
+bytes so they can be forwarded to connected peers:
+
+```csharp
+var change = await handle.ChangeAsync(doc =>
+{
+  var root = doc.RootId;
+  doc.PutString(root, "title", "Daily notes");
+  doc.PutBoolean(root, "pinned", true);
+}, message: "pin daily note");
+
+if(change is not null)
+{
+  Console.WriteLine($"Change hash: {change.ChangeHash}");
+  Console.WriteLine($"Change count: {change.Changes.Count}");
+}
+```
+
+If the mutation produces no observable difference (for example, setting a property to the same value),
+the method returns `null` and no change bytes are queued.
+
+A synchronous version is also available:
+
+```csharp
+handle.Change(doc =>
+{
+  var root = doc.RootId;
+  doc.PutString(root, "title", "Hello");
+});
+```
+
+## Change at Specific Heads
+
+`ChangeAt` creates a concurrent branch by forking the document at specified heads, applying the mutation,
+and merging the fork back:
+
+```csharp
+var heads = handle.GetHeads();
+
+// Later, apply a change as if it happened at those heads
+var changes = handle.ChangeAt(heads, doc =>
+{
+  doc.PutString(doc.RootId, "status", "updated");
+});
+```
+
+This is useful for reconciling external state that was modified independently from the document.
+
+# Processing Remote Updates
+
+The Repo uses `ApplyRemoteChangesAsync` to apply change batches received from peers:
+
+```csharp
+await handle.ApplyRemoteChangesAsync(remoteChanges);
+```
+
+This clones the supplied byte arrays before forwarding them to Automerge. You can safely reuse
+buffers after the method returns.
+
+# Draining Local Changes
+
+The sync layer calls `DrainLocalChanges()` to retrieve and clear the queue of pending local changes:
+
+```csharp
+var pending = handle.DrainLocalChanges();
+// Send these to peers
+```
+
+This returns an empty list if there are no pending changes.
+
+# Merging Documents
+
+Merge another handle's document into this one:
+
+```csharp
+handle.Merge(otherHandle);
+```
+
+This performs a full Automerge merge operation and triggers change events.
+
+# History and Diffing
+
+Access the full change history:
+
+```csharp
+var history = handle.History();
+// Returns a list of head arrays, one per commit
+```
+
+Compute the diff between two points in history:
+
+```csharp
+var patches = handle.Diff(fromHeads, toHeads);
+foreach(var patch in patches)
+{
+  Console.WriteLine($"Path: {patch.Path}, Action: {patch.Action}");
+}
+```
+
+Get metadata for a specific change:
+
+```csharp
+var meta = handle.Metadata(changeHash);
+if(meta is not null)
+{
+  Console.WriteLine($"Message: {meta.Message}");
+  Console.WriteLine($"Timestamp: {meta.Timestamp}");
+  Console.WriteLine($"Actor: {meta.ActorId}");
+}
+```
+
+# Read-Only Views
+
+Create a read-only view of the document at specific heads:
+
+```csharp
+var heads = handle.GetHeads();
+
+// Make some changes...
+await handle.ChangeAsync(doc =>
+{
+  doc.PutString(doc.RootId, "title", "Updated");
+});
+
+// View the document as it was before the change
+using var snapshot = handle.View(heads);
+var oldDoc = snapshot.Doc();
+var oldJson = oldDoc.HydrateJson();
+```
+
+View handles are read-only (`IsReadOnly == true`). Calling `ChangeAsync` on them throws
+`InvalidOperationException`.
+
+# Typed Views
+
+`DocHandle<T>` is generic so you can project the underlying document into any shape. Supply a
+`ViewFactory` when constructing the handle:
+
+```csharp
+var notesHandle = new DocHandle<NoteDto>(
+  "notes/123",
+  new DocHandleOptions<NoteDto>
+  {
+    ViewFactory = doc =>
+    {
+      var json = doc.HydrateJson();
+      return JsonSerializer.Deserialize<NoteDto>(json)!;
+    }
+  },
+  document);
+
+var note = await notesHandle.DocAsync();
+Console.WriteLine(note.Title);
+```
+
+# Events
+
+DocHandle exposes events for reacting to document lifecycle changes:
+
+## Ready
+
+Fires when the document becomes available for the first time:
+
+```csharp
+handle.Ready += (sender, args) =>
+{
+  Console.WriteLine($"Handle {args.Handle.DocumentId} ready (new: {args.IsNew})");
+};
+```
+
+## Changed
+
+Fires on every content change, whether local or remote:
+
+```csharp
+handle.Changed += (sender, args) =>
+{
+  if(args.IsLocal)
+  {
+    Console.WriteLine($"Local change: {args.LocalChange?.ChangeHash}");
+  }
+  else
+  {
+    Console.WriteLine($"Remote changes applied: {args.AppliedChanges?.Count ?? 0}");
+  }
+};
+```
+
+## HeadsChanged
+
+Fires when the document heads (changeset identifiers) update:
+
+```csharp
+handle.HeadsChanged += (sender, args) =>
+{
+  Console.WriteLine($"New heads: {string.Join(", ", args.Heads.Take(2))}");
+};
+```
+
+## Deleted
+
+Fires when the document is deleted from the Repo:
+
+```csharp
+handle.Deleted += (sender, args) =>
+{
+  Console.WriteLine($"Document {args.Handle.DocumentId} deleted");
+};
+```
+
+## Unavailable
+
+Fires when the document cannot be found from any source:
+
+```csharp
+handle.Unavailable += (sender, args) =>
+{
+  Console.WriteLine($"Document {args.Handle.DocumentId} unavailable");
+};
+```
+
+## RemoteHeadsUpdated
+
+Fires when a remote peer's sync state changes for this document:
+
+```csharp
+handle.RemoteHeadsUpdated += (sender, args) =>
+{
+  Console.WriteLine($"Peer {args.StorageId} updated to heads: {args.SyncInfo.LastHeads.Count}");
+};
+```
+
+## EphemeralMessageReceived / EphemeralMessageOutbound
+
+For sending and receiving transient messages that are not persisted:
+
+```csharp
+// Receive from peers
+handle.EphemeralMessageReceived += (sender, args) =>
+{
+  Console.WriteLine($"Ephemeral from {args.SenderId}: {args.Payload}");
+};
+
+// Broadcast to peers
+handle.Broadcast(new { cursor = 42 });
+```
+
+# DocHandleOptions
+
+| Property      | Type                          | Default    | Description                                       |
+|---------------|-------------------------------|------------|---------------------------------------------------|
+| `IsNew`       | `bool`                        | `false`    | Whether this is a newly created document          |
+| `Heads`       | `IReadOnlyList<string>?`      | `null`     | Fixed heads for read-only view mode               |
+| `Timeout`     | `TimeSpan`                    | 10 seconds | How long to wait for the document to become ready |
+| `ViewFactory` | `Func<AutomergeDocument, T>?` | `null`     | Projects the raw document into type T             |
+
+# Disposal and Safety
+
+Disposing a handle also disposes the underlying `AutomergeDocument`. All future operations throw
+`ObjectDisposedException`:
+
+```csharp
+handle.Dispose();
+await Assert.ThrowsAsync<ObjectDisposedException>(() => handle.ChangeAsync(_ => { }));
+```
+
+Because the handle serializes access with a semaphore and forces callers through the provided API surface,
+the Repo can independently drain `DrainLocalChanges`, listen for `Changed`, and orchestrate persistence
+without worrying about concurrent writes or missed change batches.
+
+# IDocHandle Interface
+
+The non-generic `IDocHandle` interface enables the Repo to store handles of different generic types
+in the same collection. It exposes lifecycle methods (`Begin`, `Initialize`, `DoneLoading`, `Request`,
+`Delete`, `Unload`), state properties, and sync helpers without requiring knowledge of the generic
+type parameter `T`.
+
+You typically do not interact with `IDocHandle` directly — it is used internally by the Repo.

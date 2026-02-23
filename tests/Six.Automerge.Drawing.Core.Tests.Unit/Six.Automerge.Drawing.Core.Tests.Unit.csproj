@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <RootNamespace>Six.Automerge.Drawing.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Reactive" Version="6.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\libs\Six.Automerge.Drawing.Core\Six.Automerge.Drawing.Core.csproj" />
+    </ItemGroup>
+
+    <Target Name="CopyNativeLibs" BeforeTargets="Build">
+        <Exec Command="dotnet $(MSBuildThisFileDirectory)..\..\scripts\copy-native-libs.cs -- -o $(OutputPath)" />
+    </Target>
+
+</Project>

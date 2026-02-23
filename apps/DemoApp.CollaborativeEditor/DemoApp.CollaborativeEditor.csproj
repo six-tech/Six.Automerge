@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="DemoApp.CollaborativeEditor.Tests"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        
+        <PackageReference Include="Avalonia" Version="11.3.11"/>
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.11"/>
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11"/>
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.11"/>
+        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.11">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
+        <PackageReference Include="Six.Avalonia.Mcp.Connector" Version="1.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\libs\Six.Automerge.TextEditor.Core\Six.Automerge.TextEditor.Core.csproj" />
+        <ProjectReference Include="..\DemoApp.Shared\DemoApp.Shared.csproj"/>
+        <ProjectReference Include="..\..\infra\Infra.ServiceDefaults\Infra.ServiceDefaults.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="src\Views\EditorWindow.axaml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="src\App.axaml.cs">
+        <DependentUpon>App.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
+
+    <Target Name="CopyNativeLibs" BeforeTargets="Build">
+        <Exec Command="dotnet $(MSBuildThisFileDirectory)..\..\scripts\copy-native-libs.cs -- -o $(OutputPath)" />
+    </Target>
+
+</Project>

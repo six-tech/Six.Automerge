@@ -1,0 +1,12 @@
+{
+  "id": "20260221233245-a5f52a86",
+  "created": "2026-02-21T23:32:45.4224199Z",
+  "runSlug": "demoapp-collaborativeeditor-issues-the-collab",
+  "contentHash": "4698C931EAE5FBBB",
+  "type": "observation",
+  "tags": [
+    "best-practices",
+    "async-await",
+    "ui-thread"
+  ]
+}

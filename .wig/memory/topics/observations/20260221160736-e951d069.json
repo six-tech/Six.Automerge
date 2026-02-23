@@ -1,0 +1,13 @@
+{
+  "id": "20260221160736-e951d069",
+  "created": "2026-02-21T16:07:36.5862463Z",
+  "runSlug": "rust-compilation-and-artefacts-currently-we-a",
+  "contentHash": "CBA2AE2B4C70B380",
+  "type": "observation",
+  "tags": [
+    "nuget-packaging",
+    "directory-props",
+    "path-resolution",
+    "file-references"
+  ]
+}

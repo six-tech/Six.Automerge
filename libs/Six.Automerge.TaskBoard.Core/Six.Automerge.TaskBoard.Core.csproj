@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+   <PropertyGroup>
+      <RootNamespace>Six.Automerge.TaskBoard</RootNamespace>
+   </PropertyGroup>
+
+   <ItemGroup>
+       <InternalsVisibleTo Include="Six.Automerge.TaskBoard.Core.Tests.Unit" />
+   </ItemGroup>
+
+   <ItemGroup>
+       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+       <PackageReference Include="System.Reactive" Version="6.0.1" />
+   </ItemGroup>
+
+   <ItemGroup>
+       <ProjectReference Include="..\Six.Automerge\Six.Automerge.csproj" />
+       <ProjectReference Include="..\Six.Automerge.Repo\Six.Automerge.Repo.csproj" />
+   </ItemGroup>
+
+</Project>

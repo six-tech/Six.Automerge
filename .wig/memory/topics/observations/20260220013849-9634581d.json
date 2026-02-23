@@ -1,0 +1,13 @@
+{
+  "id": "20260220013849-9634581d",
+  "created": "2026-02-20T01:38:49.2451978Z",
+  "runSlug": "introduction-we-are-implementing-a-c-wrapper",
+  "tags": [
+    "list-mutation",
+    "cursor",
+    "FFI",
+    "serialization",
+    "InternalsVisibleTo",
+    "usize-indices"
+  ]
+}

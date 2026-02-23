@@ -1,0 +1,13 @@
+{
+  "id": "20260220013849-a06d96f2",
+  "created": "2026-02-20T01:38:49.2622245Z",
+  "runSlug": "introduction-we-are-implementing-a-c-wrapper",
+  "tags": [
+    "historical-queries",
+    "iteration",
+    "FFI",
+    "parameter-naming",
+    "trait-methods",
+    "ObjId-ExId"
+  ]
+}

@@ -1,0 +1,417 @@
+---
+title: Core Concepts
+description: Understanding documents, actors, container types, and the Automerge data model
+---
+
+# Overview
+
+This guide explains the fundamental concepts behind Six.Automerge.
+
+Understanding these concepts helps you design effective collaborative applications.
+
+# Documents
+
+An Automerge document is a container for your data. It tracks all changes made to that data over time.
+
+## Creating Documents
+
+You create a document using the static factory method:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+```
+
+You can optionally specify an actor ID during creation:
+
+```csharp
+using var doc = AutomergeDocument.Create("user-alice-device-1");
+```
+
+## Document State
+
+Documents maintain several pieces of state:
+
+**Root Object** - Every document has a root map where you store top-level data.
+
+**Actor ID** - Identifies who is making changes to this document.
+
+**Pending Operations** - Changes you've made but haven't committed yet.
+
+**Commit History** - All committed changes with their messages and metadata.
+
+**Heads** - The latest commit hashes representing the current state.
+
+# Doc Handles
+
+When an Automerge document is managed by a repository you interact with it through a `DocHandle`. The handle serializes
+access, tracks locally generated change bytes, raises notifications, and exposes helpers for feeding remote updates back
+into the document. See the [Doc Handles](/Six.Automerge/repo/doc-handles/) guide for details on coordinating repository-backed documents.
+
+# Actors
+
+An actor represents a user or device making changes to a document.
+
+Each document has exactly one actor ID. When you sync documents, Automerge uses actor IDs to track who made which changes.
+
+## Actor ID Format
+
+Automerge generates random UUIDs as actor IDs by default:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+Console.WriteLine(doc.ActorId); // Something like "a1b2c3d4..."
+```
+
+You can set custom actor IDs for easier debugging or tracking:
+
+```csharp
+doc.ActorId = "alice-laptop";
+```
+
+## Why Actor IDs Matter
+
+Actor IDs help resolve conflicts. When two actors make concurrent changes, Automerge uses the actor ID as a tiebreaker in some situations.
+
+They also help you track change provenance. You can see which actor made each modification.
+
+# Container Types
+
+Automerge provides three container types for organizing data:
+
+## Map
+
+Maps store key-value pairs, like a dictionary or object. The root of every document is a map.
+
+Use maps when you need named fields:
+
+```csharp
+var root = doc.RootId;
+doc.PutString(root, "username", "alice");
+doc.PutInt64(root, "score", 100);
+```
+
+Maps support any string as a key. Values can be any supported data type or nested container.
+
+## List
+
+Lists store ordered sequences of items, like an array.
+
+Use lists when order matters and you don't need named keys:
+
+```csharp
+var root = doc.RootId;
+var tasks = doc.PutObject(root, "tasks", AutomergeContainerType.List);
+doc.ListInsertString(tasks, 0, "Write documentation");
+doc.ListInsertString(tasks, 1, "Review code");
+```
+
+Lists support insertion at any index. Concurrent insertions from different actors maintain their relative order in predictable ways.
+
+## Text
+
+Text containers provide special CRDT semantics for collaborative text editing.
+
+Use text when multiple users might edit the same content simultaneously:
+
+```csharp
+var root = doc.RootId;
+var description = doc.PutObject(root, "description", AutomergeContainerType.Text);
+doc.SpliceText(description, 0, 0, "Hello, world!");
+```
+
+Text containers track character-level operations. When two users edit nearby text, Automerge merges their changes intelligently.
+
+# Object IDs
+
+Every container in an Automerge document has a unique identifier called an Object ID.
+
+## Getting Object IDs
+
+When you create a container, you receive its Object ID:
+
+```csharp
+var root = doc.RootId; // The root map's ID
+var listId = doc.PutObject(root, "items", AutomergeContainerType.List); // New list's ID
+```
+
+You use these IDs to reference containers in subsequent operations:
+
+```csharp
+doc.ListInsertString(listId, 0, "first item");
+```
+
+## Object ID Lifetime
+
+Object IDs remain valid for the lifetime of the document. You can store them and use them later.
+
+However, they don't serialize to JSON. When you call `HydrateJson()`, you get the data values, not the internal Object IDs.
+
+# Commits
+
+Automerge uses an explicit commit model. Changes you make are pending until you commit them.
+
+## Creating Commits
+
+Call `Commit()` to finalize your changes:
+
+```csharp
+var hash = doc.Commit("Update user profile");
+```
+
+The method returns a commit hash. This hash uniquely identifies this set of changes.
+
+## Commit Messages
+
+Commit messages help you understand your change history:
+
+```csharp
+doc.Commit("Fix typo in description");
+doc.Commit("Add user preferences");
+doc.Commit("Update task priorities");
+```
+
+Messages are optional but recommended for debugging and auditing.
+
+## Commit Timestamps
+
+You can provide explicit timestamps:
+
+```csharp
+var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+doc.Commit("Scheduled update", timestamp);
+```
+
+Without an explicit timestamp, Automerge uses the current time.
+
+## Rollback
+
+You can discard uncommitted changes:
+
+```csharp
+doc.PutString(root, "temp", "temporary value");
+var count = doc.Rollback(); // Discards the PutString operation
+```
+
+The method returns the number of operations rolled back.
+
+# Conflict-Free Merging
+
+Automerge automatically merges concurrent changes without conflicts.
+
+## How It Works
+
+Each operation has a unique identifier combining the actor ID and a logical timestamp. When merging, Automerge uses these identifiers to determine operation order.
+
+Different data types have different merge semantics:
+
+**Last-Write-Wins** - For simple values like strings and numbers, the operation with the higher timestamp wins.
+
+**Addition** - For counters, values add together.
+
+**List Operations** - Insertions from different actors maintain their relative positions. Deletions apply regardless of other changes.
+
+**Text Operations** - Character insertions and deletions merge character by character.
+
+## Concurrent Edits Example
+
+Two users edit different fields in the same document:
+
+```csharp
+// Alice's document
+using var alice = AutomergeDocument.Create();
+var aliceRoot = alice.RootId;
+alice.PutString(aliceRoot, "title", "Project Plan");
+alice.Commit("Alice: Add title");
+
+// Bob's document (starts empty)
+using var bob = AutomergeDocument.Create();
+var bobRoot = bob.RootId;
+bob.PutString(bobRoot, "author", "Bob");
+bob.Commit("Bob: Add author");
+
+// Sync them
+var heads = alice.GetHeads();
+var changes = bob.GetChanges(heads);
+alice.ApplyChanges(changes);
+
+// Alice's document now has both title and author
+```
+
+Both changes survive the merge because they modify different keys.
+
+## Concurrent Updates to Same Key
+
+When two actors update the same key, the later timestamp wins:
+
+```csharp
+// Both Alice and Bob update "status" at roughly the same time
+alice.PutString(aliceRoot, "status", "in-progress");
+bob.PutString(bobRoot, "status", "completed");
+
+// After sync, one value wins based on timestamps and actor IDs
+```
+
+This is last-write-wins semantics. If you need different behavior, use counters or separate keys.
+
+# Data Types
+
+Automerge supports these primitive data types:
+
+**String** - UTF-8 text values.
+
+**Int64** - Signed 64-bit integers.
+
+**UInt64** - Unsigned 64-bit integers.
+
+**Double** - 64-bit floating-point numbers.
+
+**Boolean** - True or false values.
+
+**Timestamp** - Unix timestamps in milliseconds.
+
+**Bytes** - Binary data.
+
+**Null** - Explicit null values.
+
+**Counter** - CRDT counters that add together during merges.
+
+You can also use three container types (Map, List, Text) to create nested structures.
+
+# Change Tracking
+
+Automerge tracks every change with full history.
+
+## Getting Heads
+
+Heads represent the latest state:
+
+```csharp
+var heads = doc.GetHeads();
+foreach (var head in heads)
+{
+    Console.WriteLine($"Head: {head}");
+}
+```
+
+Most documents have one head. Multiple heads appear temporarily during merges.
+
+## Getting Changes
+
+Retrieve all changes since a known state:
+
+```csharp
+var knownHeads = new[] { "abc123...", "def456..." };
+var changes = doc.GetChanges(knownHeads);
+```
+
+This returns a list of binary change objects. You can send these to other peers for synchronization.
+
+## Last Local Change
+
+Get the most recent change made by this actor:
+
+```csharp
+var lastChange = doc.GetLastLocalChange();
+if (lastChange != null)
+{
+    Console.WriteLine($"Last change size: {lastChange.Length} bytes");
+}
+```
+
+This helps implement efficient change notification systems.
+
+# Document Lifecycle
+
+## Creation
+
+Start with a new document:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+```
+
+## Modification
+
+Make changes and commit them:
+
+```csharp
+var root = doc.RootId;
+doc.PutString(root, "field", "value");
+doc.Commit("Update field");
+```
+
+## Synchronization
+
+Exchange changes with other documents:
+
+```csharp
+var changes = doc.GetChanges(otherDoc.GetHeads());
+otherDoc.ApplyChanges(changes);
+```
+
+## Persistence
+
+Save the document to bytes:
+
+```csharp
+var bytes = doc.Save();
+```
+
+Load it back later:
+
+```csharp
+using var restored = AutomergeDocument.Load(bytes);
+```
+
+## Cleanup
+
+Dispose of documents when done:
+
+```csharp
+doc.Dispose();
+```
+
+Or use a `using` statement for automatic disposal.
+
+# Performance Considerations
+
+## Commit Frequency
+
+Each commit adds overhead. Batch related changes into single commits:
+
+```csharp
+// Good: One commit for related changes
+doc.PutString(root, "first_name", "Alice");
+doc.PutString(root, "last_name", "Smith");
+doc.PutString(root, "email", "alice@example.com");
+doc.Commit("Update user info");
+
+// Less efficient: Many small commits
+doc.PutString(root, "first_name", "Alice");
+doc.Commit("Update first name");
+doc.PutString(root, "last_name", "Smith");
+doc.Commit("Update last name");
+```
+
+## Document Size
+
+Large documents take longer to serialize and sync. Consider splitting very large datasets into multiple documents.
+
+## Memory Management
+
+Documents hold native resources. Always dispose of them:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+// Use the document
+// Automatic disposal happens here
+```
+
+# Next Steps
+
+With these concepts understood, explore specific operations:
+
+- [Maps — Basic Operations](/Six.Automerge/guides/maps/basic-operations/) — Learn all map operations and patterns.
+- [Lists — Basic Operations](/Six.Automerge/guides/lists/basic-operations/) — Understand list manipulation and ordering.
+- [Text — Basic Operations](/Six.Automerge/guides/text/basic-operations/) — Explore text editing capabilities.
+- [Text — Collaborative Editing](/Six.Automerge/guides/text/collaborative-editing/) — See how concurrent text edits merge.

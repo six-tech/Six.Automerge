@@ -1,0 +1,155 @@
+---
+title: Conflict Values
+description: API reference for AutomergeConflictValue — values returned by conflict-aware methods
+---
+
+# Overview
+
+`AutomergeConflictValue` represents a value returned by conflict-aware methods like `GetAll`, `Values`, `ListRange`, and `MapRange`. When multiple peers concurrently write to the same key or index, Automerge picks a winner deterministically but preserves all concurrent values. `AutomergeConflictValue` provides access to both winning and losing values along with their operation IDs.
+
+```csharp
+using Six.Automerge;
+
+var values = doc.GetAll(root, "status");
+foreach(var v in values)
+{
+  if(v.IsObject)
+    Console.WriteLine($"Object: {v.ObjectId} ({v.ObjectType})");
+  else
+    Console.WriteLine($"Scalar: {v.Scalar?.Kind} (op: {v.OperationId})");
+}
+```
+
+# AutomergeConflictValue
+
+```csharp
+public sealed class AutomergeConflictValue
+```
+
+A value entry that may be part of a conflict. Contains either a scalar value or an object reference, along with the operation ID that produced it.
+
+**Namespace:** `Six.Automerge`
+
+## Properties
+
+### IsObject
+
+```csharp
+public bool IsObject { get; }
+```
+
+Whether this value is a container (Map, List, or Text). When `true`, use `ObjectId` and `ObjectType`. When `false`, use `Scalar`.
+
+### Scalar
+
+```csharp
+public AutomergeScalarValue? Scalar { get; }
+```
+
+The scalar value. Non-null when `IsObject` is `false`. See [AutomergeScalarValue](/Six.Automerge/api/automerge-marks/#automergescalarvalue) for the value type details.
+
+### ObjectId
+
+```csharp
+public AutomergeObjectId? ObjectId { get; }
+```
+
+The object ID of the container. Non-null when `IsObject` is `true`.
+
+### ObjectType
+
+```csharp
+public AutomergeContainerType? ObjectType { get; }
+```
+
+The container type (Map, List, or Text). Non-null when `IsObject` is `true`.
+
+### OperationId
+
+```csharp
+public string OperationId { get; }
+```
+
+The operation ID that created this value. Format: `"counter@actorId"`. Useful for debugging conflicts and understanding which peer wrote which value.
+
+# Methods That Return Conflict Values
+
+These `AutomergeDocument` methods return `IReadOnlyList` of `AutomergeConflictValue`:
+
+| Method | Description |
+|--------|-------------|
+| `GetAll(objectId, key)` | All concurrent values at a map key |
+| `GetAll(listId, index)` | All concurrent values at a list index |
+| `GetAllAtHeads(objectId, key, heads)` | Historical concurrent values at a map key |
+| `GetAllAtHeads(listId, index, heads)` | Historical concurrent values at a list index |
+| `Values(objectId)` | All values in a map or list |
+| `ValuesAtHeads(objectId, heads)` | Historical values in a map or list |
+| `MapRange(mapId, startKey, endKey)` | Values in a key range |
+| `MapRangeFull(mapId)` | All values in a map |
+| `ListRange(listId, start, end)` | Values in an index range |
+| `ListRangeFull(listId)` | All values in a list |
+
+# Detecting Conflicts
+
+A key or index has a conflict when `GetAll` returns more than one entry:
+
+```csharp
+var values = doc.GetAll(root, "color");
+if(values.Count > 1)
+{
+  Console.WriteLine($"Conflict! {values.Count} concurrent values:");
+  foreach(var v in values)
+  {
+    Console.WriteLine($"  {v.Scalar?.StringValue} from op {v.OperationId}");
+  }
+  // The first entry is the "winner" — the value returned by GetString etc.
+}
+else if(values.Count == 1)
+{
+  Console.WriteLine($"No conflict: {values[0].Scalar?.StringValue}");
+}
+```
+
+# Reading Values from Conflict Entries
+
+```csharp
+var values = doc.GetAll(root, "data");
+foreach(var v in values)
+{
+  if(v.IsObject)
+  {
+    // Value is a nested container
+    var containerType = v.ObjectType; // Map, List, or Text
+    var id = v.ObjectId;
+    // Use id with doc.GetKeys, doc.ListLength, doc.GetText, etc.
+  }
+  else
+  {
+    // Value is a scalar
+    var scalar = v.Scalar!;
+    switch(scalar.Kind)
+    {
+      case AutomergeScalarValueKind.String:
+        Console.WriteLine(scalar.StringValue);
+        break;
+      case AutomergeScalarValueKind.Int:
+        Console.WriteLine(scalar.IntValue);
+        break;
+      case AutomergeScalarValueKind.Boolean:
+        Console.WriteLine(scalar.BoolValue);
+        break;
+      case AutomergeScalarValueKind.Null:
+        Console.WriteLine("null");
+        break;
+      // ... handle other kinds
+    }
+  }
+}
+```
+
+# See Also
+
+- [AutomergeScalarValue](/Six.Automerge/api/automerge-marks/#automergescalarvalue) — Scalar value details
+- [Conflict Values Guide](/Six.Automerge/guides/conflicts/conflict-values/) — Working with conflicts
+- [Detecting Conflicts Guide](/Six.Automerge/guides/conflicts/detecting-conflicts/) — Identifying concurrent writes
+- [AutomergeDocument — GetAll](/Six.Automerge/api/automerge-document/#getall-map) — Conflict-aware read methods

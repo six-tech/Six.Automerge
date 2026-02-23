@@ -1,0 +1,120 @@
+---
+title: Repository Layer
+description: Manage document lifecycle, persistence, and synchronization with the Repo pattern
+---
+
+# Overview
+
+The Repository layer (`Six.Automerge.Repo`) builds on top of `AutomergeDocument` to provide a complete
+document management system. It handles persistence, network synchronization, peer discovery, and document
+lifecycle — things you would otherwise need to implement yourself.
+
+When working with raw `AutomergeDocument`, you are responsible for saving documents to disk, loading them
+back, generating sync messages, managing peer connections, and tracking which changes have been sent to
+whom. The Repo layer handles all of this automatically through pluggable adapters.
+
+# When to Use Repo vs Standalone Documents
+
+**Use `AutomergeDocument` directly when:**
+
+- You need full control over persistence and sync timing
+- You are building a custom sync protocol
+- You have a single-user, single-device application
+- You want minimal dependencies
+
+**Use `Repo` when:**
+
+- Multiple peers need to synchronize documents
+- You want automatic persistence with configurable storage backends
+- You need document lifecycle management (create, find, delete, clone)
+- You are building a collaborative application
+
+# Architecture
+
+The Repo coordinates three subsystems through a single entry point:
+
+```
+┌───────────────────────────────────────────────────────────────┐
+│                          Repo                                 │
+│   Create / Find / Delete / Clone / Export / Import / Flush    │
+├─────────────┬──────────────────────┬──────────────────────────┤
+│  Storage    │   Network            │   Synchronizer           │
+│  Subsystem  │   Subsystem          │   (CollectionSynchronizer│
+│             │                      │    + DocSynchronizer)    │
+├─────────────┼──────────────────────┼──────────────────────────┤
+│ IStorage-   │ INetworkAdapter      │ Automerge sync protocol  │
+│ Adapter     │ (one or more)        │ (generate/receive msgs)  │
+│             │                      │                          │
+│ • InMemory  │ • InMemory           │ Manages per-peer and     │
+│ • FileSystem│ • SignalR             │ per-document sync state  │
+│ • (custom)  │ • Orleans            │                          │
+│             │ • (custom)           │                          │
+└─────────────┴──────────────────────┴──────────────────────────┘
+```
+
+**StorageSubsystem** manages document persistence with automatic compaction. It saves a full snapshot
+on the first write, then stores incremental changes. When the number of incremental chunks reaches the
+size of the snapshot, it compacts everything into a new snapshot.
+
+**NetworkSubsystem** manages one or more network adapters and routes messages between peers. It handles
+peer discovery, connection lifecycle, and message deduplication for ephemeral messages.
+
+**CollectionSynchronizer** orchestrates the Automerge sync protocol across all documents and peers.
+When a document changes, it generates sync messages for each connected peer. When a sync message arrives,
+it applies it to the correct document and updates sync state.
+
+# Key Concepts
+
+## DocHandle
+
+Every document in the Repo is wrapped in a `DocHandle<T>`. Handles provide:
+
+- Serialized access to the document (no concurrent mutation bugs)
+- Change tracking (local changes are queued for sync)
+- Event notifications (`Changed`, `HeadsChanged`, `Ready`, `Deleted`)
+- State machine lifecycle (`Idle` → `Loading` → `Ready`)
+
+See the [Doc Handles](/Six.Automerge/repo/doc-handles/) guide for details.
+
+## Document Identity
+
+Documents are identified by `DocumentId`, a Base58Check-encoded identifier. The Repo generates these
+automatically when you call `Create()`, or you can supply your own.
+
+## Peer Identity
+
+Each Repo instance has a unique `PeerId` (formatted as `peer-{random}`). This identity is used to
+track which changes came from which peer and to manage sync state.
+
+# Repo API Summary
+
+| Method | Description |
+|--------|-------------|
+| `Create<T>()` | Create a new document with auto-generated ID |
+| `Create<T>(documentId)` | Create a new document with a specific ID |
+| `CreateAsync<T>()` | Create with async ID factory support |
+| `Find<T>(documentId)` | Find a document in cache, storage, or network |
+| `Delete(documentId)` | Delete a document from Repo and storage |
+| `Clone<T>(source)` | Clone an existing document into a new one |
+| `Export(documentId)` | Export a document as binary data |
+| `Import<T>(data)` | Import a document from binary data |
+| `Flush()` | Flush all pending saves immediately |
+| `RemoveFromCache(documentId)` | Evict a document from memory (keeps storage) |
+| `Shutdown()` | Gracefully shut down, flushing all data |
+
+# Events
+
+| Event | Description |
+|-------|-------------|
+| `DocumentLoaded` | A document was loaded and is ready |
+| `DocumentDeleted` | A document was deleted |
+| `DocumentUnavailable` | A document could not be found from any peer |
+| `PeerConnected` | A new peer connected |
+| `PeerDisconnected` | A peer disconnected |
+
+# Next Steps
+
+- [Getting Started](/Six.Automerge/repo/getting-started/) — Set up a Repo with storage and network adapters
+- [Doc Handles](/Six.Automerge/repo/doc-handles/) — Work with document handles and their state machine
+- [Storage](/Six.Automerge/repo/storage/) — Choose and configure storage adapters
+- [Networking](/Six.Automerge/repo/network/) — Connect peers with network adapters

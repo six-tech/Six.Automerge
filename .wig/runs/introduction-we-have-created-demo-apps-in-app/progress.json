@@ -1,0 +1,558 @@
+{
+  "tasks": [
+    {
+      "id": "sprint-1-task-1",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In \u0060FileSystemStorageAdapter.cs\u0060, extract an internal \u0060LoadCore(StorageKey key)\u0060 method that reads from cache first, then disk, without acquiring \u0060_lock\u0060. This method should contain the current body of \u0060Load()\u0060 minus the lock acquisition",
+      "description": "In \u0060FileSystemStorageAdapter.cs\u0060, extract an internal \u0060LoadCore(StorageKey key)\u0060 method that reads from cache first, then disk, without acquiring \u0060_lock\u0060. This method should contain the current body of \u0060Load()\u0060 minus the lock acquisition",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-2",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Refactor \u0060Load(StorageKey key)\u0060 to acquire \u0060_lock\u0060, call \u0060LoadCore()\u0060, and release \u0060_lock\u0060",
+      "description": "Refactor \u0060Load(StorageKey key)\u0060 to acquire \u0060_lock\u0060, call \u0060LoadCore()\u0060, and release \u0060_lock\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-3",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Refactor \u0060LoadRange(StorageKey keyPrefix)\u0060 to call \u0060LoadCore()\u0060 instead of \u0060Load()\u0060 when iterating files inside its existing lock scope, eliminating the deadlock",
+      "description": "Refactor \u0060LoadRange(StorageKey keyPrefix)\u0060 to call \u0060LoadCore()\u0060 instead of \u0060Load()\u0060 when iterating files inside its existing lock scope, eliminating the deadlock",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-4",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Fix \u0060RemoveRange(StorageKey keyPrefix)\u0060 to clear all matching cache entries immediately after deleting the directory tree, by iterating cache keys and evicting any that start with the removed prefix",
+      "description": "Fix \u0060RemoveRange(StorageKey keyPrefix)\u0060 to clear all matching cache entries immediately after deleting the directory tree, by iterating cache keys and evicting any that start with the removed prefix",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-5",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Run existing \u0060Storage.FileSystem.Tests.Unit\u0060 and \u0060Storage.FileSystem.Tests.Integration\u0060 tests to verify no regressions. Add a new test for cold-cache \u0060LoadRange()\u0060 (the previously deadlocking scenario)",
+      "description": "Run existing \u0060Storage.FileSystem.Tests.Unit\u0060 and \u0060Storage.FileSystem.Tests.Integration\u0060 tests to verify no regressions. Add a new test for cold-cache \u0060LoadRange()\u0060 (the previously deadlocking scenario)",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-6",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Add a test for \u0060RemoveRange()\u0060 verifying that cached data is cleared immediately (not stale until expiration)",
+      "description": "Add a test for \u0060RemoveRange()\u0060 verifying that cached data is cleared immediately (not stale until expiration)",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-2-task-1",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In \u0060CollectionSynchronizer.cs\u0060, replace all \u0060_lock.Wait()\u0060 calls with \u0060await _lock.WaitAsync()\u0060. Convert \u0060AddDocument\u0060, \u0060RemoveDocument\u0060, \u0060OnPeerConnected\u0060, \u0060OnPeerDisconnected\u0060, \u0060OnMessageReceived\u0060, and \u0060NotifyDocumentChanged\u0060 to async methods. Update the interface/callers accordingly",
+      "description": "In \u0060CollectionSynchronizer.cs\u0060, replace all \u0060_lock.Wait()\u0060 calls with \u0060await _lock.WaitAsync()\u0060. Convert \u0060AddDocument\u0060, \u0060RemoveDocument\u0060, \u0060OnPeerConnected\u0060, \u0060OnPeerDisconnected\u0060, \u0060OnMessageReceived\u0060, and \u0060NotifyDocumentChanged\u0060 to async methods. Update the interface/callers accordingly",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-2",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In \u0060DocSynchronizer.cs\u0060, replace all \u0060_lock.Wait()\u0060 calls with \u0060await _lock.WaitAsync()\u0060. Convert \u0060BeginSync\u0060, \u0060EndSync\u0060, \u0060HasPeer\u0060, \u0060GetPeerStatus\u0060, \u0060ReceiveMessage\u0060, and \u0060NotifyLocalChange\u0060 to async methods. Update callers in \u0060CollectionSynchronizer\u0060",
+      "description": "In \u0060DocSynchronizer.cs\u0060, replace all \u0060_lock.Wait()\u0060 calls with \u0060await _lock.WaitAsync()\u0060. Convert \u0060BeginSync\u0060, \u0060EndSync\u0060, \u0060HasPeer\u0060, \u0060GetPeerStatus\u0060, \u0060ReceiveMessage\u0060, and \u0060NotifyLocalChange\u0060 to async methods. Update callers in \u0060CollectionSynchronizer\u0060",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-3",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In \u0060Repo.cs\u0060, replace \u0060_handleLock.Wait()\u0060 with \u0060await _handleLock.WaitAsync()\u0060 in \u0060Create\u003CT\u003E()\u0060 (convert to async), \u0060Delete()\u0060, \u0060Clone()\u0060, \u0060Handles\u0060 property getter, and all other methods using synchronous waits. Replace \u0060_saveLock.Wait()\u0060 similarly",
+      "description": "In \u0060Repo.cs\u0060, replace \u0060_handleLock.Wait()\u0060 with \u0060await _handleLock.WaitAsync()\u0060 in \u0060Create\u003CT\u003E()\u0060 (convert to async), \u0060Delete()\u0060, \u0060Clone()\u0060, \u0060Handles\u0060 property getter, and all other methods using synchronous waits. Replace \u0060_saveLock.Wait()\u0060 similarly",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-4",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In \u0060DocHandle.cs\u0060, fix \u0060CompositeSemaphore\u0060 to use \u0060await _first.WaitAsync()\u0060 and \u0060await _second.WaitAsync()\u0060 instead of synchronous \u0060.Wait()\u0060. This requires converting \u0060CompositeSemaphore\u0060 to an async-disposable pattern or restructuring callers",
+      "description": "In \u0060DocHandle.cs\u0060, fix \u0060CompositeSemaphore\u0060 to use \u0060await _first.WaitAsync()\u0060 and \u0060await _second.WaitAsync()\u0060 instead of synchronous \u0060.Wait()\u0060. This requires converting \u0060CompositeSemaphore\u0060 to an async-disposable pattern or restructuring callers",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-5",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Add \u0060ConfigureAwait(false)\u0060 to all \u0060await\u0060 calls in \u0060Repo.cs\u0060 that don\u0027t need UI context (especially \u0060ScheduleSave\u0060/\u0060PerformSave\u0060 continuations, and internal storage/network operations)",
+      "description": "Add \u0060ConfigureAwait(false)\u0060 to all \u0060await\u0060 calls in \u0060Repo.cs\u0060 that don\u0027t need UI context (especially \u0060ScheduleSave\u0060/\u0060PerformSave\u0060 continuations, and internal storage/network operations)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-6",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Run \u0060Repo.Tests.Unit\u0060 (259 tests) and \u0060FFI.Tests.Unit\u0060 (145 tests) to verify no regressions from async refactoring",
+      "description": "Run \u0060Repo.Tests.Unit\u0060 (259 tests) and \u0060FFI.Tests.Unit\u0060 (145 tests) to verify no regressions from async refactoring",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-3-task-1",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In all four demo app windows (\u0060MainWindow.axaml.cs\u0060 for TextEditor/Drawing/TaskBoard, \u0060EditorWindow.axaml.cs\u0060 for Editor), ensure \u0060OnSessionResultReady\u0060 properly wraps all async operations in try/catch with user-visible error feedback. Ensure UI-thread dispatching with \u0060Dispatcher.UIThread.InvokeAsync()\u0060 for any UI updates after async operations",
+      "description": "In all four demo app windows (\u0060MainWindow.axaml.cs\u0060 for TextEditor/Drawing/TaskBoard, \u0060EditorWindow.axaml.cs\u0060 for Editor), ensure \u0060OnSessionResultReady\u0060 properly wraps all async operations in try/catch with user-visible error feedback. Ensure UI-thread dispatching with \u0060Dispatcher.UIThread.InvokeAsync()\u0060 for any UI updates after async operations",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-2",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In \u0060RepoService.cs\u0060, add proper cancellation support to \u0060InitializeAsync()\u0060. Add a \u0060CancellationToken\u0060 parameter. Add a configurable connection timeout (default 10s). Ensure \u0060WhenReady().WaitAsync()\u0060 uses the cancellation token so the UI can cancel if needed",
+      "description": "In \u0060RepoService.cs\u0060, add proper cancellation support to \u0060InitializeAsync()\u0060. Add a \u0060CancellationToken\u0060 parameter. Add a configurable connection timeout (default 10s). Ensure \u0060WhenReady().WaitAsync()\u0060 uses the cancellation token so the UI can cancel if needed",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-3",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In all four demo apps, update \u0060HandleCreateAsync\u0060, \u0060HandleJoinAsync\u0060, and \u0060HandleResumeAsync\u0060 to show a loading indicator while operations are in progress, and display meaningful error messages on failure instead of silently freezing",
+      "description": "In all four demo apps, update \u0060HandleCreateAsync\u0060, \u0060HandleJoinAsync\u0060, and \u0060HandleResumeAsync\u0060 to show a loading indicator while operations are in progress, and display meaningful error messages on failure instead of silently freezing",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-4",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Build and run \u0060DemoApp.CollaborativeTextEditor\u0060 via Aspire. Use \u0060six-avalonia-mcp\u0060 to verify: the app starts without freezing, \u0022Create New\u0022 works, the document session dialog is responsive",
+      "description": "Build and run \u0060DemoApp.CollaborativeTextEditor\u0060 via Aspire. Use \u0060six-avalonia-mcp\u0060 to verify: the app starts without freezing, \u0022Create New\u0022 works, the document session dialog is responsive",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-5",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Test the \u0022Resume\u0022 flow by creating a document, closing the app, reopening, and clicking on the stored document. Verify no deadlock (this was the primary reproduction scenario for the \u0060LoadRange\u0060 deadlock)",
+      "description": "Test the \u0022Resume\u0022 flow by creating a document, closing the app, reopening, and clicking on the stored document. Verify no deadlock (this was the primary reproduction scenario for the \u0060LoadRange\u0060 deadlock)",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-4-task-1",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Create \u0060apps/Server.Api/src/Services/ServerRepoOptions.cs\u0060 with \u0060StorageBaseDirectory\u0060 property (default: \u0060Path.Combine(AppContext.BaseDirectory, \u0022documents\u0022)\u0060)",
+      "description": "Create \u0060apps/Server.Api/src/Services/ServerRepoOptions.cs\u0060 with \u0060StorageBaseDirectory\u0060 property (default: \u0060Path.Combine(AppContext.BaseDirectory, \u0022documents\u0022)\u0060)",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-2",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Create \u0060apps/Server.Api/src/Services/ServerRepoManager.cs\u0060 as a singleton \u0060IHostedService\u0060. It should create and manage one \u0060Repo\u0060 instance per registered app type, each with its own \u0060FileSystemStorageAdapter\u0060 in an isolated subdirectory (e.g., \u0060documents/text-editor/\u0060, \u0060documents/editor/\u0060, \u0060documents/drawing/\u0060, \u0060documents/task-board/\u0060). Implement \u0060GetRepo(appType)\u0060, \u0060ListDocuments(appType)\u0060 (scans storage directory for document IDs), \u0060StartAsync\u0060, \u0060StopAsync\u0060 (flushes and disposes repos)",
+      "description": "Create \u0060apps/Server.Api/src/Services/ServerRepoManager.cs\u0060 as a singleton \u0060IHostedService\u0060. It should create and manage one \u0060Repo\u0060 instance per registered app type, each with its own \u0060FileSystemStorageAdapter\u0060 in an isolated subdirectory (e.g., \u0060documents/text-editor/\u0060, \u0060documents/editor/\u0060, \u0060documents/drawing/\u0060, \u0060documents/task-board/\u0060). Implement \u0060GetRepo(appType)\u0060, \u0060ListDocuments(appType)\u0060 (scans storage directory for document IDs), \u0060StartAsync\u0060, \u0060StopAsync\u0060 (flushes and disposes repos)",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-3",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Create \u0060apps/Server.Api/src/Network/SignalRServerNetworkAdapter.cs\u0060 implementing \u0060INetworkAdapter\u0060. This adapter bridges SignalR hub events to the server Repo. Key methods: \u0060OnClientConnected(connectionId, peerId, metadata)\u0060 \u2192 raises \u0060PeerCandidate\u0060, \u0060OnClientDisconnected(connectionId, peerId)\u0060 \u2192 raises \u0060PeerDisconnected\u0060, \u0060OnClientMessage(senderId, message)\u0060 \u2192 deserializes and raises \u0060MessageReceived\u0060. For outbound \u0060Send(IRepoMessage)\u0060: if message has \u0060TargetPeerId\u0060, look up the connection ID and send via \u0060IHubContext\u0060; otherwise broadcast to all connected clients. Maintain \u0060ConcurrentDictionary\u003CPeerId, ConnectionId\u003E\u0060 mapping",
+      "description": "Create \u0060apps/Server.Api/src/Network/SignalRServerNetworkAdapter.cs\u0060 implementing \u0060INetworkAdapter\u0060. This adapter bridges SignalR hub events to the server Repo. Key methods: \u0060OnClientConnected(connectionId, peerId, metadata)\u0060 \u2192 raises \u0060PeerCandidate\u0060, \u0060OnClientDisconnected(connectionId, peerId)\u0060 \u2192 raises \u0060PeerDisconnected\u0060, \u0060OnClientMessage(senderId, message)\u0060 \u2192 deserializes and raises \u0060MessageReceived\u0060. For outbound \u0060Send(IRepoMessage)\u0060: if message has \u0060TargetPeerId\u0060, look up the connection ID and send via \u0060IHubContext\u0060; otherwise broadcast to all connected clients. Maintain \u0060ConcurrentDictionary\u003CPeerId, ConnectionId\u003E\u0060 mapping",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-4",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Wire \u0060ServerRepoManager\u0060 and \u0060SignalRServerNetworkAdapter\u0060 together: each Repo instance gets a \u0060SignalRServerNetworkAdapter\u0060 as its network adapter and a \u0060FileSystemStorageAdapter\u0060 as its storage adapter. The adapter needs \u0060IHubContext\u003CTHub\u003E\u0060 injected for sending messages back to clients",
+      "description": "Wire \u0060ServerRepoManager\u0060 and \u0060SignalRServerNetworkAdapter\u0060 together: each Repo instance gets a \u0060SignalRServerNetworkAdapter\u0060 as its network adapter and a \u0060FileSystemStorageAdapter\u0060 as its storage adapter. The adapter needs \u0060IHubContext\u003CTHub\u003E\u0060 injected for sending messages back to clients",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-5",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Register \u0060ServerRepoManager\u0060 and its dependencies in \u0060Server.Api/Program.cs\u0060 DI container. Configure \u0060ServerRepoOptions\u0060 from environment variable \u0060SERVER_STORAGE_DIR\u0060 with fallback to default",
+      "description": "Register \u0060ServerRepoManager\u0060 and its dependencies in \u0060Server.Api/Program.cs\u0060 DI container. Configure \u0060ServerRepoOptions\u0060 from environment variable \u0060SERVER_STORAGE_DIR\u0060 with fallback to default",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-6",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Add \u0060/hubs/health\u0060 endpoint that reports status of all registered hubs and their Repo instances",
+      "description": "Add \u0060/hubs/health\u0060 endpoint that reports status of all registered hubs and their Repo instances",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-5-task-1",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Create \u0060apps/Server.Api/src/Hubs/ICollaborativeHubClient.cs\u0060 extending \u0060IDocumentsHubClient\u0060 with \u0060Task OnDocumentListUpdated(List\u003Cstring\u003E documentIds)\u0060 for push-based document list updates",
+      "description": "Create \u0060apps/Server.Api/src/Hubs/ICollaborativeHubClient.cs\u0060 extending \u0060IDocumentsHubClient\u0060 with \u0060Task OnDocumentListUpdated(List\u003Cstring\u003E documentIds)\u0060 for push-based document list updates",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-2",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Create \u0060apps/Server.Api/src/Hubs/CollaborativeHub.cs\u0060 \u2014 abstract base class inheriting \u0060Hub\u003CICollaborativeHubClient\u003E\u0060. Implement: \u0060Handshake()\u0060 that notifies server adapter \u002B broadcasts to others, \u0060SendMessage()\u0060 that routes through server adapter (not direct relay), \u0060SubscribeToDocument()\u0060, \u0060UnsubscribeFromDocument()\u0060, \u0060ListDocuments()\u0060 that returns document IDs from \u0060ServerRepoManager\u0060, \u0060OnConnectedAsync/OnDisconnectedAsync\u0060 that notify server adapter. Each hub is configured with its \u0060appType\u0060 string",
+      "description": "Create \u0060apps/Server.Api/src/Hubs/CollaborativeHub.cs\u0060 \u2014 abstract base class inheriting \u0060Hub\u003CICollaborativeHubClient\u003E\u0060. Implement: \u0060Handshake()\u0060 that notifies server adapter \u002B broadcasts to others, \u0060SendMessage()\u0060 that routes through server adapter (not direct relay), \u0060SubscribeToDocument()\u0060, \u0060UnsubscribeFromDocument()\u0060, \u0060ListDocuments()\u0060 that returns document IDs from \u0060ServerRepoManager\u0060, \u0060OnConnectedAsync/OnDisconnectedAsync\u0060 that notify server adapter. Each hub is configured with its \u0060appType\u0060 string",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-3",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Create four concrete hub classes: \u0060TextEditorHub\u0060, \u0060EditorHub\u0060, \u0060DrawingHub\u0060, \u0060TaskBoardHub\u0060 \u2014 each inheriting \u0060CollaborativeHub\u0060 with its specific \u0060appType\u0060 string (\u0022text-editor\u0022, \u0022editor\u0022, \u0022drawing\u0022, \u0022task-board\u0022)",
+      "description": "Create four concrete hub classes: \u0060TextEditorHub\u0060, \u0060EditorHub\u0060, \u0060DrawingHub\u0060, \u0060TaskBoardHub\u0060 \u2014 each inheriting \u0060CollaborativeHub\u0060 with its specific \u0060appType\u0060 string (\u0022text-editor\u0022, \u0022editor\u0022, \u0022drawing\u0022, \u0022task-board\u0022)",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-4",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In \u0060Server.Api/Program.cs\u0060, map all four hub endpoints: \u0060/hubs/text-editor\u0060, \u0060/hubs/editor\u0060, \u0060/hubs/drawing\u0060, \u0060/hubs/task-board\u0060. Keep the legacy \u0060/hubs/documents\u0060 endpoint for backward compatibility during migration",
+      "description": "In \u0060Server.Api/Program.cs\u0060, map all four hub endpoints: \u0060/hubs/text-editor\u0060, \u0060/hubs/editor\u0060, \u0060/hubs/drawing\u0060, \u0060/hubs/task-board\u0060. Keep the legacy \u0060/hubs/documents\u0060 endpoint for backward compatibility during migration",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-5",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Remove the old \u0060AddSignalRDocumentsHub()\u0060 call and replace with per-hub SignalR configuration using \u0060AddSignalR().AddMessagePackProtocol().AddJsonProtocol()\u0060",
+      "description": "Remove the old \u0060AddSignalRDocumentsHub()\u0060 call and replace with per-hub SignalR configuration using \u0060AddSignalR().AddMessagePackProtocol().AddJsonProtocol()\u0060",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-6",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Build Server.Api and verify it starts successfully with all hubs mapped and health endpoint responding",
+      "description": "Build Server.Api and verify it starts successfully with all hubs mapped and health endpoint responding",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-6-task-1",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In \u0060DemoApp.Shared/src/RepoService.cs\u0060, add a \u0060HubPath\u0060 property to \u0060RepoServiceOptions\u0060 (e.g., \u0060/hubs/text-editor\u0060). Update \u0060InitializeAsync\u0060 to construct the full hub URL from Aspire service discovery base URL \u002B \u0060HubPath\u0060. Add \u0060ListServerDocumentsAsync()\u0060 method that calls \u0060connection.InvokeAsync\u003CList\u003Cstring\u003E\u003E(\u0022ListDocuments\u0022)\u0060 on the hub connection",
+      "description": "In \u0060DemoApp.Shared/src/RepoService.cs\u0060, add a \u0060HubPath\u0060 property to \u0060RepoServiceOptions\u0060 (e.g., \u0060/hubs/text-editor\u0060). Update \u0060InitializeAsync\u0060 to construct the full hub URL from Aspire service discovery base URL \u002B \u0060HubPath\u0060. Add \u0060ListServerDocumentsAsync()\u0060 method that calls \u0060connection.InvokeAsync\u003CList\u003Cstring\u003E\u003E(\u0022ListDocuments\u0022)\u0060 on the hub connection",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-2",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Update \u0060DemoApp.CollaborativeTextEditor/Program.cs\u0060 to use hub path \u0060/hubs/text-editor\u0060 in \u0060ResolveHubUrl()\u0060",
+      "description": "Update \u0060DemoApp.CollaborativeTextEditor/Program.cs\u0060 to use hub path \u0060/hubs/text-editor\u0060 in \u0060ResolveHubUrl()\u0060",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-3",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Update \u0060DemoApp.CollaborativeEditor/Program.cs\u0060 to use hub path \u0060/hubs/editor\u0060",
+      "description": "Update \u0060DemoApp.CollaborativeEditor/Program.cs\u0060 to use hub path \u0060/hubs/editor\u0060",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-4",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Update \u0060DemoApp.CollaborativeDrawing/Program.cs\u0060 to use hub path \u0060/hubs/drawing\u0060",
+      "description": "Update \u0060DemoApp.CollaborativeDrawing/Program.cs\u0060 to use hub path \u0060/hubs/drawing\u0060",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-5",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Update \u0060DemoApp.CollaborativeTaskBoard/Program.cs\u0060 to use hub path \u0060/hubs/task-board\u0060",
+      "description": "Update \u0060DemoApp.CollaborativeTaskBoard/Program.cs\u0060 to use hub path \u0060/hubs/task-board\u0060",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-6",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Add \u0060GetHubConnection()\u0060 or expose the underlying \u0060HubConnection\u0060 from \u0060RepoService\u0060/\u0060SignalRConnectionService\u0060 so that \u0060ListServerDocumentsAsync()\u0060 can invoke the \u0060ListDocuments\u0060 RPC",
+      "description": "Add \u0060GetHubConnection()\u0060 or expose the underlying \u0060HubConnection\u0060 from \u0060RepoService\u0060/\u0060SignalRConnectionService\u0060 so that \u0060ListServerDocumentsAsync()\u0060 can invoke the \u0060ListDocuments\u0060 RPC",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-7-task-1",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "In \u0060DocumentSessionDialogViewModel.cs\u0060, add a \u0060ServerDocuments\u0060 collection (\u0060ObservableCollection\u003Cstring\u003E\u0060), an \u0060AllDocuments\u0060 collection that merges local and server documents, and a \u0060DocumentSource\u0060 enum (Local, Server, Both) to tag each entry",
+      "description": "In \u0060DocumentSessionDialogViewModel.cs\u0060, add a \u0060ServerDocuments\u0060 collection (\u0060ObservableCollection\u003Cstring\u003E\u0060), an \u0060AllDocuments\u0060 collection that merges local and server documents, and a \u0060DocumentSource\u0060 enum (Local, Server, Both) to tag each entry",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-2",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Add \u0060LoadServerDocumentsAsync(RepoService repoService)\u0060 method that calls \u0060repoService.ListServerDocumentsAsync()\u0060 and populates \u0060ServerDocuments\u0060. Handle connection failures gracefully (show only local documents if server unreachable)",
+      "description": "Add \u0060LoadServerDocumentsAsync(RepoService repoService)\u0060 method that calls \u0060repoService.ListServerDocumentsAsync()\u0060 and populates \u0060ServerDocuments\u0060. Handle connection failures gracefully (show only local documents if server unreachable)",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-3",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Update the merged document list to show visual indicators: filled circle for server documents, open circle for local-only documents. Show \u0022(also local)\u0022 label for documents that exist in both",
+      "description": "Update the merged document list to show visual indicators: filled circle for server documents, open circle for local-only documents. Show \u0022(also local)\u0022 label for documents that exist in both",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-4",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Update \u0060DocumentSessionDialog.axaml\u0060 to display the merged document list with the new visual indicators. Add a \u0022Refresh\u0022 button to re-fetch server documents",
+      "description": "Update \u0060DocumentSessionDialog.axaml\u0060 to display the merged document list with the new visual indicators. Add a \u0022Refresh\u0022 button to re-fetch server documents",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-5",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Update all four demo app windows to call \u0060LoadServerDocumentsAsync()\u0060 after initializing \u0060RepoService\u0060 (before showing the dialog)",
+      "description": "Update all four demo app windows to call \u0060LoadServerDocumentsAsync()\u0060 after initializing \u0060RepoService\u0060 (before showing the dialog)",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-6",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Build and run \u0060DemoApp.CollaborativeTextEditor\u0060 via Aspire. Use \u0060six-avalonia-mcp\u0060 to verify the dialog shows server documents after the server is running. Create a document in one replica, verify it appears in the other replica\u0027s dialog server list",
+      "description": "Build and run \u0060DemoApp.CollaborativeTextEditor\u0060 via Aspire. Use \u0060six-avalonia-mcp\u0060 to verify the dialog shows server documents after the server is running. Create a document in one replica, verify it appears in the other replica\u0027s dialog server list",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-8-task-1",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Start \u0060Infra.AppHost\u0060 and enable all four demo apps (remove \u0060.WithExplicitStart()\u0060 temporarily). Verify all apps start successfully and connect to the server",
+      "description": "Start \u0060Infra.AppHost\u0060 and enable all four demo apps (remove \u0060.WithExplicitStart()\u0060 temporarily). Verify all apps start successfully and connect to the server",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-2",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Test \u0060CollaborativeTextEditor\u0060: Create a document in replica 0, verify it appears in replica 1\u0027s document list. Open in replica 1, type text in both, verify changes sync bidirectionally through the server",
+      "description": "Test \u0060CollaborativeTextEditor\u0060: Create a document in replica 0, verify it appears in replica 1\u0027s document list. Open in replica 1, type text in both, verify changes sync bidirectionally through the server",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-3",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Test \u0060CollaborativeEditor\u0060: Same flow as TextEditor but also test rich text formatting (bold, italic) syncing correctly between replicas",
+      "description": "Test \u0060CollaborativeEditor\u0060: Same flow as TextEditor but also test rich text formatting (bold, italic) syncing correctly between replicas",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-4",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Test \u0060CollaborativeDrawing\u0060: Create a canvas in one replica, add shapes, verify they appear in the other replica. Move/resize shapes and verify sync",
+      "description": "Test \u0060CollaborativeDrawing\u0060: Create a canvas in one replica, add shapes, verify they appear in the other replica. Move/resize shapes and verify sync",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-5",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Test \u0060CollaborativeTaskBoard\u0060: Create columns and tasks, verify they sync. Test task movement between columns. Test vote counter sync (CRDT counter)",
+      "description": "Test \u0060CollaborativeTaskBoard\u0060: Create columns and tasks, verify they sync. Test task movement between columns. Test vote counter sync (CRDT counter)",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-6",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Test offline/reconnection: Start editing in one replica, stop the server, continue editing locally, restart the server, verify changes sync automatically when reconnected",
+      "description": "Test offline/reconnection: Start editing in one replica, stop the server, continue editing locally, restart the server, verify changes sync automatically when reconnected",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-7",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Restore \u0060.WithExplicitStart()\u0060 on apps that had it before (CollaborativeEditor, CollaborativeDrawing, CollaborativeTaskBoard). Verify the \u0060AppHost.cs\u0060 is in its final correct state",
+      "description": "Restore \u0060.WithExplicitStart()\u0060 on apps that had it before (CollaborativeEditor, CollaborativeDrawing, CollaborativeTaskBoard). Verify the \u0060AppHost.cs\u0060 is in its final correct state",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-8",
+      "specFile": ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md",
+      "title": "Review all console output for errors, warnings, or unnecessary debug logging. Clean up any leftover \u0060Console.WriteLine\u0060 debug statements in production code paths",
+      "description": "Review all console output for errors, warnings, or unnecessary debug logging. Clean up any leftover \u0060Console.WriteLine\u0060 debug statements in production code paths",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "sprint-1",
+      "title": "Fix Critical Bugs \u2014 FileSystemStorageAdapter Deadlock \u0026 Cache",
+      "description": "Fix the \u0060FileSystemStorageAdapter\u0060 deadlock in \u0060LoadRange()\u0060 and the stale cache bug in \u0060RemoveRange()\u0060. These are blocking issues that cause UI freezes when loading documents.\r\n\r\n- [ ] In \u0060FileSystemStorageAdapter.cs\u0060, extract an internal \u0060LoadCore(StorageKey key)\u0060 method that reads from cache first, then disk, without acquiring \u0060_lock\u0060. This method should contain the current body of \u0060Load()\u0060 minus the lock acquisition\r\n- [ ] Refactor \u0060Load(StorageKey key)\u0060 to acquire \u0060_lock\u0060, call \u0060LoadCore()\u0060, and release \u0060_lock\u0060\r\n- [ ] Refactor \u0060LoadRange(StorageKey keyPrefix)\u0060 to call \u0060LoadCore()\u0060 instead of \u0060Load()\u0060 when iterating files inside its existing lock scope, eliminating the deadlock\r\n- [ ] Fix \u0060RemoveRange(StorageKey keyPrefix)\u0060 to clear all matching cache entries immediately after deleting the directory tree, by iterating cache keys and evicting any that start with the removed prefix\r\n- [ ] Run existing \u0060Storage.FileSystem.Tests.Unit\u0060 and \u0060Storage.FileSystem.Tests.Integration\u0060 tests to verify no regressions. Add a new test for cold-cache \u0060LoadRange()\u0060 (the previously deadlocking scenario)\r\n- [ ] Add a test for \u0060RemoveRange()\u0060 verifying that cached data is cleared immediately (not stale until expiration)",
+      "taskIds": [
+        "sprint-1-task-1",
+        "sprint-1-task-2",
+        "sprint-1-task-3",
+        "sprint-1-task-4",
+        "sprint-1-task-5",
+        "sprint-1-task-6"
+      ]
+    },
+    {
+      "id": "sprint-2",
+      "title": "Fix Critical Bugs \u2014 Async Lock Fixes in Repo and Synchronizers",
+      "description": "Fix synchronous \u0060.Wait()\u0060 calls on \u0060SemaphoreSlim\u0060 throughout \u0060Repo.cs\u0060, \u0060CollectionSynchronizer.cs\u0060, \u0060DocSynchronizer.cs\u0060, and \u0060DocHandle.cs\u0060 that block the UI thread.\r\n\r\n- [ ] In \u0060CollectionSynchronizer.cs\u0060, replace all \u0060_lock.Wait()\u0060 calls with \u0060await _lock.WaitAsync()\u0060. Convert \u0060AddDocument\u0060, \u0060RemoveDocument\u0060, \u0060OnPeerConnected\u0060, \u0060OnPeerDisconnected\u0060, \u0060OnMessageReceived\u0060, and \u0060NotifyDocumentChanged\u0060 to async methods. Update the interface/callers accordingly\r\n- [ ] In \u0060DocSynchronizer.cs\u0060, replace all \u0060_lock.Wait()\u0060 calls with \u0060await _lock.WaitAsync()\u0060. Convert \u0060BeginSync\u0060, \u0060EndSync\u0060, \u0060HasPeer\u0060, \u0060GetPeerStatus\u0060, \u0060ReceiveMessage\u0060, and \u0060NotifyLocalChange\u0060 to async methods. Update callers in \u0060CollectionSynchronizer\u0060\r\n- [ ] In \u0060Repo.cs\u0060, replace \u0060_handleLock.Wait()\u0060 with \u0060await _handleLock.WaitAsync()\u0060 in \u0060Create\u003CT\u003E()\u0060 (convert to async), \u0060Delete()\u0060, \u0060Clone()\u0060, \u0060Handles\u0060 property getter, and all other methods using synchronous waits. Replace \u0060_saveLock.Wait()\u0060 similarly\r\n- [ ] In \u0060DocHandle.cs\u0060, fix \u0060CompositeSemaphore\u0060 to use \u0060await _first.WaitAsync()\u0060 and \u0060await _second.WaitAsync()\u0060 instead of synchronous \u0060.Wait()\u0060. This requires converting \u0060CompositeSemaphore\u0060 to an async-disposable pattern or restructuring callers\r\n- [ ] Add \u0060ConfigureAwait(false)\u0060 to all \u0060await\u0060 calls in \u0060Repo.cs\u0060 that don\u0027t need UI context (especially \u0060ScheduleSave\u0060/\u0060PerformSave\u0060 continuations, and internal storage/network operations)\r\n- [ ] Run \u0060Repo.Tests.Unit\u0060 (259 tests) and \u0060FFI.Tests.Unit\u0060 (145 tests) to verify no regressions from async refactoring",
+      "taskIds": [
+        "sprint-2-task-1",
+        "sprint-2-task-2",
+        "sprint-2-task-3",
+        "sprint-2-task-4",
+        "sprint-2-task-5",
+        "sprint-2-task-6"
+      ]
+    },
+    {
+      "id": "sprint-3",
+      "title": "Fix Demo App UI Responsiveness",
+      "description": "Fix the demo app event handlers and async patterns that cause UI freezes.\r\n\r\n- [ ] In all four demo app windows (\u0060MainWindow.axaml.cs\u0060 for TextEditor/Drawing/TaskBoard, \u0060EditorWindow.axaml.cs\u0060 for Editor), ensure \u0060OnSessionResultReady\u0060 properly wraps all async operations in try/catch with user-visible error feedback. Ensure UI-thread dispatching with \u0060Dispatcher.UIThread.InvokeAsync()\u0060 for any UI updates after async operations\r\n- [ ] In \u0060RepoService.cs\u0060, add proper cancellation support to \u0060InitializeAsync()\u0060. Add a \u0060CancellationToken\u0060 parameter. Add a configurable connection timeout (default 10s). Ensure \u0060WhenReady().WaitAsync()\u0060 uses the cancellation token so the UI can cancel if needed\r\n- [ ] In all four demo apps, update \u0060HandleCreateAsync\u0060, \u0060HandleJoinAsync\u0060, and \u0060HandleResumeAsync\u0060 to show a loading indicator while operations are in progress, and display meaningful error messages on failure instead of silently freezing\r\n- [ ] Build and run \u0060DemoApp.CollaborativeTextEditor\u0060 via Aspire. Use \u0060six-avalonia-mcp\u0060 to verify: the app starts without freezing, \u0022Create New\u0022 works, the document session dialog is responsive\r\n- [ ] Test the \u0022Resume\u0022 flow by creating a document, closing the app, reopening, and clicking on the stored document. Verify no deadlock (this was the primary reproduction scenario for the \u0060LoadRange\u0060 deadlock)",
+      "taskIds": [
+        "sprint-3-task-1",
+        "sprint-3-task-2",
+        "sprint-3-task-3",
+        "sprint-3-task-4",
+        "sprint-3-task-5"
+      ]
+    },
+    {
+      "id": "sprint-4",
+      "title": "Server-Side Repo Infrastructure \u2014 ServerRepoManager \u0026 SignalRServerNetworkAdapter",
+      "description": "Build the server-side document management infrastructure.\r\n\r\n- [ ] Create \u0060apps/Server.Api/src/Services/ServerRepoOptions.cs\u0060 with \u0060StorageBaseDirectory\u0060 property (default: \u0060Path.Combine(AppContext.BaseDirectory, \u0022documents\u0022)\u0060)\r\n- [ ] Create \u0060apps/Server.Api/src/Services/ServerRepoManager.cs\u0060 as a singleton \u0060IHostedService\u0060. It should create and manage one \u0060Repo\u0060 instance per registered app type, each with its own \u0060FileSystemStorageAdapter\u0060 in an isolated subdirectory (e.g., \u0060documents/text-editor/\u0060, \u0060documents/editor/\u0060, \u0060documents/drawing/\u0060, \u0060documents/task-board/\u0060). Implement \u0060GetRepo(appType)\u0060, \u0060ListDocuments(appType)\u0060 (scans storage directory for document IDs), \u0060StartAsync\u0060, \u0060StopAsync\u0060 (flushes and disposes repos)\r\n- [ ] Create \u0060apps/Server.Api/src/Network/SignalRServerNetworkAdapter.cs\u0060 implementing \u0060INetworkAdapter\u0060. This adapter bridges SignalR hub events to the server Repo. Key methods: \u0060OnClientConnected(connectionId, peerId, metadata)\u0060 \u2192 raises \u0060PeerCandidate\u0060, \u0060OnClientDisconnected(connectionId, peerId)\u0060 \u2192 raises \u0060PeerDisconnected\u0060, \u0060OnClientMessage(senderId, message)\u0060 \u2192 deserializes and raises \u0060MessageReceived\u0060. For outbound \u0060Send(IRepoMessage)\u0060: if message has \u0060TargetPeerId\u0060, look up the connection ID and send via \u0060IHubContext\u0060; otherwise broadcast to all connected clients. Maintain \u0060ConcurrentDictionary\u003CPeerId, ConnectionId\u003E\u0060 mapping\r\n- [ ] Wire \u0060ServerRepoManager\u0060 and \u0060SignalRServerNetworkAdapter\u0060 together: each Repo instance gets a \u0060SignalRServerNetworkAdapter\u0060 as its network adapter and a \u0060FileSystemStorageAdapter\u0060 as its storage adapter. The adapter needs \u0060IHubContext\u003CTHub\u003E\u0060 injected for sending messages back to clients\r\n- [ ] Register \u0060ServerRepoManager\u0060 and its dependencies in \u0060Server.Api/Program.cs\u0060 DI container. Configure \u0060ServerRepoOptions\u0060 from environment variable \u0060SERVER_STORAGE_DIR\u0060 with fallback to default\r\n- [ ] Add \u0060/hubs/health\u0060 endpoint that reports status of all registered hubs and their Repo instances",
+      "taskIds": [
+        "sprint-4-task-1",
+        "sprint-4-task-2",
+        "sprint-4-task-3",
+        "sprint-4-task-4",
+        "sprint-4-task-5",
+        "sprint-4-task-6"
+      ]
+    },
+    {
+      "id": "sprint-5",
+      "title": "App-Specific SignalR Hubs on Server",
+      "description": "Create per-app hub classes that integrate with the server Repo via \u0060SignalRServerNetworkAdapter\u0060.\r\n\r\n- [ ] Create \u0060apps/Server.Api/src/Hubs/ICollaborativeHubClient.cs\u0060 extending \u0060IDocumentsHubClient\u0060 with \u0060Task OnDocumentListUpdated(List\u003Cstring\u003E documentIds)\u0060 for push-based document list updates\r\n- [ ] Create \u0060apps/Server.Api/src/Hubs/CollaborativeHub.cs\u0060 \u2014 abstract base class inheriting \u0060Hub\u003CICollaborativeHubClient\u003E\u0060. Implement: \u0060Handshake()\u0060 that notifies server adapter \u002B broadcasts to others, \u0060SendMessage()\u0060 that routes through server adapter (not direct relay), \u0060SubscribeToDocument()\u0060, \u0060UnsubscribeFromDocument()\u0060, \u0060ListDocuments()\u0060 that returns document IDs from \u0060ServerRepoManager\u0060, \u0060OnConnectedAsync/OnDisconnectedAsync\u0060 that notify server adapter. Each hub is configured with its \u0060appType\u0060 string\r\n- [ ] Create four concrete hub classes: \u0060TextEditorHub\u0060, \u0060EditorHub\u0060, \u0060DrawingHub\u0060, \u0060TaskBoardHub\u0060 \u2014 each inheriting \u0060CollaborativeHub\u0060 with its specific \u0060appType\u0060 string (\u0022text-editor\u0022, \u0022editor\u0022, \u0022drawing\u0022, \u0022task-board\u0022)\r\n- [ ] In \u0060Server.Api/Program.cs\u0060, map all four hub endpoints: \u0060/hubs/text-editor\u0060, \u0060/hubs/editor\u0060, \u0060/hubs/drawing\u0060, \u0060/hubs/task-board\u0060. Keep the legacy \u0060/hubs/documents\u0060 endpoint for backward compatibility during migration\r\n- [ ] Remove the old \u0060AddSignalRDocumentsHub()\u0060 call and replace with per-hub SignalR configuration using \u0060AddSignalR().AddMessagePackProtocol().AddJsonProtocol()\u0060\r\n- [ ] Build Server.Api and verify it starts successfully with all hubs mapped and health endpoint responding",
+      "taskIds": [
+        "sprint-5-task-1",
+        "sprint-5-task-2",
+        "sprint-5-task-3",
+        "sprint-5-task-4",
+        "sprint-5-task-5",
+        "sprint-5-task-6"
+      ]
+    },
+    {
+      "id": "sprint-6",
+      "title": "Update Demo Apps \u2014 Hub Paths \u0026 Client RepoService",
+      "description": "Update each demo app to connect to its app-specific hub and add server document listing.\r\n\r\n- [ ] In \u0060DemoApp.Shared/src/RepoService.cs\u0060, add a \u0060HubPath\u0060 property to \u0060RepoServiceOptions\u0060 (e.g., \u0060/hubs/text-editor\u0060). Update \u0060InitializeAsync\u0060 to construct the full hub URL from Aspire service discovery base URL \u002B \u0060HubPath\u0060. Add \u0060ListServerDocumentsAsync()\u0060 method that calls \u0060connection.InvokeAsync\u003CList\u003Cstring\u003E\u003E(\u0022ListDocuments\u0022)\u0060 on the hub connection\r\n- [ ] Update \u0060DemoApp.CollaborativeTextEditor/Program.cs\u0060 to use hub path \u0060/hubs/text-editor\u0060 in \u0060ResolveHubUrl()\u0060\r\n- [ ] Update \u0060DemoApp.CollaborativeEditor/Program.cs\u0060 to use hub path \u0060/hubs/editor\u0060\r\n- [ ] Update \u0060DemoApp.CollaborativeDrawing/Program.cs\u0060 to use hub path \u0060/hubs/drawing\u0060\r\n- [ ] Update \u0060DemoApp.CollaborativeTaskBoard/Program.cs\u0060 to use hub path \u0060/hubs/task-board\u0060\r\n- [ ] Add \u0060GetHubConnection()\u0060 or expose the underlying \u0060HubConnection\u0060 from \u0060RepoService\u0060/\u0060SignalRConnectionService\u0060 so that \u0060ListServerDocumentsAsync()\u0060 can invoke the \u0060ListDocuments\u0060 RPC",
+      "taskIds": [
+        "sprint-6-task-1",
+        "sprint-6-task-2",
+        "sprint-6-task-3",
+        "sprint-6-task-4",
+        "sprint-6-task-5",
+        "sprint-6-task-6"
+      ]
+    },
+    {
+      "id": "sprint-7",
+      "title": "Update DocumentSessionDialog \u2014 Server Document Discovery",
+      "description": "Enhance the DocumentSessionDialog to show both local and server documents.\r\n\r\n- [ ] In \u0060DocumentSessionDialogViewModel.cs\u0060, add a \u0060ServerDocuments\u0060 collection (\u0060ObservableCollection\u003Cstring\u003E\u0060), an \u0060AllDocuments\u0060 collection that merges local and server documents, and a \u0060DocumentSource\u0060 enum (Local, Server, Both) to tag each entry\r\n- [ ] Add \u0060LoadServerDocumentsAsync(RepoService repoService)\u0060 method that calls \u0060repoService.ListServerDocumentsAsync()\u0060 and populates \u0060ServerDocuments\u0060. Handle connection failures gracefully (show only local documents if server unreachable)\r\n- [ ] Update the merged document list to show visual indicators: filled circle for server documents, open circle for local-only documents. Show \u0022(also local)\u0022 label for documents that exist in both\r\n- [ ] Update \u0060DocumentSessionDialog.axaml\u0060 to display the merged document list with the new visual indicators. Add a \u0022Refresh\u0022 button to re-fetch server documents\r\n- [ ] Update all four demo app windows to call \u0060LoadServerDocumentsAsync()\u0060 after initializing \u0060RepoService\u0060 (before showing the dialog)\r\n- [ ] Build and run \u0060DemoApp.CollaborativeTextEditor\u0060 via Aspire. Use \u0060six-avalonia-mcp\u0060 to verify the dialog shows server documents after the server is running. Create a document in one replica, verify it appears in the other replica\u0027s dialog server list",
+      "taskIds": [
+        "sprint-7-task-1",
+        "sprint-7-task-2",
+        "sprint-7-task-3",
+        "sprint-7-task-4",
+        "sprint-7-task-5",
+        "sprint-7-task-6"
+      ]
+    },
+    {
+      "id": "sprint-8",
+      "title": "End-to-End Integration Testing \u0026 Polish",
+      "description": "Validate the full client-server sync workflow across all four demo apps.\r\n\r\n- [ ] Start \u0060Infra.AppHost\u0060 and enable all four demo apps (remove \u0060.WithExplicitStart()\u0060 temporarily). Verify all apps start successfully and connect to the server\r\n- [ ] Test \u0060CollaborativeTextEditor\u0060: Create a document in replica 0, verify it appears in replica 1\u0027s document list. Open in replica 1, type text in both, verify changes sync bidirectionally through the server\r\n- [ ] Test \u0060CollaborativeEditor\u0060: Same flow as TextEditor but also test rich text formatting (bold, italic) syncing correctly between replicas\r\n- [ ] Test \u0060CollaborativeDrawing\u0060: Create a canvas in one replica, add shapes, verify they appear in the other replica. Move/resize shapes and verify sync\r\n- [ ] Test \u0060CollaborativeTaskBoard\u0060: Create columns and tasks, verify they sync. Test task movement between columns. Test vote counter sync (CRDT counter)\r\n- [ ] Test offline/reconnection: Start editing in one replica, stop the server, continue editing locally, restart the server, verify changes sync automatically when reconnected\r\n- [ ] Restore \u0060.WithExplicitStart()\u0060 on apps that had it before (CollaborativeEditor, CollaborativeDrawing, CollaborativeTaskBoard). Verify the \u0060AppHost.cs\u0060 is in its final correct state\r\n- [ ] Review all console output for errors, warnings, or unnecessary debug logging. Clean up any leftover \u0060Console.WriteLine\u0060 debug statements in production code paths",
+      "taskIds": [
+        "sprint-8-task-1",
+        "sprint-8-task-2",
+        "sprint-8-task-3",
+        "sprint-8-task-4",
+        "sprint-8-task-5",
+        "sprint-8-task-6",
+        "sprint-8-task-7",
+        "sprint-8-task-8"
+      ]
+    }
+  ],
+  "currentSprintIndex": 8,
+  "currentTaskId": "sprint-8-task-8",
+  "completedCount": 49,
+  "totalCount": 49,
+  "completionPercent": 100,
+  "hasSprints": true
+}

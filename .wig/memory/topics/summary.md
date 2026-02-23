@@ -1,0 +1,1 @@
+Pre-existing test DocumentIdTests.ToBinary_WithInvalidChecksum_ShouldThrow fails due to Base58 checksum validation issue

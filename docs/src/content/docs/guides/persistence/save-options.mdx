@@ -1,0 +1,210 @@
+---
+title: "Save Options"
+description: Control compression, orphan retention, hash verification, and partial load behavior with SaveOptions and LoadOptions
+---
+
+# Overview
+
+The default `Save` and `Load` methods work well for most cases. When you need more control — disabling compression for speed, skipping hash verification for faster loads, or handling partially loaded documents — use `SaveWithOptions` and `LoadWithOptions`.
+
+# SaveWithOptions
+
+`SaveWithOptions` accepts a `SaveOptions` object that controls two behaviors:
+
+```csharp
+var bytes = doc.SaveWithOptions(new SaveOptions
+{
+    Deflate = true,         // Apply DEFLATE compression (default: true)
+    RetainOrphans = true    // Keep orphan changes (default: true)
+});
+```
+
+## SaveOptions Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `Deflate` | `bool` | `true` | Whether to apply DEFLATE compression to the output |
+| `RetainOrphans` | `bool` | `true` | Whether to keep changes whose dependencies are missing |
+
+### Deflate Compression
+
+By default, `Save` compresses the output using DEFLATE. This produces smaller files at the cost of CPU time during save and load. Disable it when:
+
+- You need maximum save speed and storage size doesn't matter
+- The data will be compressed at another layer (e.g., HTTP gzip, filesystem compression)
+- You're benchmarking raw serialization performance
+
+```csharp
+// Default (compressed) — equivalent to Save()
+var compressed = doc.SaveWithOptions(new SaveOptions { Deflate = true });
+
+// Uncompressed — faster save, larger output
+var uncompressed = doc.SaveWithOptions(new SaveOptions { Deflate = false });
+```
+
+### Orphan Retention
+
+Orphan changes are changes whose causal dependencies are not present in the document. This can happen when loading partial change histories. By default, orphans are retained so they can be resolved if the missing dependencies arrive later.
+
+Set `RetainOrphans = false` to strip orphan changes from the output. This can reduce file size if you're certain the missing dependencies will never arrive.
+
+# SaveNoCompress
+
+`SaveNoCompress` is a convenience method equivalent to `SaveWithOptions(new SaveOptions { Deflate = false })`:
+
+```csharp
+var uncompressed = doc.SaveNoCompress();
+
+// Equivalent to:
+var same = doc.SaveWithOptions(new SaveOptions { Deflate = false, RetainOrphans = true });
+```
+
+# Size Comparison
+
+Compression makes a significant difference, especially for documents with repetitive string data:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Add enough data to show compression difference
+for(var i = 0; i < 100; i++)
+{
+    doc.PutString(root, $"key{i}", $"value{i}");
+}
+
+doc.Commit("bulk data");
+
+var compressed = doc.Save();
+var uncompressed = doc.SaveNoCompress();
+
+Console.WriteLine($"Compressed:   {compressed.Length} bytes");
+Console.WriteLine($"Uncompressed: {uncompressed.Length} bytes");
+Console.WriteLine($"Ratio:        {(double)compressed.Length / uncompressed.Length:P1}");
+// Compressed is typically 30-60% of uncompressed size
+```
+
+Both formats produce identical documents when loaded — the content and history are the same regardless of compression.
+
+# Equivalence with Default Save
+
+`SaveWithOptions` with default values produces the same output as `Save`:
+
+```csharp
+var defaultSave = doc.Save();
+var withOptions = doc.SaveWithOptions(new SaveOptions { Deflate = true, RetainOrphans = true });
+
+// defaultSave and withOptions are equal in length and content
+```
+
+Similarly, `SaveNoCompress` matches `SaveWithOptions` with `Deflate = false`:
+
+```csharp
+var noCompress = doc.SaveNoCompress();
+var withOptions = doc.SaveWithOptions(new SaveOptions { Deflate = false, RetainOrphans = true });
+
+// noCompress and withOptions are equal
+```
+
+# LoadWithOptions
+
+`LoadWithOptions` accepts a `LoadOptions` object for controlling verification and error handling:
+
+```csharp
+using var doc = AutomergeDocument.LoadWithOptions(bytes, new LoadOptions
+{
+    VerificationMode = VerificationMode.Check,  // Verify change hashes (default)
+    OnPartialLoad = OnPartialLoad.Error          // Error on partial loads (default)
+});
+```
+
+## LoadOptions Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `VerificationMode` | `VerificationMode` | `Check` | Whether to verify change hashes after loading |
+| `OnPartialLoad` | `OnPartialLoad` | `Error` | Behavior when the document only partially loads |
+
+### Verification Mode
+
+Hash verification ensures the loaded data hasn't been corrupted or tampered with:
+
+- **`VerificationMode.Check`** (default) — Verify all change hashes. Slower but catches corruption.
+- **`VerificationMode.NoCheck`** — Skip hash verification. Faster but trusts the data is valid.
+
+```csharp
+// Verified load (default) — safe for untrusted data
+using var verified = AutomergeDocument.LoadWithOptions(bytes, new LoadOptions
+{
+    VerificationMode = VerificationMode.Check
+});
+
+// Unverified load — faster for trusted sources
+using var fast = AutomergeDocument.LoadWithOptions(bytes, new LoadOptions
+{
+    VerificationMode = VerificationMode.NoCheck
+});
+```
+
+Use `NoCheck` when:
+- Loading from a trusted local store where data integrity is managed at the storage layer
+- Performance is critical and you accept the risk of loading corrupted data
+- The data has already been verified elsewhere in your pipeline
+
+### Partial Load Behavior
+
+Controls what happens when only part of the document can be loaded (e.g., incomplete data or missing dependencies):
+
+- **`OnPartialLoad.Error`** (default) — Throw an exception if the document can't be fully loaded.
+- **`OnPartialLoad.Ignore`** — Load whatever is available and silently skip the rest.
+
+```csharp
+// Strict: error on partial load (default)
+using var strict = AutomergeDocument.LoadWithOptions(bytes, new LoadOptions
+{
+    OnPartialLoad = OnPartialLoad.Error
+});
+
+// Lenient: load what's available
+using var lenient = AutomergeDocument.LoadWithOptions(bytes, new LoadOptions
+{
+    OnPartialLoad = OnPartialLoad.Ignore
+});
+```
+
+Use `Ignore` when:
+- Working with data from unreliable sources where partial data is expected
+- Implementing best-effort loading where some data is better than none
+- Building repair tools that need to salvage partially corrupted documents
+
+# Combining Options
+
+Options compose freely:
+
+```csharp
+// Maximum performance: no verification, no compression
+var saved = doc.SaveWithOptions(new SaveOptions { Deflate = false });
+
+using var loaded = AutomergeDocument.LoadWithOptions(saved, new LoadOptions
+{
+    VerificationMode = VerificationMode.NoCheck,
+    OnPartialLoad = OnPartialLoad.Error
+});
+```
+
+```csharp
+// Maximum safety: compressed, verified, strict
+var saved = doc.SaveWithOptions(new SaveOptions { Deflate = true, RetainOrphans = true });
+
+using var loaded = AutomergeDocument.LoadWithOptions(saved, new LoadOptions
+{
+    VerificationMode = VerificationMode.Check,
+    OnPartialLoad = OnPartialLoad.Error
+});
+```
+
+# Next Steps
+
+- [Save and Load](/Six.Automerge/guides/persistence/save-and-load/) — Basic persistence with `Save` and `Load`
+- [Incremental Saves](/Six.Automerge/guides/persistence/incremental-saves/) — Save only changes for efficiency
+- [Storage Strategies](/Six.Automerge/guides/persistence/storage-strategies/) — Full, incremental, and hybrid patterns

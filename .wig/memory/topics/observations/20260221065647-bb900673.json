@@ -1,0 +1,15 @@
+{
+  "id": "20260221065647-bb900673",
+  "created": "2026-02-21T06:56:47.161921Z",
+  "runSlug": "introduction-we-have-created-demo-apps-in-app",
+  "contentHash": "F092F58E36B8F856",
+  "type": "observation",
+  "tags": [
+    "server-side",
+    "signalr",
+    "sync-messages",
+    "persistence",
+    "bug",
+    "sender-id"
+  ]
+}

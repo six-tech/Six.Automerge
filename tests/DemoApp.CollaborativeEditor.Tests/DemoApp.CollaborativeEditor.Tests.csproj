@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\apps\DemoApp.CollaborativeEditor\DemoApp.CollaborativeEditor.csproj"/>
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,490 @@
+---
+title: "Lists: Basic Operations"
+description: Learn how to create and manipulate list containers in Automerge documents
+---
+
+# Overview
+
+Lists store ordered sequences of items, similar to arrays.
+
+Lists support insertion at any position, removal of items, and nested containers. They maintain order even when multiple users make concurrent changes.
+
+# Creating Lists
+
+Create a list using `PutObject` with the List container type:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var items = doc.PutObject(root, "items", AutomergeContainerType.List);
+```
+
+This creates an empty list stored under the "items" key in the root map.
+
+# Inserting Items
+
+Lists use index-based insertion. Index 0 inserts at the beginning, and higher indices insert further along.
+
+## Strings
+
+Insert text values:
+
+```csharp
+var items = doc.PutObject(root, "todos", AutomergeContainerType.List);
+
+doc.ListInsertString(items, 0, "Write documentation");
+doc.ListInsertString(items, 1, "Review pull request");
+doc.ListInsertString(items, 2, "Deploy to production");
+
+doc.Commit("Add todo items");
+```
+
+This creates a list: `["Write documentation", "Review pull request", "Deploy to production"]`
+
+## Numbers
+
+Insert integer values:
+
+```csharp
+var numbers = doc.PutObject(root, "scores", AutomergeContainerType.List);
+
+doc.ListInsertInt64(numbers, 0, 100);
+doc.ListInsertInt64(numbers, 1, -42);
+doc.ListInsertInt64(numbers, 2, 0);
+
+doc.ListInsertUInt64(numbers, 3, 999);
+```
+
+Use `ListInsertInt64` for signed integers and `ListInsertUInt64` for unsigned integers.
+
+Insert floating-point values:
+
+```csharp
+var measurements = doc.PutObject(root, "temperatures", AutomergeContainerType.List);
+
+doc.ListInsertDouble(measurements, 0, 23.5);
+doc.ListInsertDouble(measurements, 1, 24.1);
+doc.ListInsertDouble(measurements, 2, 22.8);
+```
+
+## Booleans
+
+Insert true or false values:
+
+```csharp
+var flags = doc.PutObject(root, "completed", AutomergeContainerType.List);
+
+doc.ListInsertBoolean(flags, 0, true);
+doc.ListInsertBoolean(flags, 1, false);
+doc.ListInsertBoolean(flags, 2, true);
+```
+
+## Binary Data
+
+Insert byte arrays:
+
+```csharp
+var hashes = doc.PutObject(root, "checksums", AutomergeContainerType.List);
+
+var hash1 = new byte[] { 0xDE, 0xAD, 0xBE, 0xEF };
+var hash2 = new byte[] { 0xCA, 0xFE, 0xBA, 0xBE };
+
+doc.ListInsertBytes(hashes, 0, hash1);
+doc.ListInsertBytes(hashes, 1, hash2);
+```
+
+## Null Values
+
+Insert explicit null values:
+
+```csharp
+var optional = doc.PutObject(root, "optional_values", AutomergeContainerType.List);
+
+doc.ListInsertString(optional, 0, "present");
+doc.ListInsertNull(optional, 1);
+doc.ListInsertString(optional, 2, "also present");
+```
+
+This creates: `["present", null, "also present"]`
+
+## Nested Containers
+
+Insert maps, lists, or text containers:
+
+```csharp
+var tasks = doc.PutObject(root, "tasks", AutomergeContainerType.List);
+
+// Insert a map
+var task1 = doc.ListInsertObject(tasks, 0, AutomergeContainerType.Map);
+doc.PutString(task1, "title", "Write tests");
+doc.PutBoolean(task1, "completed", false);
+doc.PutInt64(task1, "priority", 1);
+
+// Insert another map
+var task2 = doc.ListInsertObject(tasks, 1, AutomergeContainerType.Map);
+doc.PutString(task2, "title", "Review code");
+doc.PutBoolean(task2, "completed", true);
+doc.PutInt64(task2, "priority", 2);
+
+doc.Commit("Add tasks");
+```
+
+This creates:
+
+```json
+{
+  "tasks": [
+    {
+      "title": "Write tests",
+      "completed": false,
+      "priority": 1
+    },
+    {
+      "title": "Review code",
+      "completed": true,
+      "priority": 2
+    }
+  ]
+}
+```
+
+# Insertion Position
+
+The index parameter controls where items appear.
+
+## Insert at Beginning
+
+Use index 0:
+
+```csharp
+var items = doc.PutObject(root, "items", AutomergeContainerType.List);
+
+doc.ListInsertString(items, 0, "first");   // ["first"]
+doc.ListInsertString(items, 0, "new first"); // ["new first", "first"]
+```
+
+## Insert at End
+
+Use the current length as the index:
+
+```csharp
+doc.ListInsertString(items, 0, "first");  // ["first"]
+doc.ListInsertString(items, 1, "second"); // ["first", "second"]
+doc.ListInsertString(items, 2, "third");  // ["first", "second", "third"]
+```
+
+## Insert in Middle
+
+Use any valid index:
+
+```csharp
+doc.ListInsertString(items, 0, "first");  // ["first"]
+doc.ListInsertString(items, 1, "third");  // ["first", "third"]
+doc.ListInsertString(items, 1, "second"); // ["first", "second", "third"]
+```
+
+# Removing Items
+
+Remove items by index using `ListRemove`:
+
+```csharp
+var items = doc.PutObject(root, "items", AutomergeContainerType.List);
+
+doc.ListInsertString(items, 0, "keep this");
+doc.ListInsertString(items, 1, "remove this");
+doc.ListInsertString(items, 2, "keep this too");
+doc.Commit("Add items");
+
+doc.ListRemove(items, 1); // Remove the middle item
+doc.Commit("Remove item");
+```
+
+After removal, the list contains: `["keep this", "keep this too"]`
+
+Indices shift down after removal. Removing index 1 makes the old index 2 become the new index 1.
+
+# Getting List Length
+
+Check how many items a list contains:
+
+```csharp
+var items = doc.PutObject(root, "items", AutomergeContainerType.List);
+
+var length = doc.ListLength(items);
+Console.WriteLine($"Length: {length}"); // Length: 0
+
+doc.ListInsertString(items, 0, "first");
+doc.ListInsertString(items, 1, "second");
+
+length = doc.ListLength(items);
+Console.WriteLine($"Length: {length}"); // Length: 2
+```
+
+The length changes as you insert and remove items.
+
+# Reading List Contents
+
+Use `HydrateJson` to get the list as JSON:
+
+```csharp
+var items = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(items, 0, "apple");
+doc.ListInsertString(items, 1, "banana");
+doc.ListInsertString(items, 2, "cherry");
+doc.Commit("Add fruits");
+
+var json = doc.HydrateJson();
+using var parsed = JsonDocument.Parse(json);
+var itemsArray = parsed.RootElement.GetProperty("items");
+
+for (int i = 0; i < itemsArray.GetArrayLength(); i++)
+{
+    Console.WriteLine($"Item {i}: {itemsArray[i].GetString()}");
+}
+```
+
+Output:
+```
+Item 0: apple
+Item 1: banana
+Item 2: cherry
+```
+
+# Complete Example
+
+Here's a task list implementation:
+
+```csharp
+using System;
+using System.Text.Json;
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Create a task list
+var tasks = doc.PutObject(root, "tasks", AutomergeContainerType.List);
+
+// Add first task
+var task1 = doc.ListInsertObject(tasks, 0, AutomergeContainerType.Map);
+doc.PutString(task1, "id", "TASK-001");
+doc.PutString(task1, "title", "Design database schema");
+doc.PutBoolean(task1, "completed", false);
+doc.PutInt64(task1, "priority", 1);
+doc.PutTimestamp(task1, "created_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+// Add task tags as nested list
+var task1Tags = doc.PutObject(task1, "tags", AutomergeContainerType.List);
+doc.ListInsertString(task1Tags, 0, "database");
+doc.ListInsertString(task1Tags, 1, "backend");
+
+// Add second task
+var task2 = doc.ListInsertObject(tasks, 1, AutomergeContainerType.Map);
+doc.PutString(task2, "id", "TASK-002");
+doc.PutString(task2, "title", "Create API endpoints");
+doc.PutBoolean(task2, "completed", false);
+doc.PutInt64(task2, "priority", 2);
+doc.PutTimestamp(task2, "created_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+var task2Tags = doc.PutObject(task2, "tags", AutomergeContainerType.List);
+doc.ListInsertString(task2Tags, 0, "api");
+doc.ListInsertString(task2Tags, 1, "backend");
+
+doc.Commit("Create task list");
+
+Console.WriteLine($"Task count: {doc.ListLength(tasks)}");
+
+// Display tasks
+var json = doc.HydrateJson();
+using var parsed = JsonDocument.Parse(json);
+var tasksArray = parsed.RootElement.GetProperty("tasks");
+
+for (int i = 0; i < tasksArray.GetArrayLength(); i++)
+{
+    var task = tasksArray[i];
+    var title = task.GetProperty("title").GetString();
+    var completed = task.GetProperty("completed").GetBoolean();
+    var priority = task.GetProperty("priority").GetInt64();
+
+    var status = completed ? "done" : "todo";
+    Console.WriteLine($"[{status}] Priority {priority}: {title}");
+
+    if (task.TryGetProperty("tags", out var tags))
+    {
+        Console.Write("    Tags: ");
+        for (int j = 0; j < tags.GetArrayLength(); j++)
+        {
+            Console.Write(tags[j].GetString());
+            if (j < tags.GetArrayLength() - 1) Console.Write(", ");
+        }
+        Console.WriteLine();
+    }
+}
+```
+
+# Merge Behavior
+
+Lists merge concurrent insertions intelligently.
+
+## Different Positions
+
+When users insert at different positions, both insertions appear:
+
+```csharp
+// Alice's document
+using var alice = AutomergeDocument.Create();
+var aliceRoot = alice.RootId;
+var aliceList = alice.PutObject(aliceRoot, "items", AutomergeContainerType.List);
+alice.ListInsertString(aliceList, 0, "Alice's item at 0");
+alice.Commit("Alice: Insert at 0");
+
+// Bob's document
+using var bob = AutomergeDocument.Create();
+var bobRoot = bob.RootId;
+var bobList = bob.PutObject(bobRoot, "items", AutomergeContainerType.List);
+bob.ListInsertString(bobList, 0, "Bob's item at 0");
+bob.Commit("Bob: Insert at 0");
+
+// After merge, both items appear
+var bobChanges = bob.GetChanges(new string[0]);
+alice.ApplyChanges(bobChanges);
+
+// Result: Both items present, order determined by Automerge's conflict resolution
+```
+
+## Same Position
+
+When both users insert at the same position, Automerge preserves both items:
+
+```csharp
+// Start with a shared list: ["first", "third"]
+var aliceList = alice.PutObject(aliceRoot, "items", AutomergeContainerType.List);
+alice.ListInsertString(aliceList, 0, "first");
+alice.ListInsertString(aliceList, 1, "third");
+alice.Commit("Alice: Add first and third");
+
+// Bob gets Alice's state
+var aliceChanges = alice.GetChanges(new string[0]);
+var bob = AutomergeDocument.Create();
+bob.ApplyChanges(aliceChanges);
+var bobRoot = bob.RootId;
+var bobList = bob.PutObject(bobRoot, "items", AutomergeContainerType.List);
+
+// Both insert "second" at index 1
+alice.ListInsertString(aliceList, 1, "Alice's second");
+alice.Commit("Alice: Insert at 1");
+
+bob.ListInsertString(bobList, 1, "Bob's second");
+bob.Commit("Bob: Insert at 1");
+
+// After merge, both insertions appear
+// Automerge determines a consistent order across all peers
+```
+
+## Concurrent Removals
+
+If two users remove different items, both removals apply:
+
+```csharp
+// Start with ["a", "b", "c"]
+alice.ListRemove(aliceList, 0); // Remove "a"
+bob.ListRemove(bobList, 2);     // Remove "c"
+
+// After merge: ["b"]
+```
+
+If both remove the same item, the removal applies once:
+
+```csharp
+// Both remove index 1
+alice.ListRemove(aliceList, 1);
+bob.ListRemove(bobList, 1);
+
+// After merge: Item removed once, not twice
+```
+
+# Best Practices
+
+## Use Lists for Ordered Data
+
+Choose lists when order matters:
+
+```csharp
+// Good: Ordered steps
+var steps = doc.PutObject(root, "steps", AutomergeContainerType.List);
+doc.ListInsertString(steps, 0, "Step 1: Initialize");
+doc.ListInsertString(steps, 1, "Step 2: Configure");
+doc.ListInsertString(steps, 2, "Step 3: Deploy");
+```
+
+For unordered data, consider maps instead:
+
+```csharp
+// Better for unordered data: Use a map with IDs as keys
+var users = doc.PutObject(root, "users", AutomergeContainerType.Map);
+var user1 = doc.PutObject(users, "user_123", AutomergeContainerType.Map);
+doc.PutString(user1, "name", "Alice");
+```
+
+## Use Nested Maps in Lists
+
+Store structured items as nested maps:
+
+```csharp
+// Good: Structured items
+var tasks = doc.PutObject(root, "tasks", AutomergeContainerType.List);
+var task = doc.ListInsertObject(tasks, 0, AutomergeContainerType.Map);
+doc.PutString(task, "title", "Task title");
+doc.PutBoolean(task, "completed", false);
+doc.PutInt64(task, "priority", 1);
+
+// Less flexible: Multiple parallel lists
+var titles = doc.PutObject(root, "task_titles", AutomergeContainerType.List);
+var completed = doc.PutObject(root, "task_completed", AutomergeContainerType.List);
+var priorities = doc.PutObject(root, "task_priorities", AutomergeContainerType.List);
+```
+
+## Avoid Large Lists
+
+Very large lists (thousands of items) can impact performance. Consider:
+
+- Pagination: Load and display subsets
+- Filtering: Store only relevant items
+- Splitting: Use multiple documents for large datasets
+
+## Use Stable IDs
+
+Store unique identifiers in list items to track them across changes:
+
+```csharp
+var tasks = doc.PutObject(root, "tasks", AutomergeContainerType.List);
+var task = doc.ListInsertObject(tasks, 0, AutomergeContainerType.Map);
+doc.PutString(task, "id", "TASK-001"); // Stable identifier
+doc.PutString(task, "title", "Do something");
+```
+
+This helps you find specific items even after the list order changes.
+
+## Insert in Logical Order
+
+Insert items in a natural order when possible:
+
+```csharp
+// Good: Append at the end
+var items = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(items, 0, "first");
+doc.ListInsertString(items, 1, "second");  // Append after first
+doc.ListInsertString(items, 2, "third");   // Append after second
+
+// Works but less predictable: Insert at beginning repeatedly
+doc.ListInsertString(items, 0, "third");
+doc.ListInsertString(items, 0, "second");
+doc.ListInsertString(items, 0, "first");
+```
+
+# Next Steps
+
+- [Text — Basic Operations](/Six.Automerge/guides/text/basic-operations/) — Learn about text containers for collaborative editing.
+- [Maps — Basic Operations](/Six.Automerge/guides/maps/basic-operations/) — Review map operations for comparison.
+- [Nested Maps](/Six.Automerge/guides/maps/nested-maps/) — Learn about nested containers and object IDs.

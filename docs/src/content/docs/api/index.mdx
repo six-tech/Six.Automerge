@@ -1,0 +1,134 @@
+---
+title: API Reference
+description: Complete API reference for Six.Automerge classes, methods, and types
+---
+
+# Overview
+
+This section provides a complete reference for every public class and method in the Six.Automerge library. Each page documents method signatures, parameters, return types, exceptions, and usage examples.
+
+# Core Classes
+
+| Class | Description |
+|-------|-------------|
+| [AutomergeDocument](/Six.Automerge/api/automerge-document/) | The primary class for creating, reading, and writing Automerge CRDT documents. Contains 130+ methods organized by category. |
+| [AutomergeSyncState](/Six.Automerge/api/automerge-sync-state/) | Manages synchronization state between two peers during the Automerge sync protocol. |
+| [AutomergeCursor](/Six.Automerge/api/automerge-cursor/) | A stable position reference in a list or text that tracks a logical position across concurrent edits. |
+
+# Supporting Types
+
+These types are used as parameters or return values by the core classes.
+
+## Value Types
+
+| Type | Reference | Description |
+|------|-----------|-------------|
+| `AutomergeScalarValue` | [Marks and Scalar Values](/Six.Automerge/api/automerge-marks/) | Represents a scalar value (string, int, bool, double, bytes, counter, timestamp, null). |
+| `AutomergeConflictValue` | [Conflict Values](/Six.Automerge/api/automerge-conflicts/) | A value returned by conflict-aware methods like `GetAll`. Contains either a scalar or an object reference, plus the operation ID. |
+| `ImmutableString` | [Options and Utility Types](/Six.Automerge/api/automerge-options/) | A string wrapper signaling that the value should be replaced atomically, not merged character-by-character. Use for URLs, IDs, and enum-like constants. |
+
+## Container and Object Types
+
+| Type | Reference | Description |
+|------|-----------|-------------|
+| `AutomergeObjectId` | — | An opaque identifier for a container (Map, List, or Text) within a document. Obtained from `RootId` or methods that create containers. |
+| `AutomergeContainerType` | [Options and Utility Types](/Six.Automerge/api/automerge-options/) | Enum with values `Map`, `List`, and `Text`. Specifies which container type to create. |
+
+## Rich Text Types
+
+| Type | Reference | Description |
+|------|-----------|-------------|
+| `AutomergeMarkInfo` | [Marks and Scalar Values](/Six.Automerge/api/automerge-marks/) | Describes a mark applied to a text range: `Name`, `Value`, `Start`, and `End`. |
+| `AutomergeSpan` | [Spans](/Six.Automerge/api/automerge-spans/) | Base class for spans returned by `GetSpans`. Either an `AutomergeTextSpan` or an `AutomergeBlockSpan`. |
+| `AutomergeTextSpan` | [Spans](/Six.Automerge/api/automerge-spans/) | A span of text with its active marks. Properties: `Text`, `Marks`. |
+| `AutomergeBlockSpan` | [Spans](/Six.Automerge/api/automerge-spans/) | A block marker in rich text. Properties: `BlockType`, `Parents`, `AttributesJson`. |
+| `ExpandMode` | [Marks and Scalar Values](/Six.Automerge/api/automerge-marks/) | Enum controlling how marks expand when text is inserted at their boundaries: `Before`, `After`, `Both`, `None`. |
+
+## History and Diff Types
+
+| Type | Reference | Description |
+|------|-----------|-------------|
+| `DecodedChange` | [Options and Utility Types](/Six.Automerge/api/automerge-options/) | Metadata about a committed change: `Hash`, `Actor`, `Sequence`, `TimestampMillis`, `Message`, `Dependencies`. |
+| `AutomergePatch` | [Patches](/Six.Automerge/api/automerge-patches/) | Describes a single change in a diff: the target `ObjectId`, the `Path` from root, and the `Action`. |
+| `AutomergePatchAction` | [Patches](/Six.Automerge/api/automerge-patches/) | Details of what changed: `Kind` (PutMap, PutSeq, Insert, SpliceText, Increment, Conflict, DeleteMap, DeleteSeq, Mark), plus kind-specific fields. |
+| `AutomergePatchPathElement` | [Patches](/Six.Automerge/api/automerge-patches/) | One step in the path from the root to a changed object. Contains the `ObjectId` and `Prop` (key or index). |
+
+## Object Graph Types
+
+| Type | Reference | Description |
+|------|-----------|-------------|
+| `AutomergePathElement` | [Options and Utility Types](/Six.Automerge/api/automerge-options/) | Base class for path elements returned by `Parents` and `PathToObject`. |
+| `AutomergeMapPathElement` | [Options and Utility Types](/Six.Automerge/api/automerge-options/) | A path element through a map container. Property: `Key`. |
+| `AutomergeListPathElement` | [Options and Utility Types](/Six.Automerge/api/automerge-options/) | A path element through a list container. Property: `Index`. |
+
+## Options Types
+
+| Type | Reference | Description |
+|------|-----------|-------------|
+| `SaveOptions` | [Options and Utility Types](/Six.Automerge/api/automerge-options/) | Options for `SaveWithOptions`: `Deflate` (compression, default true), `RetainOrphans` (keep orphan changes, default true). |
+| `LoadOptions` | [Options and Utility Types](/Six.Automerge/api/automerge-options/) | Options for `LoadWithOptions`: `VerificationMode` (Check or NoCheck), `OnPartialLoad` (Error or Ignore). |
+
+# Repository Layer
+
+| Class | Reference | Description |
+|-------|-----------|-------------|
+| `Repo` | [Repo](/Six.Automerge/api/repo/) | Central repository managing document lifecycle, storage, and network sync. |
+| `DocHandle` | [DocHandle](/Six.Automerge/api/doc-handle/) | Document handle with lifecycle state machine, change events, and sync coordination. |
+| `IStorageAdapter` | [Storage](/Six.Automerge/api/storage/) | Interface for pluggable document persistence. |
+| `INetworkAdapter` | [Network](/Six.Automerge/api/network/) | Interface for pluggable peer-to-peer transport. |
+| `DocumentId` | [Identifiers](/Six.Automerge/api/identifiers/) | Base58Check-encoded document identifier. |
+| `PeerId` | [Identifiers](/Six.Automerge/api/identifiers/) | Network peer identifier. |
+| `AutomergeUrl` | [Identifiers](/Six.Automerge/api/identifiers/) | URL format for sharing document references. |
+
+# How to Read the Reference
+
+Each method entry follows this format:
+
+**Signature** shows the C# method signature with full parameter types and return type.
+
+**Parameters** lists each parameter with its type and description. Optional parameters show their default values.
+
+**Returns** describes the return value and when it may be null.
+
+**Exceptions** lists exceptions that can be thrown and under what conditions.
+
+**Example** provides a minimal working code snippet demonstrating typical usage.
+
+# Namespace
+
+All types are in the `Six.Automerge` namespace:
+
+```csharp
+using Six.Automerge;
+```
+
+# Disposal Pattern
+
+`AutomergeDocument` and `AutomergeSyncState` implement `IDisposable` because they hold native (Rust) resources. Always use `using` statements:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+using var syncState = AutomergeSyncState.Create();
+```
+
+Failing to dispose these objects will leak native memory.
+
+# Thread Safety
+
+`AutomergeDocument` is **not thread-safe**. Do not call methods on the same document from multiple threads concurrently. If you need concurrent access, use the Repository layer (`Six.Automerge.Repo`) which serializes access through `DocHandle`.
+
+# Next Steps
+
+- [AutomergeDocument](/Six.Automerge/api/automerge-document/) — Full method reference for the core document class
+- [AutomergeSyncState](/Six.Automerge/api/automerge-sync-state/) — Sync state management for peer-to-peer synchronization
+- [AutomergeCursor](/Six.Automerge/api/automerge-cursor/) — Stable position tracking in lists and text
+- [Spans](/Six.Automerge/api/automerge-spans/) — Rich text span types
+- [Marks and Scalar Values](/Six.Automerge/api/automerge-marks/) — Mark annotations and scalar value types
+- [Patches](/Six.Automerge/api/automerge-patches/) — Diff and patch types
+- [Conflict Values](/Six.Automerge/api/automerge-conflicts/) — Conflict-aware value entries
+- [Options and Utility Types](/Six.Automerge/api/automerge-options/) — Save/load options, DecodedChange, path elements
+- [Repo](/Six.Automerge/api/repo/) — Repository class reference
+- [DocHandle](/Six.Automerge/api/doc-handle/) — Document handle lifecycle and API
+- [Storage](/Six.Automerge/api/storage/) — Storage adapter interface and types
+- [Network](/Six.Automerge/api/network/) — Network adapter interface and message types
+- [Identifiers](/Six.Automerge/api/identifiers/) — DocumentId, PeerId, AutomergeUrl, and related types

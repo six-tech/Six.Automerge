@@ -1,0 +1,12 @@
+{
+  "id": "20260221160736-9b061644",
+  "created": "2026-02-21T16:07:36.7238257Z",
+  "runSlug": "rust-compilation-and-artefacts-currently-we-a",
+  "contentHash": "A544BBE10DA033A9",
+  "type": "observation",
+  "tags": [
+    "pack-script",
+    "glob-patterns",
+    "nuget-packaging"
+  ]
+}

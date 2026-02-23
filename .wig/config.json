@@ -1,0 +1,46 @@
+{
+  "runtime": {
+    "maxIterations": 100,
+    "summaryModel": "haiku",
+    "loopDelayMs": 1000,
+    "sprintAdvanceDelayMs": 1000
+  },
+  "retry": {
+    "maxRetries": 3,
+    "backoffMs": [
+      5000,
+      10000,
+      15000
+    ]
+  },
+  "prompt": {
+    "maxPromptBytes": 100000,
+    "pipeThresholdBytes": 80000,
+    "memorySummarizationHint": "3-5 high-level, generalizable learnings"
+  },
+  "claude": {
+    "defaultTools": "Bash,Read,Edit,Write,Glob,Grep,WebFetch,WebSearch"
+  },
+  "telegram": {
+    "botToken": "8253139024:AAFOAT5_De3uRxl9PJ290R8txJ1x74Vz3F0",
+    "chatId": 2006236725,
+    "enabled": true,
+    "messageTruncationLength": 4000
+  },
+  "git": {
+    "branchingEnabled": true,
+    "maxCommits": 10,
+    "branchPrefix": "wig/task-"
+  },
+  "team": {
+    "enabled": false,
+    "teamSize": 3
+  },
+  "memory": {
+    "promotionThreshold": 0.8,
+    "decayRate": 0.05,
+    "minObservationsForPattern": 2,
+    "minApplicationsForPromotion": 5,
+    "consolidationModel": "haiku"
+  }
+}

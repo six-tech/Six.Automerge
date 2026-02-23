@@ -1,0 +1,231 @@
+---
+title: "Time Travel"
+description: Read document state at any point in history using heads-based queries
+---
+
+# Overview
+
+Automerge stores the full history of every change. You can read the document state at any previous point by providing the **heads** (commit hashes) from that moment. The current document remains unmodified — you are simply querying a historical snapshot.
+
+# Reading Values at Historical Heads
+
+## Map Values
+
+Use `GetStringAtHeads` to read a map value as it existed at specific heads:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "name", "Version 1");
+doc.Commit("v1");
+var headsV1 = doc.GetHeads();
+
+doc.PutString(root, "name", "Version 2");
+doc.Commit("v2");
+
+var current = doc.GetString(root, "name");
+// "Version 2"
+
+var historical = doc.GetStringAtHeads(root, "name", headsV1);
+// "Version 1"
+```
+
+If a key did not exist at the specified heads, the method returns `null`:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.EmptyChange("empty");
+var emptyHeads = doc.GetHeads();
+
+doc.PutString(doc.RootId, "name", "added later");
+doc.Commit("add");
+
+var historical = doc.GetStringAtHeads(doc.RootId, "name", emptyHeads);
+// null — key didn't exist at that point
+```
+
+## List Values
+
+Use `ListGetStringAtHeads` to read list elements at historical heads:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "original");
+doc.Commit("init");
+var heads = doc.GetHeads();
+
+doc.ListPutString(list, 0, "replaced");
+doc.Commit("replace");
+
+var current = doc.ListGetString(list, 0);
+// "replaced"
+
+var historical = doc.ListGetStringAtHeads(list, 0, heads);
+// "original"
+```
+
+# Historical Keys
+
+Use `GetKeysAtHeads` to see which keys existed in a map at a given point:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "alpha", "a");
+doc.PutString(root, "beta", "b");
+doc.Commit("first");
+var heads1 = doc.GetHeads();
+
+doc.PutString(root, "gamma", "c");
+doc.Commit("second");
+
+var keysAtV1 = doc.GetKeysAtHeads(root, heads1);
+// ["alpha", "beta"]
+
+var keysNow = doc.GetKeys(root);
+// ["alpha", "beta", "gamma"]
+```
+
+This also works after key deletion — deleted keys appear in the historical view:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "keep", "yes");
+doc.PutString(root, "remove", "no");
+doc.Commit("init");
+var headsBefore = doc.GetHeads();
+
+doc.Delete(root, "remove");
+doc.Commit("deleted");
+
+var keysAfterDelete = doc.GetKeys(root);
+// ["keep"]
+
+var keysBeforeDelete = doc.GetKeysAtHeads(root, headsBefore);
+// ["keep", "remove"]
+```
+
+# Historical Length
+
+Use `LengthAtHeads` to check how many entries a map or list had at a point in history:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "a", "1");
+doc.PutString(root, "b", "2");
+doc.Commit("two keys");
+var heads1 = doc.GetHeads();
+
+doc.PutString(root, "c", "3");
+doc.Commit("three keys");
+
+var lengthAtV1 = doc.LengthAtHeads(root, heads1);
+// 2
+```
+
+Works with lists too:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "first");
+doc.ListInsertString(list, 1, "second");
+doc.Commit("two items");
+var heads1 = doc.GetHeads();
+
+doc.ListInsertString(list, 2, "third");
+doc.Commit("three items");
+
+var lengthAtV1 = doc.LengthAtHeads(list, heads1);
+// 2
+
+var lengthNow = doc.ListLength(list);
+// 3
+```
+
+# Historical JSON
+
+Use `HydrateJsonAtHeads` to get the complete JSON representation of the document at any historical point:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "value", "initial");
+doc.Commit("initial");
+var baselineHeads = doc.GetHeads();
+
+doc.PutString(root, "value", "updated");
+doc.Commit("update");
+
+// Current state
+var currentJson = doc.HydrateJson();
+// Contains "updated"
+
+// Historical state
+var historicalJson = doc.HydrateJsonAtHeads(baselineHeads);
+// Contains "initial", does NOT contain "updated"
+
+// The current document is unchanged
+var stillCurrent = doc.HydrateJson();
+// Still contains "updated"
+```
+
+`HydrateJsonAtHeads` is read-only — it never modifies the document. This makes it safe to use for displaying historical snapshots, building undo previews, or auditing past states.
+
+# Complete Example
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Build up history with multiple commits
+doc.PutString(root, "title", "Draft");
+doc.PutString(root, "author", "Alice");
+doc.Commit("Create document");
+var v1 = doc.GetHeads();
+
+doc.PutString(root, "title", "In Review");
+doc.PutString(root, "reviewer", "Bob");
+doc.Commit("Submit for review");
+var v2 = doc.GetHeads();
+
+doc.PutString(root, "title", "Published");
+doc.Delete(root, "reviewer");
+doc.Commit("Publish");
+var v3 = doc.GetHeads();
+
+// Travel back to any version
+var jsonV1 = doc.HydrateJsonAtHeads(v1);
+// {"title": "Draft", "author": "Alice"}
+
+var jsonV2 = doc.HydrateJsonAtHeads(v2);
+// {"title": "In Review", "author": "Alice", "reviewer": "Bob"}
+
+var keysV2 = doc.GetKeysAtHeads(root, v2);
+// ["author", "reviewer", "title"]
+
+var titleV1 = doc.GetStringAtHeads(root, "title", v1);
+// "Draft"
+
+// Current state is still the latest
+var currentJson = doc.HydrateJson();
+// {"title": "Published", "author": "Alice"}
+```
+
+# Next Steps
+
+- [Diffing](/Six.Automerge/guides/history/diffing/) — Compare two points in history and get a list of patches
+- [Isolate and Integrate](/Six.Automerge/guides/history/isolate-integrate/) — Switch the document's active view to a specific point in history
+- [Commits and Heads](/Six.Automerge/guides/history/commits-and-heads/) — Understand commits, heads, and rollback

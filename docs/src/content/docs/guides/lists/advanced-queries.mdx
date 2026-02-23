@@ -1,0 +1,201 @@
+---
+title: "Lists: Advanced Queries"
+description: Learn how to query list contents with ListRange, ListRangeFull, Values, and LengthAtHeads
+---
+
+# Overview
+
+Beyond basic insert and remove, Automerge provides query methods for inspecting list contents.
+
+These methods let you retrieve slices of a list, get all values, and query list state at historical points.
+
+# ListRange
+
+## Querying an Index Range
+
+Use `ListRange` to get elements within an index range:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "zero");
+doc.ListInsertString(list, 1, "one");
+doc.ListInsertString(list, 2, "two");
+doc.ListInsertString(list, 3, "three");
+doc.ListInsertString(list, 4, "four");
+doc.Commit("list");
+
+// Get elements at indices 1 and 2 (range [1, 3) is half-open)
+var range = doc.ListRange(list, 1, 3);
+
+Console.WriteLine($"Elements in range: {range.Count}"); // 2
+```
+
+The range is half-open: it includes elements at indices >= `startIndex` and < `endIndex`.
+
+## Out-of-Bounds Ranges
+
+When the range extends beyond the list, only existing elements are returned:
+
+```csharp
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "a");
+doc.Commit("list");
+
+// Range [5, 10) is beyond list bounds
+var range = doc.ListRange(list, 5, 10);
+
+Console.WriteLine($"Count: {range.Count}"); // 0
+```
+
+## Getting All Elements
+
+Use `ListRangeFull` to get every element in a list:
+
+```csharp
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "a");
+doc.ListInsertString(list, 1, "b");
+doc.ListInsertString(list, 2, "c");
+doc.Commit("list");
+
+var all = doc.ListRangeFull(list);
+
+Console.WriteLine($"Total elements: {all.Count}"); // 3
+```
+
+This is equivalent to calling `ListRange(list, 0, length)`.
+
+# Values
+
+## Getting All Values from a List
+
+The `Values` method also works on lists, returning all element values:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "hello");
+doc.ListInsertInt64(list, 1, 42);
+doc.ListInsertBoolean(list, 2, false);
+doc.Commit("list");
+
+var values = doc.Values(list);
+
+Console.WriteLine($"Value count: {values.Count}"); // 3
+```
+
+Each value is an `AutomergeConflictValue` with scalar or object data.
+
+# LengthAtHeads
+
+## Historical List Length
+
+Use `LengthAtHeads` to query a list's length at a previous point in time:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "first");
+doc.ListInsertString(list, 1, "second");
+doc.Commit("two items");
+
+var heads1 = doc.GetHeads();
+
+doc.ListInsertString(list, 2, "third");
+doc.Commit("three items");
+
+var lengthAtV1 = doc.LengthAtHeads(list, heads1);
+var lengthNow = doc.ListLength(list);
+
+Console.WriteLine($"Length at v1: {lengthAtV1}"); // 2
+Console.WriteLine($"Length now: {lengthNow}");     // 3
+```
+
+Capture change hashes with `GetHeads()` after a commit to create snapshots you can query later.
+
+## Historical Map Length
+
+`LengthAtHeads` also works on maps, returning the number of keys at a given point:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "a", "1");
+doc.PutString(root, "b", "2");
+doc.Commit("two keys");
+
+var heads1 = doc.GetHeads();
+
+doc.PutString(root, "c", "3");
+doc.Commit("three keys");
+
+var countAtV1 = doc.LengthAtHeads(root, heads1);
+Console.WriteLine($"Keys at v1: {countAtV1}"); // 2
+```
+
+# Complete Example
+
+Here's a versioned shopping cart using range queries and historical length:
+
+```csharp
+using System;
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var cart = doc.PutObject(root, "cart", AutomergeContainerType.List);
+
+// Add items to cart
+doc.ListInsertString(cart, 0, "Laptop");
+doc.ListInsertString(cart, 1, "Mouse");
+doc.ListInsertString(cart, 2, "Keyboard");
+doc.ListInsertString(cart, 3, "Monitor");
+doc.ListInsertString(cart, 4, "Headphones");
+doc.Commit("Add items to cart");
+
+// Snapshot after initial items
+var initialHeads = doc.GetHeads();
+
+// Add more items
+doc.ListInsertString(cart, 5, "Webcam");
+doc.ListInsertString(cart, 6, "USB Hub");
+doc.Commit("Add accessories");
+
+// Query the first 3 items
+var firstThree = doc.ListRange(cart, 0, 3);
+Console.WriteLine($"First 3 items: {firstThree.Count}"); // 3
+
+// Query the last few items
+var lastItems = doc.ListRange(cart, 5, 7);
+Console.WriteLine($"Accessories: {lastItems.Count}"); // 2
+
+// Get all items
+var allItems = doc.ListRangeFull(cart);
+Console.WriteLine($"Total items: {allItems.Count}"); // 7
+
+// Check historical cart size
+var initialSize = doc.LengthAtHeads(cart, initialHeads);
+var currentSize = doc.ListLength(cart);
+
+Console.WriteLine($"Initial cart size: {initialSize}");   // 5
+Console.WriteLine($"Current cart size: {currentSize}");    // 7
+
+// Get all values
+var values = doc.Values(cart);
+Console.WriteLine($"Cart values: {values.Count}"); // 7
+```
+
+# Next Steps
+
+- [Lists — Splice Operations](/Six.Automerge/guides/lists/list-splice/) — Learn about batch insert, delete, and replace.
+- [Lists — ListPut Operations](/Six.Automerge/guides/lists/list-put/) — Learn about index-based value replacement.
+- [Maps — Advanced Queries](/Six.Automerge/guides/maps/advanced-queries/) — Learn about MapRange, Values, Parents, and PathToObject.

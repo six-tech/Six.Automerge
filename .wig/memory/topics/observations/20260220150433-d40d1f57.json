@@ -1,0 +1,14 @@
+{
+  "id": "20260220150433-d40d1f57",
+  "created": "2026-02-20T15:04:33.7413818Z",
+  "runSlug": "introduction-you-have-written-example-applicati",
+  "contentHash": "8C2D64C7A99E1221",
+  "type": "observation",
+  "tags": [
+    "avalonia",
+    "aspire",
+    "framework-references",
+    "service-discovery",
+    "csproj"
+  ]
+}

@@ -1,0 +1,57 @@
+<!-- MASTER Directory.Build.props -->
+<!-- All other Directory.Build.props files inherit from this one -->
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>14</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsAsErrors>nullable</WarningsAsErrors>
+        <NoWarn>CS1591;NU1900</NoWarn>
+        <WarningsNotAsErrors>CS1723,CS0649,CS0169,CA1050,CA1822,CA2211,IDE1006,CS1574,CS1584,CS1581,CS1580,NU5104,NU1900</WarningsNotAsErrors>
+
+        <!--
+            Offline development requires restores to succeed even when public feeds are unreachable.
+            These properties mirror invoking the CLI with the ignore-failed-sources switch and avoid
+            repeated retries across feeds that would otherwise fail in air-gapped environments.
+        -->
+        <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
+        <RestoreDisableParallel>true</RestoreDisableParallel>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4"/>
+    </ItemGroup>
+
+    <!--        
+        StyleCop: https://github.com/DotNetAnalyzers/StyleCopAnalyzers
+    -->
+    <PropertyGroup>
+        <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory).ruleset</CodeAnalysisRuleSet>
+        <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <AnalysisLevel>preview</AnalysisLevel>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json"/>
+    </ItemGroup>
+
+
+    <!-- CI/CD Build Optimization -->
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <!-- CI-specific optimizations -->
+        <ContinuousIntegrationBuild Condition="'$(CI)' == 'true' or '$(GITHUB_ACTIONS)' == 'true' or '$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
+
+        <!-- Deterministic builds for reproducibility -->
+        <Deterministic>true</Deterministic>
+        <DeterministicSourcePaths>true</DeterministicSourcePaths>
+
+        <!-- Disable features not needed in CI -->
+        <UseSharedCompilation>false</UseSharedCompilation>
+        <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    </PropertyGroup>
+
+</Project>

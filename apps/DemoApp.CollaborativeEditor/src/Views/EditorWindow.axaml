@@ -1,0 +1,112 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DemoApp.CollaborativeEditor.ViewModels"
+        xmlns:shared="using:DemoApp.Shared.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+        x:Class="DemoApp.CollaborativeEditor.Views.EditorWindow"
+        x:DataType="vm:EditorViewModel"
+        Title="Collaborative Text Editor — Automerge Demo"
+        Width="1000" Height="700">
+
+    <Design.DataContext>
+        <vm:EditorViewModel/>
+    </Design.DataContext>
+
+    <Panel>
+        <!-- Document Session Dialog (shown on startup) -->
+        <Border Name="SessionPanel" VerticalAlignment="Center" HorizontalAlignment="Center"
+                MaxWidth="500" MaxHeight="600">
+            <shared:DocumentSessionDialog Name="SessionDialog" DataContext="{x:Null}"/>
+        </Border>
+
+        <!-- Editor Panel (hidden until document is loaded) -->
+        <DockPanel Name="EditorPanel" IsVisible="False">
+            <!-- Formatting toolbar -->
+            <Border DockPanel.Dock="Top" Padding="8" >
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SyncStatus}" Foreground="#666666" FontSize="12"
+                                   VerticalAlignment="Center" Name="SyncStatusText"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Text Editor" FontWeight="Bold" FontSize="16"
+                                   VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="False">
+                            <Separator Width="1" Height="24" Margin="4,0"/>
+
+                            <!-- Formatting buttons (hidden — plain text mode) -->
+                            <ToggleButton Content="B" FontWeight="Bold" Width="32" Height="32"
+                                          IsChecked="{Binding IsBold, Mode=OneWay}"
+                                          ToolTip.Tip="Bold"
+                                          Name="BoldButton"/>
+                            <ToggleButton Content="I" FontStyle="Italic" Width="32" Height="32"
+                                          IsChecked="{Binding IsItalic, Mode=OneWay}"
+                                          ToolTip.Tip="Italic"
+                                          Name="ItalicButton"/>
+                            <ToggleButton Width="32" Height="32"
+                                          IsChecked="{Binding IsUnderline, Mode=OneWay}"
+                                          ToolTip.Tip="Underline"
+                                          Name="UnderlineButton">
+                                <TextBlock Text="U" TextDecorations="Underline"/>
+                            </ToggleButton>
+
+                            <Separator Width="1" Height="24" Margin="4,0"/>
+                        </StackPanel>
+
+                        <Button Content="Save" Command="{Binding SaveCommand}"
+                                Name="SaveButton"/>
+                        <Button Content="ExportAsync JSON" Command="{Binding ExportJsonCommand}"
+                                Name="ExportJsonButton"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- Bottom bar: connection status + editor info -->
+            <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0">
+                <DockPanel>
+                    <!-- Right side: cursor position, selection, and char count -->
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="12"
+                                Margin="8,4" VerticalAlignment="Center">
+                        <TextBlock FontSize="11" VerticalAlignment="Center" Name="CursorPositionText">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Pos: {0}">
+                                    <Binding Path="CursorPosition"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <TextBlock FontSize="11" VerticalAlignment="Center" Name="SelectionLengthText">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Sel: {0}">
+                                    <Binding Path="SelectionLength"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <TextBlock FontSize="11" VerticalAlignment="Center" Name="CharCountText">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Chars: {0}">
+                                    <Binding Path="DocumentText.Length"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    <!-- Left side: connection status bar -->
+                    <shared:ConnectionStatusBar Name="StatusBar" DataContext="{x:Null}"/>
+                </DockPanel>
+            </Border>
+
+            <!-- Plain text editor -->
+            <TextBox Text="{Binding DocumentText, Mode=TwoWay}"
+                     AcceptsReturn="True"
+                     AcceptsTab="True"
+                     TextWrapping="Wrap"
+                     Watermark="Start typing here..."
+                     Margin="8"
+                     Name="LocalEditor"/>
+        </DockPanel>
+    </Panel>
+
+</Window>

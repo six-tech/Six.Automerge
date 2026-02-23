@@ -1,0 +1,14 @@
+{
+  "id": "20260220054555-18e1c531",
+  "created": "2026-02-20T05:45:55.8970927Z",
+  "runSlug": "we-have-documentation-in-docs-src-content-docs",
+  "contentHash": "DF7EECA048B11F99",
+  "type": "observation",
+  "tags": [
+    "namespace",
+    "documentation",
+    "naming",
+    "nuget",
+    "csharp"
+  ]
+}

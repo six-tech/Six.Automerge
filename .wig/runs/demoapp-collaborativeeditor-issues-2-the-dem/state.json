@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "runSlug": "demoapp-collaborativeeditor-issues-2-the-dem",
+  "status": "failed",
+  "currentIteration": 10,
+  "specFiles": [
+    ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md"
+  ],
+  "startedAt": "2026-02-22T00:35:56.3913727Z",
+  "lastIterationAt": "2026-02-22T10:16:06.8853742Z",
+  "lastError": "Failed after 3 retries"
+}

@@ -1,0 +1,171 @@
+---
+title: AutomergeCursor
+description: API reference for AutomergeCursor — stable position tracking in lists and text
+---
+
+# Overview
+
+`AutomergeCursor` represents a stable position reference in a List or Text container. Unlike numeric indices that shift when elements are inserted or removed, a cursor tracks a logical position that follows the element it was anchored to, even as concurrent edits change the surrounding content.
+
+Cursors are created via `AutomergeDocument.GetCursor` and resolved back to an index via `AutomergeDocument.GetCursorPosition`.
+
+```csharp
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var textId = doc.PutObject(doc.RootId, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello world");
+
+// Create a cursor at position 5 (the space)
+var cursor = doc.GetCursor(textId, 5);
+
+// After edits, resolve the current position
+doc.SpliceText(textId, 0, 0, "Say: "); // Insert before cursor
+var pos = doc.GetCursorPosition(textId, cursor); // 10 (shifted right by 5)
+```
+
+# When to Use Cursors
+
+Cursors solve the "moving target" problem in collaborative editing:
+
+- **Text editor selections** — Track where a user's caret is positioned across remote edits
+- **Bookmarks** — Mark a specific location in a list or text that persists through changes
+- **Annotations** — Anchor comments or highlights to specific content
+- **Undo targets** — Remember where an operation occurred for undo/redo
+
+Without cursors, you would need to manually adjust indices every time a remote peer inserts or deletes content before your position.
+
+# Methods
+
+## FromBytes
+
+```csharp
+public static AutomergeCursor FromBytes(ReadOnlySpan<byte> bytes)
+```
+
+Creates a cursor from its serialized byte representation. Use this to restore a cursor that was previously serialized with `ToBytes`.
+
+**Parameters:**
+- `bytes` — The serialized cursor data.
+
+**Returns:** A restored `AutomergeCursor`.
+
+```csharp
+byte[] saved = File.ReadAllBytes("cursor.bin");
+var cursor = AutomergeCursor.FromBytes(saved);
+```
+
+## ToBytes
+
+```csharp
+public byte[] ToBytes()
+```
+
+Serializes the cursor to a byte array. The result can be persisted and later restored with `FromBytes`.
+
+**Returns:** A byte array containing the serialized cursor data.
+
+```csharp
+byte[] data = cursor.ToBytes();
+File.WriteAllBytes("cursor.bin", data);
+```
+
+# Creating Cursors
+
+Cursors are created through `AutomergeDocument.GetCursor`:
+
+```csharp
+public AutomergeCursor GetCursor(AutomergeObjectId objectId, ulong index)
+```
+
+**Parameters:**
+- `objectId` — The List or Text object.
+- `index` — The current index to anchor the cursor to.
+
+**Returns:** An `AutomergeCursor` tracking that position.
+
+# Resolving Cursors
+
+Cursors are resolved through `AutomergeDocument.GetCursorPosition`:
+
+```csharp
+public ulong GetCursorPosition(AutomergeObjectId objectId, AutomergeCursor cursor)
+```
+
+**Parameters:**
+- `objectId` — The List or Text object the cursor belongs to.
+- `cursor` — The cursor to resolve.
+
+**Returns:** The current index position, accounting for all changes since the cursor was created.
+
+# Complete Example
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+
+// Write some text
+doc.SpliceText(textId, 0, 0, "The quick brown fox");
+doc.Commit("initial text");
+
+// Create a cursor at "brown" (position 10)
+var cursor = doc.GetCursor(textId, 10);
+
+// Serialize the cursor for storage
+byte[] cursorBytes = cursor.ToBytes();
+
+// Simulate concurrent edits that shift indices
+doc.SpliceText(textId, 0, 0, ">>> "); // Insert 4 chars at start
+doc.Commit("prefix");
+
+// Restore and resolve the cursor
+var restored = AutomergeCursor.FromBytes(cursorBytes);
+var newPos = doc.GetCursorPosition(textId, restored);
+// newPos is 14 — the cursor followed "brown" through the shift
+
+var text = doc.GetText(textId);
+// text is ">>> The quick brown fox"
+// Position 14 still points to 'b' in "brown"
+```
+
+# Cursors with Lists
+
+Cursors work with List containers too:
+
+```csharp
+var listId = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(listId, 0, "alpha");
+doc.ListInsertString(listId, 1, "beta");
+doc.ListInsertString(listId, 2, "gamma");
+
+// Cursor at "beta" (index 1)
+var cursor = doc.GetCursor(listId, 1);
+
+// Insert before "beta"
+doc.ListInsertString(listId, 0, "zero");
+
+// Cursor still points to "beta"
+var pos = doc.GetCursorPosition(listId, cursor); // 2
+var value = doc.ListGetString(listId, pos); // "beta"
+```
+
+# Cursor Persistence
+
+Cursors are lightweight byte arrays that can be stored alongside documents. A common pattern is to persist cursor positions with the document state:
+
+```csharp
+// Save document and cursor together
+byte[] docData = doc.Save();
+byte[] cursorData = cursor.ToBytes();
+
+// Later: restore both
+using var loaded = AutomergeDocument.Load(docData);
+var loadedCursor = AutomergeCursor.FromBytes(cursorData);
+var position = loaded.GetCursorPosition(textId, loadedCursor);
+```
+
+# See Also
+
+- [AutomergeDocument — GetCursor / GetCursorPosition](/Six.Automerge/api/automerge-document/#getcursor) — Creating and resolving cursors
+- [Cursors Guide](/Six.Automerge/guides/text/cursors/) — Conceptual guide to collaborative cursor tracking

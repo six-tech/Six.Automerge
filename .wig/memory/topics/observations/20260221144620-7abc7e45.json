@@ -1,0 +1,15 @@
+{
+  "id": "20260221144620-7abc7e45",
+  "created": "2026-02-21T14:46:20.3043339Z",
+  "runSlug": "proposal-05-projectnameandnamespacerename",
+  "contentHash": "33577622EA87E6E7",
+  "type": "observation",
+  "tags": [
+    "namespace-rename",
+    "csproj-updates",
+    "msbuild-targets",
+    "aspire-project-refs",
+    "multi-file-types",
+    "test-baseline"
+  ]
+}

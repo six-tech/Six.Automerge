@@ -1,0 +1,12 @@
+{
+  "id": "20260221233243-399927d8",
+  "created": "2026-02-21T23:32:43.3011373Z",
+  "runSlug": "demoapp-collaborativeeditor-issues-the-collab",
+  "contentHash": "776FCB9B1B3BC9DF",
+  "type": "observation",
+  "tags": [
+    "deadlock",
+    "async-patterns",
+    "lock-hierarchy"
+  ]
+}

@@ -1,0 +1,366 @@
+---
+title: Synchronizers
+description: How CollectionSynchronizer and DocSynchronizer orchestrate the Automerge sync protocol across peers
+---
+
+# Overview
+
+The synchronizer layer sits between the Repo and the network, orchestrating Automerge's
+sync protocol for every document with every connected peer. It consists of two classes:
+
+- **CollectionSynchronizer** — manages all documents in a repository, routes messages, enforces policies
+- **DocSynchronizer** — manages sync for a single document across multiple peers
+
+Both are internal to the `Six.Automerge.Repo` package. You interact with them indirectly through
+the [Repo](/Six.Automerge/repo/getting-started/) API. This page documents how they work
+for understanding sync behavior, debugging, and contributing.
+
+# Architecture
+
+```
+Repo
+ │
+ ├─ CollectionSynchronizer
+ │    ├─ DocSynchronizer (document A)
+ │    │    ├─ AutomergeSyncState (peer 1)
+ │    │    ├─ AutomergeSyncState (peer 2)
+ │    │    └─ AutomergeSyncState (peer N)
+ │    ├─ DocSynchronizer (document B)
+ │    │    └─ ...
+ │    └─ DocSynchronizer (document N)
+ │         └─ ...
+ │
+ └─ NetworkSubsystem
+      ├─ INetworkAdapter (SignalR)
+      ├─ INetworkAdapter (InMemory)
+      └─ INetworkAdapter (custom)
+```
+
+Each `DocSynchronizer` holds a separate `AutomergeSyncState` per peer. This enables efficient
+incremental synchronization — only changes the remote peer has not seen are transmitted.
+
+# Event Flow
+
+## Incoming Message
+
+When a message arrives from the network:
+
+```
+Network Adapter
+  │  MessageReceived event
+  ▼
+NetworkSubsystem
+  │  Deduplicates ephemeral messages
+  │  MessageReceived event
+  ▼
+Repo handler
+  │
+  ▼
+CollectionSynchronizer.OnMessageReceived(message)
+  │  Check denylist
+  │  Check access policy
+  │  Create DocSynchronizer if needed
+  │  Trigger document discovery if unknown
+  ▼
+DocSynchronizer.ReceiveMessage(message, senderId)
+  │  Route by message type:
+  │  ├─ SyncMessage      → apply sync protocol, respond
+  │  ├─ RequestMessage    → mark peer as Wants, respond
+  │  ├─ DocUnavailable    → update peer status
+  │  └─ DocSnapshot       → load full document
+  ▼
+MessageToSend event → NetworkSubsystem → Network
+SyncStateChanged event → StorageSubsystem (persist)
+```
+
+## Local Document Change
+
+When you modify a document locally:
+
+```
+DocHandle.ChangeAsync(...)
+  │
+  ▼
+Repo.NotifyDocumentChanged(documentId)
+  │
+  ▼
+CollectionSynchronizer.NotifyDocumentChanged(documentId)
+  │
+  ▼
+DocSynchronizer.NotifyLocalChange()
+  │  For each active peer:
+  │    GenerateSyncMessage → MessageToSend event
+  ▼
+NetworkSubsystem.Send → Network Adapters
+```
+
+## Peer Connection
+
+When a new peer connects:
+
+```
+Network Adapter
+  │  PeerCandidate event
+  ▼
+NetworkSubsystem
+  │  PeerCandidate event
+  ▼
+Repo handler
+  │
+  ▼
+CollectionSynchronizer.OnPeerConnected(peerId)
+  │  Apply share policy to each registered document
+  │  For each eligible document:
+  │    DocSynchronizer.BeginSync(peerId)
+  │      → SendSyncMessage → MessageToSend event
+```
+
+# CollectionSynchronizer
+
+The collection-level synchronizer manages all documents and all peers. It is the primary
+interface between the Repo and the sync protocol.
+
+## Responsibilities
+
+- Routes incoming messages to the correct `DocSynchronizer` by document ID
+- Manages peer connections (connect/disconnect lifecycle)
+- Enforces share and access policies
+- Handles document discovery when receiving messages for unknown documents
+- Maintains a denylist of documents that should never sync
+
+## Key Methods
+
+| Method | Description |
+|--------|-------------|
+| `AddDocument(documentId)` | Register a document for sync with all connected peers |
+| `RemoveDocument(documentId)` | Unregister a document and dispose its synchronizer |
+| `OnPeerConnected(peerId)` | Begin syncing all eligible documents with the new peer |
+| `OnPeerDisconnected(peerId)` | End sync for all documents with the disconnected peer |
+| `OnMessageReceived(message)` | Route message to appropriate DocSynchronizer |
+| `NotifyDocumentChanged(documentId)` | Push local changes to all syncing peers |
+| `SetSharePolicy(policy)` | Control which documents are shared with which peers |
+| `SetAccessPolicy(policy)` | Control which peers can access which documents |
+
+## Events
+
+| Event | Description |
+|-------|-------------|
+| `MessageToSend` | A sync message needs to be sent to a peer (forwarded from DocSynchronizer) |
+| `SyncStateChanged` | Sync state changed and should be persisted (forwarded from DocSynchronizer) |
+| `MetricsUpdated` | Sync metrics updated for monitoring (forwarded from DocSynchronizer) |
+
+## Document Discovery
+
+When `OnMessageReceived` encounters a message for an unknown document:
+
+1. Creates a new `DocSynchronizer` for the document
+2. Calls the `requestDocument` callback so the Repo can check storage or ask other peers
+3. Begins sync with the sender
+4. Processes the message
+
+This enables peers to discover documents they do not yet have. The Repo decides whether to
+accept or reject the document based on application logic.
+
+## Share and Access Policies
+
+Both policies are async functions that return `bool`:
+
+```csharp
+// Only share documents in the "public" namespace
+synchronizer.SetSharePolicy(async (documentId, peerId) =>
+{
+  return documentId.Value.StartsWith("public-");
+});
+
+// Only allow authenticated peers
+synchronizer.SetAccessPolicy(async (documentId, peerId) =>
+{
+  return await authService.IsAuthenticated(peerId);
+});
+```
+
+| Policy | Default | Controls |
+|--------|---------|----------|
+| Share policy | Share all | Which documents are proactively sent to which peers on connect |
+| Access policy | Allow all | Which incoming messages are accepted from which peers |
+
+When a share policy returns `false`, the document is not synced with that peer on connection.
+When an access policy returns `false`, incoming messages from that peer for that document are silently dropped.
+
+## Denylist
+
+The denylist is a set of document IDs that are never synchronized, regardless of policies:
+
+```csharp
+var denylist = new HashSet<string> { "secret-doc-id" };
+var synchronizer = new CollectionSynchronizer(
+  getDocument, updateDocument, getPeerMetadata, requestDocument,
+  denylist: denylist);
+```
+
+Denylisted documents are silently ignored for both incoming and outgoing sync.
+
+# DocSynchronizer
+
+The document-level synchronizer manages sync for a single document across multiple peers.
+It is `internal` to the Repo package.
+
+## Responsibilities
+
+- Maintains per-peer `AutomergeSyncState` instances
+- Generates and processes Automerge sync protocol messages
+- Tracks peer document status (Unknown, Has, Wants, Unavailable)
+- Sends the appropriate message type based on local and remote state
+- Fires events for the CollectionSynchronizer to forward
+
+## Peer Document Status
+
+The synchronizer tracks what it knows about each peer's relationship with the document:
+
+| Status | Meaning |
+|--------|---------|
+| `Unknown` | Initial state. We do not know if the peer has this document |
+| `Has` | The peer has the document and can participate in sync |
+| `Wants` | The peer has requested the document (sent a `RequestMessage`) |
+| `Unavailable` | The peer indicated the document is unavailable |
+
+Status transitions:
+
+```
+Unknown ──────> Has          (received sync data from peer)
+Unknown ──────> Wants        (received request from peer)
+Unknown ──────> Unavailable  (received doc-unavailable)
+Wants ────────> Has          (sync completed after request)
+```
+
+## Message Handling
+
+### SyncMessage (incoming)
+
+When a `SyncMessage` arrives from a peer:
+
+1. Get (or create) the local document
+2. Get (or create) the sync state for this peer
+3. Apply the sync message using `doc.ReceiveSyncMessage(syncState, data)`
+4. Update the local document via callback
+5. Set peer status to `Has`
+6. Fire `SyncStateChanged` for persistence
+7. Generate and send a response sync message
+
+### RequestMessage (incoming)
+
+When a `RequestMessage` arrives (peer wants the document):
+
+1. Set peer status to `Wants`
+2. If we do not have the document, send `DocumentUnavailableMessage`
+3. Otherwise, process as a sync message (request carries initial sync state)
+
+### DocumentSnapshotMessage (incoming)
+
+When a full document snapshot arrives:
+
+1. Load the document from the snapshot bytes
+2. Update the local document via callback
+3. Reset the sync state for this peer
+4. Set peer status to `Has`
+
+### Sending Messages
+
+When `SendSyncMessage` is called (either initially or in response to incoming data):
+
+1. If we do not have the document locally, send a `RequestMessage`
+2. If `GenerateSyncMessage` returns data, send a `SyncMessage`
+3. If `GenerateSyncMessage` returns null and the peer does not have the document, send a `DocumentSnapshotMessage` (full save)
+4. If `GenerateSyncMessage` returns null and the peer already has the document, sync is complete
+
+## Sync Protocol Loop
+
+The Automerge sync protocol converges through message exchanges:
+
+```
+Peer A                                    Peer B
+  │                                          │
+  │  BeginSync → SendSyncMessage             │
+  │  ──────────────────────────────────────> │
+  │                                          │  ReceiveSyncMessage
+  │                                          │  → SendSyncMessage (response)
+  │  <────────────────────────────────────── │
+  │  ReceiveSyncMessage                      │
+  │  → SendSyncMessage (response)            │
+  │  ──────────────────────────────────────> │
+  │                                          │  ReceiveSyncMessage
+  │                                          │  → GenerateSyncMessage returns null
+  │          (converged — sync complete)     │
+```
+
+Each round, `GenerateSyncMessage` produces progressively smaller payloads as peers
+converge. When it returns `null`, the sync is complete for that direction.
+
+## NotifyLocalChange
+
+When a document is modified locally, `NotifyLocalChange` sends updated sync messages
+to all active peers:
+
+```csharp
+// Called by CollectionSynchronizer when Repo detects a local change
+docSync.NotifyLocalChange();
+// → For each active peer: GenerateSyncMessage → MessageToSend event
+```
+
+# NetworkSubsystem
+
+The `NetworkSubsystem` manages multiple network adapters and coordinates message delivery:
+
+- Routes outgoing messages through the appropriate adapter
+- Forwards incoming messages from all adapters to the synchronizer
+- Tracks peer-to-adapter mappings
+- Deduplicates ephemeral messages across adapters
+- Stores peer metadata
+
+## Ephemeral Deduplication
+
+When multiple adapters are active, the same ephemeral message could arrive through different
+transports. The NetworkSubsystem tracks seen messages using a key of
+`peerId:sessionId:count` and keeps the last 1000 entries to prevent gossip loops.
+
+## Adapter Readiness
+
+The `WhenReady` method returns a `Task` that completes when at least one adapter is ready.
+This is used during document discovery to ensure the network is available before requesting
+documents from peers.
+
+# Thread Safety
+
+Both synchronizers use `SemaphoreSlim(1,1)` to protect mutable state. Events are collected
+in a `List<Action>` during lock-held operations and fired **after** the lock is released.
+This deferred event pattern prevents deadlocks when event handlers call back into the
+synchronizer.
+
+```
+lock.Wait()
+try
+{
+  // Mutate state
+  // Collect events: deferredEvents.Add(() => Event?.Invoke(...))
+}
+finally
+{
+  lock.Release()
+}
+
+// Fire all events outside the lock
+foreach(var action in deferredEvents)
+{
+  action();
+}
+```
+
+Operations that call `BeginSync` (which acquires the DocSynchronizer's own lock) are also
+performed outside the CollectionSynchronizer's lock to avoid nested lock acquisition.
+
+# Next Steps
+
+- [Network Adapters](/Six.Automerge/repo/network/) — how messages are transported
+- [SignalR Adapter](/Six.Automerge/repo/network/signalr/) — real-time sync over ASP.NET Core SignalR
+- [Storage Adapters](/Six.Automerge/repo/storage/) — persist documents and sync state
+- [Doc Handles](/Six.Automerge/repo/doc-handles/) — document reference with change events

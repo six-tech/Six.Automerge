@@ -1,0 +1,13 @@
+{
+  "id": "20260222165639-032e0536",
+  "created": "2026-02-22T16:56:39.5233538Z",
+  "runSlug": "document-sync-issues-now-when-i-run-aspire-ho",
+  "contentHash": "F7FAC5B0DC131A56",
+  "type": "observation",
+  "tags": [
+    "native-libs",
+    "msbuild",
+    "ffi",
+    "test-infrastructure"
+  ]
+}

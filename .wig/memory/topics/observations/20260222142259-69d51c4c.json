@@ -1,0 +1,15 @@
+{
+  "id": "20260222142259-69d51c4c",
+  "created": "2026-02-22T14:22:59.4603797Z",
+  "runSlug": "demoapp-collaborativeeditor-issues-3-the-dem",
+  "contentHash": "A0562A6DA08F09DE",
+  "type": "observation",
+  "tags": [
+    "xaml",
+    "textbox",
+    "replicas",
+    "environment-variables",
+    "storage",
+    "build"
+  ]
+}

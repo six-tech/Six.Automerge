@@ -1,0 +1,301 @@
+---
+title: "Conflict Values"
+description: Work with the AutomergeConflictValue model, inspect scalar and object conflicts, and implement resolution strategies
+---
+
+# Overview
+
+When you call `GetAll` on a conflicting key, you receive a list of `AutomergeConflictValue` objects. Each value represents one peer's concurrent write. This page covers the model's structure, how to inspect different value types, and practical resolution patterns.
+
+# The AutomergeConflictValue Model
+
+Each conflict value has these properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `IsObject` | `bool` | `true` if the value is a container (map, list, or text) |
+| `Scalar` | `AutomergeScalarValue?` | The scalar value, if `IsObject` is `false` |
+| `ObjectId` | `AutomergeObjectId?` | The container's ID, if `IsObject` is `true` |
+| `ObjectType` | `AutomergeContainerType?` | The container type (Map, List, Text), if `IsObject` is `true` |
+| `OperationId` | `string` | Unique ID for the operation that created this value |
+
+A conflict value is either a **scalar** (string, int, bool, etc.) or an **object** (map, list, text) — never both.
+
+# Working with Scalar Conflicts
+
+Scalar conflicts are the most common case. Check `IsObject` first, then read the `Scalar` property:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+doc1.PutString(doc1.RootId, "title", "base");
+doc1.Commit("base");
+
+using var doc2 = doc1.Fork();
+
+doc1.PutString(doc1.RootId, "title", "Document A");
+doc1.Commit("peer 1");
+
+doc2.PutString(doc2.RootId, "title", "Document B");
+doc2.Commit("peer 2");
+
+doc1.Merge(doc2);
+
+var values = doc1.GetAll(doc1.RootId, "title");
+
+foreach(var v in values)
+{
+    if(!v.IsObject)
+    {
+        var scalar = v.Scalar!;
+        Console.WriteLine($"Kind: {scalar.Kind}, Value: {scalar.StringValue}");
+    }
+}
+```
+
+## AutomergeScalarValue Types
+
+The `Scalar` property uses `AutomergeScalarValue` with a `Kind` discriminator:
+
+| Kind | Property | C# Type |
+|------|----------|---------|
+| `String` | `StringValue` | `string?` |
+| `Int` | `IntValue` | `long?` |
+| `Uint` | `UIntValue` | `ulong?` |
+| `Double` | `DoubleValue` | `double?` |
+| `Boolean` | `BoolValue` | `bool?` |
+| `Bytes` | `BytesValue` | `byte[]?` |
+| `Counter` | `CounterValue` | `long?` |
+| `Timestamp` | `TimestampValue` | `long?` |
+| `Null` | — | Always null |
+
+Check the `Kind` before accessing the corresponding property:
+
+```csharp
+void PrintScalar(AutomergeScalarValue scalar)
+{
+    switch(scalar.Kind)
+    {
+        case AutomergeScalarValueKind.String:
+            Console.WriteLine($"String: {scalar.StringValue}");
+            break;
+        case AutomergeScalarValueKind.Int:
+            Console.WriteLine($"Int: {scalar.IntValue}");
+            break;
+        case AutomergeScalarValueKind.Boolean:
+            Console.WriteLine($"Bool: {scalar.BoolValue}");
+            break;
+        case AutomergeScalarValueKind.Timestamp:
+            Console.WriteLine($"Timestamp: {DateTimeOffset.FromUnixTimeMilliseconds(scalar.TimestampValue!.Value)}");
+            break;
+        case AutomergeScalarValueKind.Counter:
+            Console.WriteLine($"Counter: {scalar.CounterValue}");
+            break;
+        default:
+            Console.WriteLine($"Other: {scalar.Kind}");
+            break;
+    }
+}
+```
+
+# Working with Object Conflicts
+
+When peers concurrently create different container types for the same key, you get object conflicts. Each conflicting value has its own `ObjectId` that you can use to read its contents:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+doc1.PutObject(doc1.RootId, "data", AutomergeContainerType.Map);
+doc1.Commit("base");
+
+using var doc2 = doc1.Fork();
+
+doc1.PutObject(doc1.RootId, "data", AutomergeContainerType.List);
+doc1.Commit("peer 1 wants a list");
+
+doc2.PutObject(doc2.RootId, "data", AutomergeContainerType.Map);
+doc2.Commit("peer 2 wants a new map");
+
+doc1.Merge(doc2);
+
+var values = doc1.GetAll(doc1.RootId, "data");
+
+foreach(var v in values)
+{
+    if(v.IsObject)
+    {
+        Console.WriteLine($"Container: {v.ObjectType}, Id: {v.ObjectId}");
+
+        // You can read the contents of each conflicting container
+        if(v.ObjectType == AutomergeContainerType.Map)
+        {
+            var keys = doc1.MapKeys(v.ObjectId!);
+            Console.WriteLine($"  Map has {keys.Count} keys");
+        }
+        else if(v.ObjectType == AutomergeContainerType.List)
+        {
+            var length = doc1.ListLength(v.ObjectId!);
+            Console.WriteLine($"  List has {length} items");
+        }
+    }
+}
+```
+
+# Using Operation IDs
+
+Every conflict value includes an `OperationId` — a unique identifier for the operation that produced it. Operation IDs have the format `{counter}@{actorId}` and can be used to:
+
+- Distinguish which peer wrote which value
+- Implement deterministic custom ordering
+- Log conflict provenance for debugging
+
+```csharp
+var values = doc.GetAll(doc.RootId, "color");
+
+foreach(var v in values)
+{
+    Console.WriteLine($"Value from operation: {v.OperationId}");
+    // e.g., "4@abc123..." — sequence 4 from actor abc123
+}
+```
+
+# Resolution Strategies
+
+## Strategy 1: Accept Automatic Winner
+
+The simplest approach — just use the normal `Get*` methods. Automerge's automatic resolution is deterministic and consistent across all peers:
+
+```csharp
+// Don't check for conflicts at all
+var color = doc.GetString(doc.RootId, "color");
+// Always returns the same winner on every peer
+```
+
+## Strategy 2: User-Driven Resolution
+
+Present all values to the user and let them choose:
+
+```csharp
+var values = doc.GetAll(doc.RootId, "title");
+
+if(values.Count > 1)
+{
+    Console.WriteLine("Multiple values found for 'title':");
+    for(var i = 0; i < values.Count; i++)
+    {
+        Console.WriteLine($"  [{i + 1}] {values[i].Scalar!.StringValue}");
+    }
+
+    Console.Write("Choose (1-{0}): ", values.Count);
+    var choice = int.Parse(Console.ReadLine()!) - 1;
+
+    doc.PutString(doc.RootId, "title", values[choice].Scalar!.StringValue!);
+    doc.Commit("user resolved conflict");
+}
+```
+
+## Strategy 3: Programmatic Rules
+
+Apply domain-specific logic to pick the winner:
+
+```csharp
+// Take the longest string
+var values = doc.GetAll(doc.RootId, "description");
+
+if(values.Count > 1)
+{
+    var best = values
+        .Where(v => !v.IsObject && v.Scalar?.Kind == AutomergeScalarValueKind.String)
+        .OrderByDescending(v => v.Scalar!.StringValue!.Length)
+        .First();
+
+    doc.PutString(doc.RootId, "description", best.Scalar!.StringValue!);
+    doc.Commit("auto-resolved: kept longest value");
+}
+```
+
+```csharp
+// Take the highest number
+var values = doc.GetAll(doc.RootId, "priority");
+
+if(values.Count > 1)
+{
+    var max = values
+        .Where(v => v.Scalar?.Kind == AutomergeScalarValueKind.Int)
+        .Max(v => v.Scalar!.IntValue!.Value);
+
+    doc.PutInt64(doc.RootId, "priority", max);
+    doc.Commit("auto-resolved: kept highest priority");
+}
+```
+
+## Strategy 4: Merge Values
+
+Combine conflicting values instead of choosing one:
+
+```csharp
+// Merge tag lists by combining unique values
+var tagConflicts = doc.GetAll(doc.RootId, "tags");
+
+if(tagConflicts.Count > 1)
+{
+    // Each conflicting value is a list container
+    var allTags = new HashSet<string>();
+
+    foreach(var v in tagConflicts.Where(v => v.IsObject && v.ObjectType == AutomergeContainerType.List))
+    {
+        var length = doc.ListLength(v.ObjectId!);
+        for(ulong i = 0; i < length; i++)
+        {
+            allTags.Add(doc.ListGetString(v.ObjectId!, i));
+        }
+    }
+
+    // Create a merged list
+    var mergedList = doc.PutObject(doc.RootId, "tags", AutomergeContainerType.List);
+    ulong idx = 0;
+    foreach(var tag in allTags.OrderBy(t => t))
+    {
+        doc.ListInsertString(mergedList, idx++, tag);
+    }
+
+    doc.Commit("merged conflicting tag lists");
+}
+```
+
+# Conflict-Aware Data Access Pattern
+
+Here's a helper pattern for reading values with conflict awareness:
+
+```csharp
+(string value, bool hasConflict) GetStringWithConflictInfo(
+    AutomergeDocument doc,
+    AutomergeObjectId objectId,
+    string key)
+{
+    var values = doc.GetAll(objectId, key);
+
+    if(values.Count == 0)
+    {
+        return ("", false);
+    }
+
+    // The "winner" (what Get returns) is the first scalar string
+    var winner = values
+        .FirstOrDefault(v => !v.IsObject && v.Scalar?.Kind == AutomergeScalarValueKind.String);
+
+    return (winner?.Scalar?.StringValue ?? "", values.Count > 1);
+}
+
+// Usage
+var (title, hasConflict) = GetStringWithConflictInfo(doc, doc.RootId, "title");
+
+if(hasConflict)
+{
+    Console.WriteLine($"⚠ '{title}' was chosen automatically — other values exist");
+}
+```
+
+# Next Steps
+
+- [Understanding Conflicts](/Six.Automerge/guides/conflicts/understanding-conflicts/) — Learn when and why conflicts occur
+- [Detecting Conflicts](/Six.Automerge/guides/conflicts/detecting-conflicts/) — Use `GetAll` and `GetAllAtHeads` to find conflicts
+- [Fork and Merge](/Six.Automerge/guides/branching/fork-and-merge/) — Create scenarios that produce conflicts

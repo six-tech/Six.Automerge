@@ -1,0 +1,216 @@
+---
+title: "Rich Text: Blocks"
+description: Create block-level structure with SplitBlock and JoinBlock — paragraphs, headings, list items, and nested block hierarchies
+---
+
+# Overview
+
+**Blocks** are structural markers that divide text into paragraphs, headings, list items, and other block-level elements. Unlike marks (which annotate character ranges), blocks are boundary markers inserted at specific positions in the text.
+
+When you call `SplitBlock`, Automerge inserts a block marker at the given position and returns a writable object where you can set the block's type, parents, and attributes. The block marker appears as an `AutomergeBlockSpan` when you read spans.
+
+# Creating Blocks with SplitBlock
+
+`SplitBlock` inserts a block boundary at a character position and returns an object ID you can write properties to:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello World");
+
+// Insert a block marker at the beginning
+var blockId = doc.SplitBlock(textId, 0);
+doc.Commit("split block");
+
+// The block marker is now in the span list
+var spans = doc.GetSpans(textId);
+// Contains at least one AutomergeBlockSpan
+```
+
+The returned `blockId` is a writable Automerge object — you use it to set block metadata.
+
+# Setting Block Type
+
+Every block should have a `"type"` property that identifies what kind of block it is:
+
+```csharp
+var blockId = doc.SplitBlock(textId, 0);
+doc.PutString(blockId, "type", "paragraph");
+doc.Commit("paragraph block");
+
+var spans = doc.GetSpans(textId);
+var block = spans.OfType<AutomergeBlockSpan>().First();
+// block.BlockType == "paragraph"
+```
+
+Common block types:
+
+| Block Type | Use Case |
+|-----------|----------|
+| `"paragraph"` | Standard text paragraph |
+| `"heading"` | Section heading |
+| `"ordered-list-item"` | Numbered list entry |
+| `"unordered-list-item"` | Bulleted list entry |
+| `"blockquote"` | Quoted text block |
+| `"code-block"` | Code listing |
+
+Block type names are conventions — you can use any string that makes sense for your application.
+
+# Block Parents
+
+The `parents` property is a list that describes the block's nesting hierarchy. This is how you represent nested structures like lists within lists:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Item one");
+
+var blockId = doc.SplitBlock(textId, 0);
+doc.PutString(blockId, "type", "ordered-list-item");
+
+// Create a parents list to indicate this item belongs to an ordered list
+var parentsId = doc.PutObject(blockId, "parents", AutomergeContainerType.List);
+doc.ListInsertString(parentsId, 0, "ordered-list");
+doc.Commit("block with parents");
+
+var spans = doc.GetSpans(textId);
+var block = spans.OfType<AutomergeBlockSpan>().First();
+// block.BlockType == "ordered-list-item"
+// block.Parents == ["ordered-list"]
+```
+
+For deeply nested structures, the parents list contains multiple entries from outermost to innermost:
+
+```csharp
+// A list item inside a blockquote
+doc.PutString(blockId, "type", "unordered-list-item");
+var parentsId = doc.PutObject(blockId, "parents", AutomergeContainerType.List);
+doc.ListInsertString(parentsId, 0, "blockquote");
+doc.ListInsertString(parentsId, 1, "unordered-list");
+// parents == ["blockquote", "unordered-list"]
+```
+
+# Splitting at Different Positions
+
+The position argument to `SplitBlock` determines where the block boundary falls in the text. Text before and after the boundary becomes separate text spans:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "HelloWorld");
+
+// Split at position 5 — between "Hello" and "World"
+var blockId = doc.SplitBlock(textId, 5);
+doc.PutString(blockId, "type", "paragraph");
+doc.Commit("split at middle");
+
+var spans = doc.GetSpans(textId);
+var textSpans = spans.OfType<AutomergeTextSpan>().ToList();
+var blockSpans = spans.OfType<AutomergeBlockSpan>().ToList();
+
+// One block marker between two text spans
+// blockSpans.Count == 1
+// textSpans produces: "Hello" + "World"
+var combined = string.Join("", textSpans.Select(t => t.Text));
+// combined == "HelloWorld"
+```
+
+The text content is preserved — the block marker is an invisible boundary, not a replacement for characters.
+
+# Multiple Blocks
+
+You can split text multiple times to create a multi-block document:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Title.First paragraph.Second paragraph.");
+
+// Split into heading + two paragraphs
+var headingBlock = doc.SplitBlock(textId, 0);
+doc.PutString(headingBlock, "type", "heading");
+
+var paraBlock = doc.SplitBlock(textId, 6);  // After "Title."
+doc.PutString(paraBlock, "type", "paragraph");
+
+var paraBlock2 = doc.SplitBlock(textId, 23); // After "First paragraph."
+doc.PutString(paraBlock2, "type", "paragraph");
+doc.Commit("multi-block document");
+
+var spans = doc.GetSpans(textId);
+var blocks = spans.OfType<AutomergeBlockSpan>().ToList();
+// blocks[0].BlockType == "heading"
+// blocks[1].BlockType == "paragraph"
+// blocks[2].BlockType == "paragraph"
+```
+
+# Removing Blocks with JoinBlock
+
+`JoinBlock` removes a block marker at a given position, merging the text spans on either side back together:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "HelloWorld");
+
+// Create a block
+var blockId = doc.SplitBlock(textId, 5);
+doc.PutString(blockId, "type", "paragraph");
+doc.Commit("split block");
+
+// Verify the block exists
+var spansBefore = doc.GetSpans(textId);
+// Contains an AutomergeBlockSpan
+
+// Remove the block
+doc.JoinBlock(textId, 5);
+doc.Commit("join block");
+
+var spansAfter = doc.GetSpans(textId);
+// No more block spans
+var textSpans = spansAfter.OfType<AutomergeTextSpan>().ToList();
+var combined = string.Join("", textSpans.Select(t => t.Text));
+// combined == "HelloWorld" — text is rejoined
+```
+
+`JoinBlock` is the inverse of `SplitBlock`. After joining, the text on either side of the removed block marker flows together as if the split never happened.
+
+# Blocks and Sync
+
+Block markers transfer correctly through sync. After forking or syncing, both documents produce identical block spans:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "First paragraph.Second paragraph.");
+doc.SplitBlock(textId, 16);
+doc.Commit("split block");
+
+using var doc2 = doc.Fork();
+
+var spans1 = doc.GetSpans(textId);
+var spans2 = doc2.GetSpans(textId);
+
+// Both have the same number of spans
+// Block types match between the two documents
+for (var i = 0; i < spans1.Count; i++)
+{
+    if (spans1[i] is AutomergeBlockSpan bs1 && spans2[i] is AutomergeBlockSpan bs2)
+    {
+        // bs1.BlockType == bs2.BlockType
+    }
+}
+```
+
+# API Reference
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `doc.SplitBlock(textId, index)` | `AutomergeObjId` | Insert a block boundary at `index`, returns writable block object |
+| `doc.JoinBlock(textId, index)` | `void` | Remove the block boundary at `index` |
+
+| Type | Properties | Description |
+|------|-----------|-------------|
+| `AutomergeBlockSpan` | `BlockType`, `Parents`, `AttributesJson` | Block marker in the span list |
+
+# Next Steps
+
+- [Update Spans](/Six.Automerge/guides/rich-text/update-spans/) — Insert and remove blocks programmatically through the `UpdateSpans` pattern.
+- [Spans](/Six.Automerge/guides/rich-text/spans/) — Understand how blocks interleave with text spans in the span model.
+- [Concurrent Rich Text](/Six.Automerge/guides/rich-text/concurrent-rich-text/) — How block edits merge across peers.

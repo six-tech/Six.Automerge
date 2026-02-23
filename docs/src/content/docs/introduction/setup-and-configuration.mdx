@@ -1,0 +1,222 @@
+---
+title: Setup and Configuration
+description: How to set up and configure your new project
+---
+
+import {CardGrid, Card, Steps, Aside} from '@astrojs/starlight/components'
+
+# Introduction
+
+This solution provides an automated initialization process that handles all the initial configuration tasks,
+making it easy to get started with your new project.
+
+## Prerequisites
+
+Before running the setup, ensure you have the following tools installed:
+
+<CardGrid>
+
+<Card title="🔧 .NET 10 SDK" icon="download">
+### Required Tool
+- **Download**: [dotnet.microsoft.com/download](https://dotnet.microsoft.com/download)
+- **Purpose**: Builds and runs .NET projects, executes C# scripts
+- **Verification**: Run `dotnet --version` to check installation
+</Card>
+
+<Card title="📦 Package Managers" icon="npm">
+### Choose One
+#### pnpm (Recommended)
+- **Install**: `npm install -g pnpm`
+- **Advantages**: Faster, disk-efficient, better dependency management
+- **Website**: [pnpm.io](https://pnpm.io/)
+
+#### npm (Alternative)
+- **Included with**: [Node.js](https://nodejs.org/)
+- **Verification**: Run `npm --version` to check installation
+</Card>
+
+</CardGrid>
+
+## Six Solution Template
+
+![Hero Image](../../../assets/six-solution-hero-banner.png)
+
+**Six.Automerge** has been built using [**Six Solution Template**](https://six-tech.github.io/Six.SolutionTemplate/six/introduction/), 
+which provides a standardized project structure, AI helpers, built-in in-repository documentation, development 
+scripts, and more.
+
+If you are modifying the code of this library or using it from the source, please explore the features and structure of 
+the template before proceeding:
+
+- [Standardized project structure](https://six-tech.github.io/Six.SolutionTemplate/six/structure/) for libraries, applications, tests, and benchmarks
+- [Hierarchical configuration management](https://six-tech.github.io/Six.SolutionTemplate/six/structure/str-configuration/) with sensible defaults
+- [C#-based development scripts](https://six-tech.github.io/Six.SolutionTemplate/six/scripts/) for cross-platform automation (testing, packaging, and publishing)
+- [Cursor and Kiro rules](https://six-tech.github.io/Six.SolutionTemplate/six/ai/introduction/) for AI assistance
+- [In-Repository Documentation](https://six-tech.github.io/Six.SolutionTemplate/six/project-documentation/setting-up-documentation/)
+- [Automatic deployment](https://six-tech.github.io/Six.SolutionTemplate/six/github-workflow-integration/) of documentation to GitHub Pages
+
+
+Please explore the whole [feature-set here](https://six-tech.github.io/Six.SolutionTemplate/six/introduction/)
+
+# Quick Start
+
+After cloning the repository and ensuring all prerequisites are available, it is as simple as running the automated 
+initialization from the solution root directory to set up your project. 
+
+## Automated Setup Process
+After cloning the repository, run the automated initialization from the solution root directory:
+
+<Aside type="caution" title="File Overwrite Warning">
+    The initialization tool will overwrite the following files if they exist:
+    - `libs/Directory.Build.props` - NuGet package configuration
+    - `docs/astro.config.mjs` - Documentation site configuration
+    - `docs/src/content/docs/` - All documentation pages
+
+    Make sure to backup any custom changes before running the initialization.
+</Aside>
+
+```bash
+dotnet run init.cs
+```
+
+The initialization script will:
+1. ✅ Check all prerequisites
+2. 🔄 Restore .NET NuGet packages
+3. ⚙️ Guide you through project configuration
+4. 📚 Setup documentation (if enabled)
+5. 📦 Install documentation dependencies (if enabled)
+6. 🤖 Configure AI features (AGENTS.md, Cursor rules, Kiro rules)
+7. 🛠️ Setup JetBrains Rider AI commit messages (if enabled)
+8. 📝 Generate all configuration files
+
+
+# Automated Initialization Process
+
+<Steps>
+
+1. **File Overwrite Confirmation**
+   The script first warns about files that will be overwritten and asks for confirmation before proceeding.
+
+2. **Prerequisites Check**
+   Automatically verifies:
+   - **dotnet CLI** availability and version
+   - **pnpm** or **npm** installation
+   - **Solution file** detection (.slnx or .sln)
+
+3. **Package Restoration**
+   Runs `dotnet restore` to restore all NuGet packages for the solution.
+
+4. **Interactive Project Configuration**
+   Guides you through configuring your project with prompts for:
+   - **Project Name** (human-readable)
+   - **Project Description**
+   - **Package Tags** (semicolon-separated)
+   - **Authors** (comma-separated)
+   - **Company**
+   - **Copyright text**
+   - **GitHub Repository URL**
+   - **Project URL**
+
+5. **Documentation Configuration**
+   If documentation is enabled:
+   - **GitHub Pages base URL**
+   - Documentation title (automatically set from project name)
+
+6. **AI Features Configuration**
+   Configure AI integration options:
+   - **AGENTS.md** file for AI coding assistants
+   - **Cursor IDE rules** (.cursor directory)
+   - **Kiro AI steering rules** (.kiro directory)
+   - **JetBrains Rider AI** conventional commit messages
+
+7. **File Generation**
+   Generates all configuration files:
+   - **`libs/Directory.Build.props`**: Complete NuGet package configuration
+   - **`docs/astro.config.mjs`**: Documentation site configuration
+   - **Documentation pages**: Introduction, setup guide, and index pages
+
+8. **Documentation Dependencies**
+   If documentation is enabled, installs Node.js dependencies using `pnpm` or `npm`.
+
+</Steps>
+
+
+---- 
+
+# Manual Setup (Alternative)
+
+If you prefer to set up manually or need to customize specific aspects:
+
+## 1. Restore .NET Packages
+```bash
+dotnet restore
+```
+
+## 2. Install Documentation Dependencies
+```bash
+cd docs
+pnpm install
+# or
+npm install
+```
+
+## 3. Configure NuGet Package Properties
+Edit `libs/Directory.Build.props`:
+```xml
+<PropertyGroup>
+  <RepositoryUrl>https://github.com/your-username/your-repo</RepositoryUrl>
+  <Authors>Your Name</Authors>
+  <Copyright>Copyright © 2024</Copyright>
+  <Description>Your project description</Description>
+  <PackageProjectUrl>https://your-project-url.com</PackageProjectUrl>
+</PropertyGroup>
+```
+
+## 4. Configure Documentation
+Edit `docs/astro.config.mjs`:
+```javascript
+export default defineConfig({
+  site: 'https://your-username.github.io/your-repo',
+  title: 'Your Project Documentation',
+  description: 'Your project description',
+  // ... other configuration
+});
+```
+
+
+
+
+# Troubleshooting
+
+## .NET CLI Not Found
+```
+Error: dotnet CLI is not installed
+```
+**Solution**: Install .NET 10 SDK from [dotnet.microsoft.com](https://dotnet.microsoft.com/download)
+
+## No Package Manager Found
+```
+Error: Neither pnpm nor npm is installed
+```
+**Solution**: Install Node.js (includes npm) from [nodejs.org](https://nodejs.org/) or pnpm with `npm install -g pnpm`
+
+
+## Solution File Not Found
+```
+Error: No solution file found in the current directory
+```
+**Solution**: Ensure you're running the setup from the repository root directory containing `.sln` or `.slnx` files
+
+## Package Installation Failures
+If package installation fails:
+1. Check your internet connection
+2. Verify Node.js version compatibility
+3. Try clearing package manager caches:
+   ```bash
+   # For pnpm
+   pnpm store prune
+   
+   # For npm
+   npm cache clean --force
+   ```
+

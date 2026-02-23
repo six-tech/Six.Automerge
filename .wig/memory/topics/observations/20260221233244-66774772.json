@@ -1,0 +1,12 @@
+{
+  "id": "20260221233244-66774772",
+  "created": "2026-02-21T23:32:44.5150449Z",
+  "runSlug": "demoapp-collaborativeeditor-issues-the-collab",
+  "contentHash": "B88E4A3C18FBDB30",
+  "type": "observation",
+  "tags": [
+    "testing",
+    "delegates",
+    "async-patterns"
+  ]
+}

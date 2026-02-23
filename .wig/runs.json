@@ -1,0 +1,132 @@
+{
+  "runs": [
+    {
+      "slug": "introduction-we-are-implementing-a-c-wrapper",
+      "specFiles": [
+        ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md"
+      ],
+      "status": "completed",
+      "stopReason": "All sprints completed",
+      "startedAt": "2026-02-19T23:23:09.1628579Z",
+      "completedAt": "2026-02-20T01:38:49.4276575Z",
+      "totalTasks": 65,
+      "completedTasks": 65,
+      "finalIteration": 10
+    },
+    {
+      "slug": "we-have-documentation-in-docs-src-content-docs",
+      "specFiles": [
+        ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md"
+      ],
+      "status": "completed",
+      "stopReason": "All sprints completed",
+      "startedAt": "2026-02-20T02:05:04.4901453Z",
+      "completedAt": "2026-02-20T05:45:55.9468535Z",
+      "totalTasks": 113,
+      "completedTasks": 113,
+      "finalIteration": 16
+    },
+    {
+      "slug": "introduction-you-have-written-example-applicati",
+      "specFiles": [
+        ".wig/specs/introduction-you-have-written-example-applicati/implementation-plan.md"
+      ],
+      "status": "completed",
+      "stopReason": "All sprints completed",
+      "startedAt": "2026-02-20T11:17:24.5155758Z",
+      "completedAt": "2026-02-20T15:04:34.1539463Z",
+      "totalTasks": 36,
+      "completedTasks": 35,
+      "finalIteration": 7
+    },
+    {
+      "slug": "introduction-we-have-created-demo-apps-in-app",
+      "specFiles": [
+        ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md"
+      ],
+      "status": "completed",
+      "stopReason": "All sprints completed",
+      "startedAt": "2026-02-21T00:01:53.0156087Z",
+      "completedAt": "2026-02-21T06:56:47.3600921Z",
+      "totalTasks": 49,
+      "completedTasks": 49,
+      "finalIteration": 8
+    },
+    {
+      "slug": "proposal-05-projectnameandnamespacerename",
+      "specFiles": [
+        ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md"
+      ],
+      "status": "completed",
+      "stopReason": "All sprints completed",
+      "startedAt": "2026-02-21T14:14:20.686363Z",
+      "completedAt": "2026-02-21T14:46:20.4654174Z",
+      "totalTasks": 27,
+      "completedTasks": 27,
+      "finalIteration": 4
+    },
+    {
+      "slug": "rust-compilation-and-artefacts-currently-we-a",
+      "specFiles": [
+        ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md"
+      ],
+      "status": "completed",
+      "stopReason": "All sprints completed",
+      "startedAt": "2026-02-21T15:17:58.9035543Z",
+      "completedAt": "2026-02-21T16:07:36.9301979Z",
+      "totalTasks": 20,
+      "completedTasks": 20,
+      "finalIteration": 4
+    },
+    {
+      "slug": "demoapp-collaborativeeditor-issues-the-collab",
+      "specFiles": [
+        ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md"
+      ],
+      "status": "completed",
+      "stopReason": "All sprints completed",
+      "startedAt": "2026-02-21T19:44:45.4339959Z",
+      "completedAt": "2026-02-21T23:32:45.6094924Z",
+      "totalTasks": 30,
+      "completedTasks": 30,
+      "finalIteration": 5
+    },
+    {
+      "slug": "demoapp-collaborativeeditor-issues-2-the-dem",
+      "specFiles": [
+        ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md"
+      ],
+      "status": "failed",
+      "startedAt": "2026-02-22T00:35:56.3913727Z",
+      "totalTasks": 63,
+      "completedTasks": 55,
+      "finalIteration": 10
+    },
+    {
+      "slug": "demoapp-collaborativeeditor-issues-3-the-dem",
+      "specFiles": [
+        ".wig/specs/demoapp-collaborativeeditor-issues-3-the-dem/implementation-plan.md"
+      ],
+      "status": "completed",
+      "stopReason": "All sprints completed",
+      "startedAt": "2026-02-22T12:44:46.0505762Z",
+      "completedAt": "2026-02-22T14:22:59.8682656Z",
+      "totalTasks": 20,
+      "completedTasks": 20,
+      "finalIteration": 4
+    },
+    {
+      "slug": "document-sync-issues-now-when-i-run-aspire-ho",
+      "specFiles": [
+        ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md"
+      ],
+      "status": "completed",
+      "stopReason": "All sprints completed",
+      "startedAt": "2026-02-22T15:24:09.1690638Z",
+      "completedAt": "2026-02-22T16:56:39.5964404Z",
+      "totalTasks": 38,
+      "completedTasks": 38,
+      "finalIteration": 6
+    }
+  ]
+}

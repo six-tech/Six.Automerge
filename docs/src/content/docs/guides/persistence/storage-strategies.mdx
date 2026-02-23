@@ -1,0 +1,308 @@
+---
+title: "Storage Strategies"
+description: Choose between full saves, incremental saves, and hybrid storage patterns for file systems, databases, and cloud storage
+---
+
+# Overview
+
+How you persist Automerge documents depends on your application's profile: document size, change frequency, storage backend, and recovery requirements. This page covers the three main strategies and shows how to implement them across different storage systems.
+
+# Full Saves
+
+Save the complete document every time using `Save`:
+
+```csharp
+void SaveFull(string path, AutomergeDocument doc)
+{
+    var bytes = doc.Save();
+    File.WriteAllBytes(path, bytes);
+}
+```
+
+**Pros:**
+- Simplest to implement — one file per document
+- Easy to back up, copy, and transfer
+- No compaction needed
+- Loading is a single `Load` call
+
+**Cons:**
+- Writes the entire document on every save, even for small changes
+- Slower for large documents (megabytes of history)
+- Higher storage I/O
+
+**Best for:**
+- Small documents (under ~100 KB)
+- Infrequent changes (saves per minute, not per second)
+- Applications where simplicity matters more than I/O efficiency
+
+# Incremental Saves
+
+Save only changes since the last save using `SaveIncremental`:
+
+```csharp
+void SaveIncremental(string basePath, string incrementalPath, AutomergeDocument doc)
+{
+    var bytes = doc.SaveIncremental();
+
+    if(bytes.Length > 0)
+    {
+        File.AppendAllBytes(incrementalPath, bytes);
+    }
+}
+```
+
+Loading requires the base document plus all incremental files:
+
+```csharp
+AutomergeDocument LoadWithIncrements(string basePath, string incrementalPath)
+{
+    var baseBytes = File.ReadAllBytes(basePath);
+    var doc = AutomergeDocument.Load(baseBytes);
+
+    if(File.Exists(incrementalPath))
+    {
+        var incrementalBytes = File.ReadAllBytes(incrementalPath);
+        doc.LoadIncremental(incrementalBytes);
+    }
+
+    return doc;
+}
+```
+
+**Pros:**
+- Very fast saves — only new changes are written
+- Low storage I/O per operation
+- Efficient for documents with frequent, small changes
+
+**Cons:**
+- Requires compaction to prevent unbounded growth of incremental files
+- Loading gets slower as incremental files accumulate
+- More files to manage per document
+
+**Best for:**
+- Large documents (megabytes of data)
+- High-frequency changes (multiple saves per second)
+- Real-time collaborative editors
+
+# Hybrid Approach
+
+Combine full and incremental saves with a compaction threshold:
+
+```csharp
+class HybridDocumentStore
+{
+    readonly string _basePath;
+    readonly long _compactionThreshold;
+
+    public HybridDocumentStore(string basePath, long compactionThreshold = 1024 * 1024)
+    {
+        _basePath = basePath;
+        _compactionThreshold = compactionThreshold;
+        Directory.CreateDirectory(basePath);
+    }
+
+    public void Save(string id, AutomergeDocument doc, bool forceFullSave = false)
+    {
+        var incrementalPath = GetIncrementalPath(id);
+        var incrementalSize = File.Exists(incrementalPath)
+            ? new FileInfo(incrementalPath).Length
+            : 0;
+
+        if(forceFullSave || incrementalSize > _compactionThreshold)
+        {
+            // Full save + clear incremental file
+            var bytes = doc.Save();
+            File.WriteAllBytes(GetDocumentPath(id), bytes);
+
+            if(File.Exists(incrementalPath))
+            {
+                File.Delete(incrementalPath);
+            }
+        }
+        else
+        {
+            // Append incremental changes
+            var bytes = doc.SaveIncremental();
+
+            if(bytes.Length > 0)
+            {
+                File.AppendAllBytes(incrementalPath, bytes);
+            }
+        }
+    }
+
+    public AutomergeDocument Load(string id)
+    {
+        var docPath = GetDocumentPath(id);
+
+        if(!File.Exists(docPath))
+        {
+            throw new FileNotFoundException($"Document not found: {id}");
+        }
+
+        var doc = AutomergeDocument.Load(File.ReadAllBytes(docPath));
+
+        var incrementalPath = GetIncrementalPath(id);
+        if(File.Exists(incrementalPath))
+        {
+            var incrementalBytes = File.ReadAllBytes(incrementalPath);
+            doc.LoadIncremental(incrementalBytes);
+        }
+
+        return doc;
+    }
+
+    string GetDocumentPath(string id) => Path.Combine(_basePath, $"{id}.automerge");
+    string GetIncrementalPath(string id) => Path.Combine(_basePath, $"{id}.incremental");
+}
+```
+
+**How it works:**
+1. Most saves are incremental (fast, small writes)
+2. When incremental data exceeds a threshold (default: 1 MB), a full save compacts everything
+3. Loading always applies any pending incremental data on top of the base
+
+This balances I/O efficiency with bounded storage growth.
+
+# Database Storage
+
+Automerge's binary format stores efficiently in BLOB columns:
+
+```csharp
+// Save to database
+var bytes = doc.Save();
+await database.ExecuteAsync(
+    "INSERT INTO documents (id, data, updated_at) VALUES (@id, @data, @updated_at) " +
+    "ON CONFLICT (id) DO UPDATE SET data = @data, updated_at = @updated_at",
+    new { id = "doc-001", data = bytes, updated_at = DateTime.UtcNow });
+
+// Load from database
+var row = await database.QuerySingleAsync(
+    "SELECT data FROM documents WHERE id = @id",
+    new { id = "doc-001" });
+
+using var doc = AutomergeDocument.Load(row.data);
+```
+
+Works with PostgreSQL (`bytea`), SQL Server (`varbinary(max)`), SQLite (`BLOB`), and others.
+
+## Incremental Database Strategy
+
+Store incremental changes in a separate table and periodically compact:
+
+```csharp
+// Save incremental change
+var incremental = doc.SaveIncremental();
+await database.ExecuteAsync(
+    "INSERT INTO document_changes (document_id, data, created_at) VALUES (@id, @data, @ts)",
+    new { id = "doc-001", data = incremental, ts = DateTime.UtcNow });
+
+// Compact: load base + changes, save full, delete changes
+var baseRow = await database.QuerySingleAsync(
+    "SELECT data FROM documents WHERE id = @id",
+    new { id = "doc-001" });
+
+using var compacted = AutomergeDocument.Load(baseRow.data);
+
+var changes = await database.QueryAsync(
+    "SELECT data FROM document_changes WHERE document_id = @id ORDER BY created_at",
+    new { id = "doc-001" });
+
+foreach(var change in changes)
+{
+    compacted.LoadIncremental(change.data);
+}
+
+// Write compacted document and clear changes
+await database.ExecuteAsync(
+    "UPDATE documents SET data = @data WHERE id = @id",
+    new { id = "doc-001", data = compacted.Save() });
+
+await database.ExecuteAsync(
+    "DELETE FROM document_changes WHERE document_id = @id",
+    new { id = "doc-001" });
+```
+
+# Cloud Storage
+
+Automerge documents work with any cloud storage that handles byte arrays:
+
+```csharp
+// Save to cloud storage
+var bytes = doc.Save();
+await cloudStorage.UploadAsync($"documents/{id}.automerge", bytes);
+
+// Load from cloud storage
+var bytes = await cloudStorage.DownloadAsync($"documents/{id}.automerge");
+using var doc = AutomergeDocument.Load(bytes);
+```
+
+Works with S3, Azure Blob Storage, Google Cloud Storage, and other object stores.
+
+## Cloud Incremental Strategy
+
+Use a base object plus numbered increment objects:
+
+```csharp
+// Save increment
+var increment = doc.SaveIncremental();
+var sequence = GetNextSequence(id);
+await cloudStorage.UploadAsync($"documents/{id}/inc-{sequence:D6}.bin", increment);
+
+// Load: fetch base + all increments
+var baseBytes = await cloudStorage.DownloadAsync($"documents/{id}/base.automerge");
+using var loaded = AutomergeDocument.Load(baseBytes);
+
+var increments = await cloudStorage.ListAsync($"documents/{id}/inc-");
+foreach(var incKey in increments.OrderBy(k => k))
+{
+    var incBytes = await cloudStorage.DownloadAsync(incKey);
+    loaded.LoadIncremental(incBytes);
+}
+```
+
+# Choosing a Strategy
+
+| Factor | Full Save | Incremental | Hybrid |
+|--------|-----------|-------------|--------|
+| Document size | Small (under 100 KB) | Large (over 100 KB) | Any |
+| Change frequency | Low | High | Any |
+| Implementation effort | Low | Medium | Medium |
+| Storage I/O per save | High | Low | Low (usually) |
+| Load time | Fast | Grows with increments | Fast (compacted) |
+| Recovery | Simple | Requires all files | Simple (after compaction) |
+
+For most applications, the **hybrid approach** provides the best balance of simplicity and performance.
+
+# Versioning Documents
+
+Use heads as version markers with any storage strategy:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "content", "Version 1");
+doc.Commit("v1");
+var v1Heads = doc.GetHeads();
+
+doc.PutString(root, "content", "Version 2");
+doc.Commit("v2");
+var v2Heads = doc.GetHeads();
+
+// Store version metadata alongside the document
+var versions = new Dictionary<string, IReadOnlyList<string>>
+{
+    ["v1"] = v1Heads,
+    ["v2"] = v2Heads
+};
+
+// Later: use SaveAfter to get changes between versions
+var changesSinceV1 = doc.SaveAfter(v1Heads);
+```
+
+# Next Steps
+
+- [Save and Load](/Six.Automerge/guides/persistence/save-and-load/) — Basic persistence fundamentals
+- [Incremental Saves](/Six.Automerge/guides/persistence/incremental-saves/) — `SaveIncremental`, `LoadIncremental`, and `SaveAfter` details
+- [Save Options](/Six.Automerge/guides/persistence/save-options/) — Control compression and verification

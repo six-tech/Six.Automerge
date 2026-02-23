@@ -1,0 +1,326 @@
+---
+title: "Text: Basic Operations"
+description: Learn how to use text containers for collaborative text editing in Automerge documents
+---
+
+# Overview
+
+Text containers provide special CRDT semantics designed for collaborative text editing.
+
+Unlike regular strings, text containers track character-level operations. This enables intelligent merging when multiple users edit the same content simultaneously.
+
+# Creating Text Containers
+
+Create a text container using `PutObject` with the Text container type:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var description = doc.PutObject(root, "description", AutomergeContainerType.Text);
+```
+
+This creates an empty text container stored under the "description" key.
+
+# Adding Text
+
+Use `SpliceText` to insert text at any position:
+
+```csharp
+var description = doc.PutObject(root, "description", AutomergeContainerType.Text);
+
+// Insert at the beginning (index 0)
+doc.SpliceText(description, 0, 0, "Hello, world!");
+doc.Commit("Add initial text");
+```
+
+The `SpliceText` method takes three parameters:
+- **Index**: Where to start the operation (0 = beginning)
+- **Delete count**: How many characters to delete
+- **Text**: The text to insert
+
+# Editing Text
+
+## Inserting Text
+
+Insert text at any position:
+
+```csharp
+var text = doc.PutObject(root, "content", AutomergeContainerType.Text);
+
+doc.SpliceText(text, 0, 0, "Hello, world!");
+doc.Commit("Initial text");
+
+// Insert at the beginning
+doc.SpliceText(text, 0, 0, "Greeting: ");
+doc.Commit("Add prefix");
+// Result: "Greeting: Hello, world!"
+
+// Insert in the middle (after "Greeting: Hello")
+doc.SpliceText(text, 16, 0, " beautiful");
+doc.Commit("Add adjective");
+// Result: "Greeting: Hello, beautiful world!"
+
+// Insert at the end
+doc.SpliceText(text, 33, 0, " How are you?");
+doc.Commit("Add question");
+// Result: "Greeting: Hello, beautiful world! How are you?"
+```
+
+## Deleting Text
+
+Delete characters by specifying a delete count:
+
+```csharp
+var text = doc.PutObject(root, "content", AutomergeContainerType.Text);
+
+doc.SpliceText(text, 0, 0, "Hello, wonderful world!");
+doc.Commit("Initial text");
+
+// Delete "wonderful " (10 characters starting at index 7)
+doc.SpliceText(text, 7, 10, "");
+doc.Commit("Remove adjective");
+// Result: "Hello, world!"
+```
+
+The empty string in the third parameter means "don't insert anything."
+
+## Replacing Text
+
+Replace text by deleting and inserting in one operation:
+
+```csharp
+var text = doc.PutObject(root, "greeting", AutomergeContainerType.Text);
+
+doc.SpliceText(text, 0, 0, "Hello, world!");
+doc.Commit("Initial");
+
+// Replace "world" (5 characters at index 7) with "everyone"
+doc.SpliceText(text, 7, 5, "everyone");
+doc.Commit("Change greeting");
+// Result: "Hello, everyone!"
+```
+
+This deletes 5 characters starting at index 7 and inserts "everyone" at that position.
+
+# Reading Text
+
+Use `HydrateJson` to get the text content as JSON:
+
+```csharp
+var text = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(text, 0, 0, "This is the text content.");
+doc.Commit("Add text");
+
+var json = doc.HydrateJson();
+using var parsed = JsonDocument.Parse(json);
+var content = parsed.RootElement.GetProperty("content").GetString();
+
+Console.WriteLine($"Content: {content}");
+// Output: Content: This is the text content.
+```
+
+Text containers serialize to regular strings in JSON.
+
+# Text vs String
+
+Understanding when to use text containers versus regular strings:
+
+## Use Text Containers When:
+
+**Multiple users edit the same field**
+
+Text containers handle concurrent character-level edits:
+
+```csharp
+var description = doc.PutObject(root, "description", AutomergeContainerType.Text);
+doc.SpliceText(description, 0, 0, "Product description goes here");
+```
+
+**You need fine-grained change tracking**
+
+Text containers track every character insertion and deletion.
+
+**Content is large or frequently edited**
+
+Text containers efficiently handle long documents with many edits.
+
+## Use Regular Strings When:
+
+**Only one user updates the field**
+
+Simple fields don't need text container complexity:
+
+```csharp
+doc.PutString(root, "username", "alice");
+doc.PutString(root, "email", "alice@example.com");
+```
+
+**Content replaces entirely**
+
+When you replace the whole value, use strings:
+
+```csharp
+doc.PutString(root, "status", "draft");
+// Later: completely replace
+doc.PutString(root, "status", "published");
+```
+
+**Values are short and static**
+
+Short identifiers or labels work fine as strings:
+
+```csharp
+doc.PutString(root, "id", "USER-12345");
+doc.PutString(root, "category", "documentation");
+```
+
+# Working with Text Length
+
+Calculate text length from the JSON representation:
+
+```csharp
+var text = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(text, 0, 0, "Hello, world!");
+doc.Commit("Add text");
+
+var json = doc.HydrateJson();
+using var parsed = JsonDocument.Parse(json);
+var content = parsed.RootElement.GetProperty("content").GetString();
+
+Console.WriteLine($"Length: {content.Length}"); // Length: 13
+```
+
+You need to hydrate to JSON to get the current text and its length.
+
+# Complete Example
+
+Here's a document editor simulation:
+
+```csharp
+using System;
+using System.Text.Json;
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Create a document with title and body
+doc.PutString(root, "title", "Meeting Notes");
+var body = doc.PutObject(root, "body", AutomergeContainerType.Text);
+
+// Write initial content
+doc.SpliceText(body, 0, 0, "Meeting Date: 2024-01-15\n\n");
+doc.SpliceText(body, 26, 0, "Attendees:\n- Alice\n- Bob\n\n");
+doc.SpliceText(body, 52, 0, "Topics Discussed:\n");
+doc.Commit("Initial draft");
+
+// Add first topic
+doc.SpliceText(body, 70, 0, "1. Project timeline review\n");
+doc.Commit("Add first topic");
+
+// Add second topic
+doc.SpliceText(body, 97, 0, "2. Budget approval\n");
+doc.Commit("Add second topic");
+
+// Add notes to first topic
+var insertPos = 97; // Right before "2. Budget approval"
+doc.SpliceText(body, insertPos, 0, "   - Deadline confirmed for March 1\n   - All milestones on track\n\n");
+doc.Commit("Add timeline notes");
+
+// Fix typo in date
+doc.SpliceText(body, 14, 10, "2024-01-16"); // Replace the date
+doc.Commit("Correct meeting date");
+
+// Display the document
+var json = doc.HydrateJson();
+using var parsed = JsonDocument.Parse(json);
+
+Console.WriteLine("Title: " + parsed.RootElement.GetProperty("title").GetString());
+Console.WriteLine();
+Console.WriteLine(parsed.RootElement.GetProperty("body").GetString());
+```
+
+# Best Practices
+
+## Use Text for Collaborative Content
+
+Any field that multiple users might edit simultaneously should use text containers:
+
+```csharp
+// Good: Text for collaborative fields
+var description = doc.PutObject(root, "description", AutomergeContainerType.Text);
+var notes = doc.PutObject(root, "notes", AutomergeContainerType.Text);
+var comments = doc.PutObject(root, "comments", AutomergeContainerType.Text);
+
+// Good: Strings for single-user fields
+doc.PutString(root, "created_by", "alice");
+doc.PutString(root, "id", "DOC-123");
+```
+
+## Calculate Positions Carefully
+
+Index positions matter for correct edits:
+
+```csharp
+// Current text: "Hello, world!"
+// To insert after "Hello, ": index 7
+doc.SpliceText(text, 7, 0, "beautiful ");
+
+// To replace "world": delete 5 chars at index 7, insert "everyone"
+doc.SpliceText(text, 7, 5, "everyone");
+```
+
+Wrong positions lead to incorrect edits. Hydrate the document to verify positions if needed.
+
+## Handle Empty Text
+
+Text containers can be empty initially:
+
+```csharp
+var text = doc.PutObject(root, "content", AutomergeContainerType.Text);
+// Empty text container
+
+// Insert at index 0 to add content
+doc.SpliceText(text, 0, 0, "First content");
+```
+
+## Group Related Text Operations
+
+Batch multiple edits into one commit when they form a logical unit:
+
+```csharp
+// Good: Related edits in one commit
+doc.SpliceText(text, 0, 0, "# Title\n\n");
+doc.SpliceText(text, 9, 0, "This is the introduction.\n\n");
+doc.SpliceText(text, 36, 0, "## Section 1\n\n");
+doc.Commit("Add document structure");
+
+// Less efficient: Many small commits
+doc.SpliceText(text, 0, 0, "# Title\n\n");
+doc.Commit("Add title");
+doc.SpliceText(text, 9, 0, "This is the introduction.\n\n");
+doc.Commit("Add intro");
+```
+
+## Unicode and Special Characters
+
+Text containers handle UTF-8 encoding:
+
+```csharp
+var text = doc.PutObject(root, "content", AutomergeContainerType.Text);
+
+// Unicode characters work correctly
+doc.SpliceText(text, 0, 0, "Hello World!");
+doc.SpliceText(text, 12, 0, " Multiple languages: Bonjour, Hola");
+
+doc.Commit("Add international text");
+```
+
+Be aware that multi-byte characters may affect position calculations. Calculate positions based on the actual character offsets in the text.
+
+# Next Steps
+
+- [Collaborative Editing](/Six.Automerge/guides/text/collaborative-editing/) — Learn how concurrent text edits merge between peers.
+- [Maps — Basic Operations](/Six.Automerge/guides/maps/basic-operations/) — Learn when to use maps versus text containers.
+- [Lists — Basic Operations](/Six.Automerge/guides/lists/basic-operations/) — Compare text containers with list-based approaches.

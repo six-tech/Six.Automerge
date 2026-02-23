@@ -1,0 +1,10 @@
+[package]
+name = "six_automerge_codegen"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+six_automerge = { path = "../native" }
+interoptopus = "0.15.0-alpha.21"
+interoptopus_backend_csharp = "0.15.0-alpha.21"

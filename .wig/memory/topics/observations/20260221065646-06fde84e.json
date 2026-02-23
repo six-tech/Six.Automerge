@@ -1,0 +1,14 @@
+{
+  "id": "20260221065646-06fde84e",
+  "created": "2026-02-21T06:56:46.7284738Z",
+  "runSlug": "introduction-we-have-created-demo-apps-in-app",
+  "contentHash": "7074789489E2568C",
+  "type": "observation",
+  "tags": [
+    "async",
+    "deadlock",
+    "lock-ordering",
+    "synchronization",
+    "refactoring"
+  ]
+}

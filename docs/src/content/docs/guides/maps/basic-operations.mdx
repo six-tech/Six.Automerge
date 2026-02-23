@@ -1,0 +1,366 @@
+---
+title: "Maps: Basic Operations"
+description: Learn how to create and manipulate map containers in Automerge documents
+---
+
+# Overview
+
+Maps store key-value pairs, similar to dictionaries or JSON objects.
+
+Every Automerge document starts with a root map. You can add, update, read, and delete key-value pairs using type-specific methods.
+
+# The Root Map
+
+Every document has a root map automatically:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "name", "Alice");
+doc.Commit("Add name");
+```
+
+The root is always a Map. All top-level data goes here.
+
+# Adding Values
+
+Automerge provides type-specific methods for adding different data types to maps.
+
+## Strings
+
+Store text values:
+
+```csharp
+doc.PutString(root, "username", "alice");
+doc.PutString(root, "email", "alice@example.com");
+```
+
+Keys must be strings. Values are UTF-8 encoded text.
+
+## Numbers
+
+Store integer values:
+
+```csharp
+doc.PutInt64(root, "age", 30);
+doc.PutInt64(root, "score", -42);
+doc.PutUInt64(root, "points", 1000);
+```
+
+Use `PutInt64` for signed integers and `PutUInt64` for unsigned integers.
+
+Store floating-point values:
+
+```csharp
+doc.PutDouble(root, "temperature", 23.5);
+doc.PutDouble(root, "rating", 4.7);
+```
+
+## Booleans
+
+Store true or false values:
+
+```csharp
+doc.PutBoolean(root, "is_active", true);
+doc.PutBoolean(root, "email_verified", false);
+```
+
+## Timestamps
+
+Store dates and times as Unix milliseconds:
+
+```csharp
+var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+doc.PutTimestamp(root, "created_at", now);
+
+var future = DateTimeOffset.UtcNow.AddDays(7).ToUnixTimeMilliseconds();
+doc.PutTimestamp(root, "expires_at", future);
+```
+
+Timestamps use Int64 internally but have semantic meaning for time values.
+
+## Binary Data
+
+Store arbitrary bytes:
+
+```csharp
+var imageData = File.ReadAllBytes("avatar.png");
+doc.PutBytes(root, "avatar", imageData);
+
+var hash = new byte[] { 0xDE, 0xAD, 0xBE, 0xEF };
+doc.PutBytes(root, "checksum", hash);
+```
+
+This works for any binary data like images, encrypted data, or serialized objects.
+
+## Null Values
+
+Store explicit null:
+
+```csharp
+doc.PutNull(root, "deleted_at");
+```
+
+Null differs from a missing key. This explicitly sets the key to null.
+
+## Counters
+
+Counters are special CRDT values that merge by addition:
+
+```csharp
+doc.PutCounter(root, "view_count", 10);
+doc.Commit("Initial count");
+
+// Later, increment by 5
+doc.PutCounter(root, "view_count", 5);
+doc.Commit("Add more views");
+```
+
+When documents merge, counter values add together. If Alice increments by 10 and Bob increments by 5 concurrently, the merged value becomes 15.
+
+This differs from regular integers, which use last-write-wins semantics.
+
+# Updating Values
+
+To update a value, use the same `Put` methods:
+
+```csharp
+// Initial value
+doc.PutString(root, "status", "draft");
+doc.Commit("Set initial status");
+
+// Update the value
+doc.PutString(root, "status", "published");
+doc.Commit("Publish document");
+```
+
+Updates create new versions. The change history tracks both values.
+
+# Deleting Keys
+
+Remove keys from maps using `Delete`:
+
+```csharp
+doc.PutString(root, "temp_field", "temporary");
+doc.Commit("Add temp field");
+
+doc.Delete(root, "temp_field");
+doc.Commit("Remove temp field");
+```
+
+After deletion, the key no longer appears in the map. However, the history still contains the previous value.
+
+# Reading Values
+
+Use `HydrateJson` to get a JSON representation:
+
+```csharp
+var json = doc.HydrateJson();
+Console.WriteLine(json);
+```
+
+This returns a string you can parse with `System.Text.Json` or `Newtonsoft.Json`:
+
+```csharp
+using System.Text.Json;
+
+var json = doc.HydrateJson();
+using var parsed = JsonDocument.Parse(json);
+var root = parsed.RootElement;
+
+if (root.TryGetProperty("username", out var username))
+{
+    Console.WriteLine($"Username: {username.GetString()}");
+}
+```
+
+## Getting Keys
+
+Retrieve all keys in a map:
+
+```csharp
+var root = doc.RootId;
+doc.PutString(root, "name", "Alice");
+doc.PutInt64(root, "age", 30);
+doc.Commit("Add data");
+
+var keys = doc.GetKeys(root);
+foreach (var key in keys)
+{
+    Console.WriteLine($"Key: {key}");
+}
+// Output:
+// Key: name
+// Key: age
+```
+
+This returns an alphabetically sorted list of keys present in the map.
+
+# Complete Example
+
+Here's a complete example showing multiple map operations:
+
+```csharp
+using System;
+using System.Text.Json;
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Basic user information
+doc.PutString(root, "user_id", "usr_12345");
+doc.PutString(root, "username", "alice");
+doc.PutString(root, "email", "alice@example.com");
+doc.PutBoolean(root, "email_verified", true);
+
+// Metadata
+doc.PutTimestamp(root, "created_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+doc.PutTimestamp(root, "last_login", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+// Statistics using counters
+doc.PutCounter(root, "posts_count", 0);
+doc.PutCounter(root, "likes_count", 0);
+
+doc.Commit("Create user profile");
+
+// Display the structure
+var json = doc.HydrateJson();
+using var parsed = JsonDocument.Parse(json);
+Console.WriteLine(JsonSerializer.Serialize(parsed.RootElement, new JsonSerializerOptions
+{
+    WriteIndented = true
+}));
+
+// Update some values
+doc.PutString(root, "email", "alice.smith@example.com");
+doc.PutBoolean(root, "email_verified", false);
+doc.Commit("Update email address");
+
+// Increment counters
+doc.PutCounter(root, "posts_count", 1);
+doc.PutCounter(root, "likes_count", 5);
+doc.Commit("Add post and likes");
+```
+
+# Merge Behavior
+
+When two documents modify different keys, both changes survive:
+
+```csharp
+// Alice's document
+using var alice = AutomergeDocument.Create();
+var aliceRoot = alice.RootId;
+alice.PutString(aliceRoot, "title", "Project Plan");
+alice.PutString(aliceRoot, "owner", "Alice");
+alice.Commit("Alice: Add title and owner");
+
+// Bob's document
+using var bob = AutomergeDocument.Create();
+var bobRoot = bob.RootId;
+bob.PutString(bobRoot, "status", "in-progress");
+bob.PutInt64(bobRoot, "priority", 1);
+bob.Commit("Bob: Add status and priority");
+
+// Merge Bob's changes into Alice's document
+var bobChanges = bob.GetChanges(new string[0]);
+alice.ApplyChanges(bobChanges);
+
+// Alice's document now has all four keys
+var json = alice.HydrateJson();
+// Result contains: title, owner, status, priority
+```
+
+When both modify the same key, last-write-wins applies:
+
+```csharp
+// Both update "status"
+alice.PutString(aliceRoot, "status", "completed");
+alice.Commit("Alice: Mark complete");
+
+bob.PutString(bobRoot, "status", "blocked");
+bob.Commit("Bob: Mark blocked");
+
+// After merge, one value wins based on timestamp
+// Usually the later timestamp, with actor ID as tiebreaker
+```
+
+# Counter Merge Behavior
+
+Counters merge differently than regular values. They add together:
+
+```csharp
+// Alice increments view count by 10
+using var alice = AutomergeDocument.Create();
+var aliceRoot = alice.RootId;
+alice.PutCounter(aliceRoot, "views", 10);
+alice.Commit("Alice: Add 10 views");
+
+// Bob increments view count by 5
+using var bob = AutomergeDocument.Create();
+var bobRoot = bob.RootId;
+bob.PutCounter(bobRoot, "views", 5);
+bob.Commit("Bob: Add 5 views");
+
+// After merge, views = 15 (10 + 5)
+var bobChanges = bob.GetChanges(new string[0]);
+alice.ApplyChanges(bobChanges);
+
+var json = alice.HydrateJson();
+// views: 15
+```
+
+This makes counters useful for analytics, voting systems, and accumulating metrics.
+
+# Best Practices
+
+## Use Meaningful Keys
+
+Choose descriptive key names:
+
+```csharp
+// Good
+doc.PutString(root, "user_email", "alice@example.com");
+doc.PutTimestamp(root, "created_at", timestamp);
+
+// Unclear
+doc.PutString(root, "e", "alice@example.com");
+doc.PutTimestamp(root, "ts", timestamp);
+```
+
+## Use Counters for Metrics
+
+When multiple actors might update the same numeric value, use counters:
+
+```csharp
+// Good: Counter for concurrent increments
+doc.PutCounter(root, "view_count", 1);
+
+// Problematic: Regular int with concurrent updates
+doc.PutInt64(root, "view_count", currentValue + 1);
+```
+
+## Batch Related Changes
+
+Make related changes together in one commit:
+
+```csharp
+// Good: Related changes in one commit
+doc.PutString(root, "first_name", "Alice");
+doc.PutString(root, "last_name", "Smith");
+doc.PutString(root, "email", "alice.smith@example.com");
+doc.Commit("Update user name and email");
+
+// Less efficient: Many small commits
+doc.PutString(root, "first_name", "Alice");
+doc.Commit("Update first name");
+doc.PutString(root, "last_name", "Smith");
+doc.Commit("Update last name");
+```
+
+# Next Steps
+
+- [Nested Maps](/Six.Automerge/guides/maps/nested-maps/) — Learn about nested containers, object IDs, and deep hierarchies.
+- [Lists — Basic Operations](/Six.Automerge/guides/lists/basic-operations/) — Learn how to use list containers for ordered data.
+- [Text — Basic Operations](/Six.Automerge/guides/text/basic-operations/) — Explore collaborative text editing.

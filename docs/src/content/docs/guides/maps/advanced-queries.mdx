@@ -1,0 +1,323 @@
+---
+title: "Maps: Advanced Queries"
+description: Learn how to query map contents with MapRange, Values, Parents, and PathToObject
+---
+
+# Overview
+
+Beyond basic get and put operations, Automerge provides advanced query methods for inspecting map contents.
+
+These methods let you iterate over ranges of keys, retrieve all values, and navigate the object graph by finding an object's parent path.
+
+# MapRange
+
+## Querying a Key Range
+
+Use `MapRange` to get entries within a lexicographic key range:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "apple", "1");
+doc.PutString(root, "banana", "2");
+doc.PutString(root, "cherry", "3");
+doc.PutString(root, "date", "4");
+doc.Commit("fruits");
+
+// Get entries with keys from "b" up to (but not including) "d"
+var range = doc.MapRange(root, "b", "d");
+
+Console.WriteLine($"Entries in range: {range.Count}"); // 2 (banana, cherry)
+```
+
+The range is half-open: it includes keys >= `startKey` and < `endKey`, using lexicographic ordering.
+
+## Empty Ranges
+
+When no keys fall within the range, an empty list is returned:
+
+```csharp
+doc.PutString(root, "alpha", "1");
+doc.PutString(root, "beta", "2");
+doc.Commit("data");
+
+// No keys between "x" and "z"
+var range = doc.MapRange(root, "x", "z");
+
+Console.WriteLine($"Count: {range.Count}"); // 0
+```
+
+## Getting All Entries
+
+Use `MapRangeFull` to get every entry in a map:
+
+```csharp
+doc.PutString(root, "x", "1");
+doc.PutString(root, "y", "2");
+doc.PutString(root, "z", "3");
+doc.Commit("data");
+
+var all = doc.MapRangeFull(root);
+
+Console.WriteLine($"Total entries: {all.Count}"); // 3
+```
+
+This is equivalent to calling `MapRange` with bounds that cover all possible keys.
+
+# Values
+
+## Getting All Values
+
+Use `Values` to retrieve all values in a map (or list) without their keys:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "name", "Alice");
+doc.PutInt64(root, "age", 30);
+doc.PutBoolean(root, "active", true);
+doc.Commit("data");
+
+var values = doc.Values(root);
+
+Console.WriteLine($"Value count: {values.Count}"); // 3
+```
+
+Each value is an `AutomergeConflictValue` that contains either a scalar or an object reference:
+
+```csharp
+foreach(var value in values)
+{
+    if(value.IsObject)
+    {
+        Console.WriteLine($"Object: {value.ObjectType}");
+    }
+    else
+    {
+        Console.WriteLine($"Scalar: {value.Scalar}");
+    }
+}
+```
+
+## Values with Nested Objects
+
+When a map contains nested containers, they appear in the values list:
+
+```csharp
+doc.PutString(root, "name", "test");
+doc.PutObject(root, "nested", AutomergeContainerType.Map);
+doc.Commit("nested");
+
+var values = doc.Values(root);
+
+// values[0] is the string "test"
+// values[1] is an object entry (Map type)
+```
+
+## Historical Values with ValuesAtHeads
+
+Use `ValuesAtHeads` to query values at a specific point in history:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "x", "old");
+doc.Commit("v1");
+var heads1 = doc.GetHeads();
+
+doc.PutString(root, "x", "new");
+doc.PutString(root, "y", "added");
+doc.Commit("v2");
+
+var valuesAtV1 = doc.ValuesAtHeads(root, heads1);
+var valuesNow = doc.Values(root);
+
+Console.WriteLine($"Values at v1: {valuesAtV1.Count}"); // 1 ("old")
+Console.WriteLine($"Values now: {valuesNow.Count}");     // 2 ("new", "added")
+```
+
+Capture change hashes with `GetHeads()` to create historical snapshots you can query later.
+
+# Parents
+
+## Finding an Object's Parent Path
+
+Use `Parents` to trace the path from the root to a specific object:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var level1 = doc.PutObject(root, "level1", AutomergeContainerType.Map);
+var level2 = doc.PutObject(level1, "level2", AutomergeContainerType.Map);
+var level3 = doc.PutObject(level2, "level3", AutomergeContainerType.Map);
+doc.PutString(level3, "value", "deep");
+doc.Commit("nested");
+
+var path = doc.Parents(level3);
+
+Console.WriteLine($"Path depth: {path.Count}"); // 3
+```
+
+The path contains `AutomergePathElement` entries. Each element is either a map key or a list index:
+
+```csharp
+// Path: root["level1"] -> level1["level2"] -> level2["level3"]
+var first = (AutomergeMapPathElement)path[0];
+Console.WriteLine($"Key: {first.Key}"); // "level1"
+
+var second = (AutomergeMapPathElement)path[1];
+Console.WriteLine($"Key: {second.Key}"); // "level2"
+
+var third = (AutomergeMapPathElement)path[2];
+Console.WriteLine($"Key: {third.Key}"); // "level3"
+```
+
+## Objects in Lists
+
+When an object is inside a list, the path includes the list index:
+
+```csharp
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertObject(list, 0, AutomergeContainerType.Map);
+var nested = doc.ListInsertObject(list, 1, AutomergeContainerType.Map);
+doc.PutString(nested, "key", "val");
+doc.Commit("list with objects");
+
+var path = doc.Parents(nested);
+
+// Path: root["items"] -> list[1]
+var mapStep = (AutomergeMapPathElement)path[0];
+Console.WriteLine($"Key: {mapStep.Key}"); // "items"
+
+var listStep = (AutomergeListPathElement)path[1];
+Console.WriteLine($"Index: {listStep.Index}"); // 1
+```
+
+## Root-Level Objects
+
+Objects directly under the root have a single-element path:
+
+```csharp
+var child = doc.PutObject(root, "child", AutomergeContainerType.Map);
+doc.Commit("single level");
+
+var path = doc.Parents(child);
+
+Console.WriteLine($"Depth: {path.Count}"); // 1
+
+var elem = (AutomergeMapPathElement)path[0];
+Console.WriteLine($"Key: {elem.Key}"); // "child"
+```
+
+# PathToObject
+
+## Finding a Visible Object's Path
+
+`PathToObject` works like `Parents` but returns an empty path if the object has been deleted:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var level1 = doc.PutObject(root, "a", AutomergeContainerType.Map);
+var level2 = doc.PutObject(level1, "b", AutomergeContainerType.Map);
+doc.PutString(level2, "c", "value");
+doc.Commit("nested");
+
+var path = doc.PathToObject(level2);
+
+Console.WriteLine($"Path depth: {path.Count}"); // 2
+
+var first = (AutomergeMapPathElement)path[0];
+Console.WriteLine($"Key: {first.Key}"); // "a"
+
+var second = (AutomergeMapPathElement)path[1];
+Console.WriteLine($"Key: {second.Key}"); // "b"
+```
+
+## Deleted Objects Return Empty Path
+
+If the object is no longer visible (it was deleted), `PathToObject` returns an empty list:
+
+```csharp
+var list = doc.PutObject(root, "list", AutomergeContainerType.List);
+var obj = doc.ListInsertObject(list, 0, AutomergeContainerType.Map);
+doc.PutString(obj, "val", "test");
+doc.Commit("created");
+
+// Delete the list item
+doc.ListRemove(list, 0);
+doc.Commit("deleted");
+
+var path = doc.PathToObject(obj);
+
+Console.WriteLine($"Path count: {path.Count}"); // 0 (object is deleted)
+```
+
+Use this to check whether an object is still reachable from the root.
+
+# Complete Example
+
+Here's an example combining range queries and path navigation:
+
+```csharp
+using System;
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Build a nested document
+var users = doc.PutObject(root, "users", AutomergeContainerType.Map);
+var alice = doc.PutObject(users, "alice", AutomergeContainerType.Map);
+doc.PutString(alice, "email", "alice@example.com");
+doc.PutInt64(alice, "age", 30);
+
+var bob = doc.PutObject(users, "bob", AutomergeContainerType.Map);
+doc.PutString(bob, "email", "bob@example.com");
+doc.PutInt64(bob, "age", 25);
+
+var charlie = doc.PutObject(users, "charlie", AutomergeContainerType.Map);
+doc.PutString(charlie, "email", "charlie@example.com");
+doc.PutInt64(charlie, "age", 35);
+
+doc.Commit("Add users");
+
+// Query users in a range
+var rangeAC = doc.MapRange(users, "a", "c");
+Console.WriteLine($"Users a-c: {rangeAC.Count}"); // 2 (alice, bob)
+
+// Get all user entries
+var allUsers = doc.MapRangeFull(users);
+Console.WriteLine($"Total users: {allUsers.Count}"); // 3
+
+// Find the path to alice's map
+var alicePath = doc.Parents(alice);
+Console.WriteLine($"Alice path depth: {alicePath.Count}"); // 2
+
+// Verify alice is still reachable
+var visiblePath = doc.PathToObject(alice);
+Console.WriteLine($"Alice reachable: {visiblePath.Count > 0}"); // True
+
+// Historical query
+var heads1 = doc.GetHeads();
+
+var dave = doc.PutObject(users, "dave", AutomergeContainerType.Map);
+doc.PutString(dave, "email", "dave@example.com");
+doc.Commit("Add dave");
+
+var valuesNow = doc.Values(users);
+var valuesBefore = doc.ValuesAtHeads(users, heads1);
+Console.WriteLine($"Users now: {valuesNow.Count}");    // 4
+Console.WriteLine($"Users before: {valuesBefore.Count}"); // 3
+```
+
+# Next Steps
+
+- [Maps — Counters and Timestamps](/Six.Automerge/guides/maps/counters-and-timestamps/) — Learn about counter and timestamp data types.
+- [Maps — Basic Operations](/Six.Automerge/guides/maps/basic-operations/) — Review core map operations.
+- [Lists — Advanced Queries](/Six.Automerge/guides/lists/advanced-queries/) — Learn about ListRange and LengthAtHeads.

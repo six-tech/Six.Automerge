@@ -1,0 +1,237 @@
+---
+title: InMemoryNetworkAdapter
+description: In-memory network adapter for testing Automerge repository synchronization without real network infrastructure
+---
+
+# Overview
+
+`InMemoryNetworkAdapter` delivers messages synchronously between connected adapters in the same process.
+It requires no network infrastructure — connections are established by calling `ConnectTo` between
+adapter instances.
+
+This adapter is included in the core `Six.Automerge.Repo` package.
+
+# When to Use
+
+- **Unit tests** — verify sync behavior without network setup
+- **Integration tests** — test multi-repo scenarios in a single process
+- **Prototyping** — quickly wire up multi-peer collaboration
+- **Demos** — show sync behavior without infrastructure dependencies
+
+For production networking, use the SignalR or Orleans adapters.
+
+# Basic Usage
+
+Create two adapters and connect them:
+
+```csharp
+using Six.Automerge.Repository;
+using Six.Automerge.Repository.Network;
+using Six.Automerge.Repository.Storage;
+
+var adapterA = new InMemoryNetworkAdapter();
+var adapterB = new InMemoryNetworkAdapter();
+
+// Establish bidirectional connection
+adapterA.ConnectTo(adapterB);
+```
+
+Wire them into Repos:
+
+```csharp
+var repoA = new Repo(new RepoConfig
+{
+  Storage = new InMemoryStorageAdapter(),
+  NetworkAdapters = [adapterA]
+});
+
+var repoB = new Repo(new RepoConfig
+{
+  Storage = new InMemoryStorageAdapter(),
+  NetworkAdapters = [adapterB]
+});
+```
+
+# ConnectTo
+
+`ConnectTo` establishes a **bidirectional** connection. Calling `adapterA.ConnectTo(adapterB)` means:
+
+- Messages sent from A are delivered to B
+- Messages sent from B are delivered to A
+- Both adapters raise `PeerCandidate` events for each other
+
+```csharp
+adapterA.ConnectTo(adapterB);
+
+// This is equivalent to both:
+//   adapterA sees adapterB as a peer
+//   adapterB sees adapterA as a peer
+```
+
+Duplicate connections are ignored — calling `ConnectTo` again with the same adapter is a no-op.
+Connecting an adapter to itself throws `ArgumentException`.
+
+# Multi-Peer Topologies
+
+## Three-Peer Full Mesh
+
+```csharp
+var adapterA = new InMemoryNetworkAdapter();
+var adapterB = new InMemoryNetworkAdapter();
+var adapterC = new InMemoryNetworkAdapter();
+
+adapterA.ConnectTo(adapterB);
+adapterA.ConnectTo(adapterC);
+adapterB.ConnectTo(adapterC);
+```
+
+## Hub and Spoke
+
+```csharp
+var hub = new InMemoryNetworkAdapter();
+var spoke1 = new InMemoryNetworkAdapter();
+var spoke2 = new InMemoryNetworkAdapter();
+var spoke3 = new InMemoryNetworkAdapter();
+
+spoke1.ConnectTo(hub);
+spoke2.ConnectTo(hub);
+spoke3.ConnectTo(hub);
+// Spokes are not directly connected to each other
+```
+
+# Custom Peer Identity
+
+By default, each adapter generates a random `PeerId`. You can provide a specific one:
+
+```csharp
+var adapter = new InMemoryNetworkAdapter(
+  localPeerId: new PeerId("peer-alice"));
+
+Console.WriteLine(adapter.AdapterId); // "in-memory-peer-alice"
+```
+
+# Message Delivery
+
+Messages are delivered **synchronously** and **immediately**. When `Send` is called, every connected
+adapter's `MessageReceived` event fires before `Send` returns. This makes tests deterministic — there
+are no timing-dependent race conditions.
+
+```csharp
+adapter.Send(message);
+// By this point, all connected adapters have already received the message
+```
+
+The adapter stamps each message with the sender's `PeerId` before delivery.
+
+# Readiness
+
+The in-memory adapter is always ready:
+
+```csharp
+adapter.IsReady;     // always true
+adapter.WhenReady(); // returns Task.CompletedTask
+```
+
+This matches the behavior of a pre-connected adapter where no handshake is needed.
+
+# Disconnect
+
+`Disconnect` removes all connections and notifies connected peers:
+
+```csharp
+await adapterA.Disconnect();
+// adapterB receives PeerDisconnected for adapterA
+// adapterA raises Closed
+```
+
+After disconnecting, the adapter's connection list is cleared and it no longer receives messages.
+
+# Testing Pattern: Two-Repo Sync
+
+Here is a complete test setup showing document synchronization between two Repos:
+
+```csharp
+[Fact]
+public async Task Documents_Sync_Between_Repos()
+{
+  // Arrange
+  var adapterA = new InMemoryNetworkAdapter();
+  var adapterB = new InMemoryNetworkAdapter();
+
+  using var repoA = new Repo(new RepoConfig
+  {
+    Storage = new InMemoryStorageAdapter(),
+    NetworkAdapters = [adapterA]
+  });
+
+  using var repoB = new Repo(new RepoConfig
+  {
+    Storage = new InMemoryStorageAdapter(),
+    NetworkAdapters = [adapterB]
+  });
+
+  // Connect the adapters
+  adapterA.ConnectTo(adapterB);
+
+  // Act: create a document on repo A
+  var handleA = repoA.Create<AutomergeDocument>();
+  await handleA.ChangeAsync(doc =>
+  {
+    doc.PutString(doc.RootId, "title", "Shared Document");
+  });
+
+  // Find it on repo B
+  var handleB = await repoB.Find<AutomergeDocument>(handleA.DocumentId);
+
+  // Assert
+  Assert.NotNull(handleB);
+}
+```
+
+# Testing Pattern: Event Verification
+
+Verify that peer events fire correctly:
+
+```csharp
+[Fact]
+public void ConnectTo_Raises_PeerCandidate_Events()
+{
+  var adapterA = new InMemoryNetworkAdapter();
+  var adapterB = new InMemoryNetworkAdapter();
+
+  PeerId? discoveredPeer = null;
+  adapterA.PeerCandidate += (_, args) => discoveredPeer = args.PeerId;
+
+  adapterA.ConnectTo(adapterB);
+
+  Assert.NotNull(discoveredPeer);
+}
+```
+
+# Thread Safety
+
+The adapter uses a `lock` object to protect its internal connection list. Multiple threads can safely
+call `ConnectTo`, `Send`, and `Disconnect` concurrently.
+
+Note that `MessageReceived` event handlers execute synchronously on the sender's thread. If your
+handler performs expensive work, consider offloading to a background task.
+
+# API Summary
+
+| Member | Description |
+|--------|-------------|
+| `InMemoryNetworkAdapter(localPeerId?)` | Constructor with optional peer ID |
+| `AdapterId` | `"in-memory-{peerId}"` |
+| `IsReady` | Always `true` |
+| `WhenReady()` | Returns `Task.CompletedTask` |
+| `ConnectTo(other)` | Establish bidirectional connection |
+| `Connect(peerId, metadata?)` | No-op (use `ConnectTo` instead) |
+| `Send(message)` | Deliver to all connected adapters synchronously |
+| `Disconnect()` | Remove all connections, notify peers, raise `Closed` |
+
+# Limitations
+
+- Messages are delivered synchronously — no simulation of network latency or message reordering
+- No support for message loss or partial delivery
+- All adapters must be in the same process (no cross-process communication)
+- The `Connect` method (from `INetworkAdapter`) is a no-op — use `ConnectTo` to establish connections

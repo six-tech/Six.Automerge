@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "runSlug": "introduction-we-have-created-demo-apps-in-app",
+  "status": "completed",
+  "currentIteration": 8,
+  "sessionId": "e2e0fcce-d25a-4941-86db-aceeedd6a898",
+  "specFiles": [
+    ".wig/specs/introduction-we-have-created-demo-apps-in-app/implementation-plan.md"
+  ],
+  "startedAt": "2026-02-21T00:01:53.0156087Z",
+  "lastIterationAt": "2026-02-21T04:07:26.8055332Z",
+  "stopReason": "All sprints completed"
+}

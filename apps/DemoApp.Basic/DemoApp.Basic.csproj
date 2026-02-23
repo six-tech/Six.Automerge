@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>DemoApp.Collaborative</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\libs\Six.Automerge\Six.Automerge.csproj" />
+    </ItemGroup>
+
+    <Target Name="CopyNativeLibs" BeforeTargets="Build">
+        <Exec Command="dotnet $(MSBuildThisFileDirectory)..\..\scripts\copy-native-libs.cs -- -o $(OutputPath)" />
+    </Target>
+
+</Project>

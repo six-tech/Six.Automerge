@@ -1,0 +1,15 @@
+{
+  "id": "20260220054555-09e552be",
+  "created": "2026-02-20T05:45:55.7959097Z",
+  "runSlug": "we-have-documentation-in-docs-src-content-docs",
+  "contentHash": "2BABDEF8BDB27964",
+  "type": "observation",
+  "tags": [
+    "astro",
+    "mdx",
+    "jsx",
+    "documentation",
+    "syntax",
+    "gotcha"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "20260221065647-7966ceb0",
+  "created": "2026-02-21T06:56:47.0707222Z",
+  "runSlug": "introduction-we-have-created-demo-apps-in-app",
+  "contentHash": "410C803734FB92E4",
+  "type": "observation",
+  "tags": [
+    "build-system",
+    "native-libs",
+    "msbuild",
+    "transitive-refs",
+    "workaround"
+  ]
+}

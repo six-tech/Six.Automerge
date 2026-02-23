@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "runSlug": "we-have-documentation-in-docs-src-content-docs",
+  "status": "completed",
+  "currentIteration": 16,
+  "sessionId": "43adf495-73ff-491e-9f7c-0bdcbdd6d4e8",
+  "specFiles": [
+    ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md"
+  ],
+  "startedAt": "2026-02-20T02:05:04.4901453Z",
+  "lastIterationAt": "2026-02-20T05:37:03.3004436Z",
+  "stopReason": "All sprints completed"
+}

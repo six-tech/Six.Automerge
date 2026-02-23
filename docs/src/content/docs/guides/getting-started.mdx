@@ -1,0 +1,209 @@
+---
+title: Getting Started
+description: Install Six.Automerge and create your first collaborative document
+---
+
+# Overview
+
+This guide walks you through installing Six.Automerge and creating your first document.
+
+You'll learn how to create a document, add data, commit changes, and view the results.
+
+# Installation
+
+Add the NuGet package to your project using the .NET CLI:
+
+```bash
+dotnet add package Six.Automerge
+```
+
+Or using the Package Manager Console in Visual Studio:
+
+```powershell
+Install-Package Six.Automerge
+```
+
+# Requirements
+
+The library requires .NET 9.0 or later.
+
+It includes native binaries for Windows, Linux, and macOS. The correct native library loads automatically based on your platform.
+
+# Your First Document
+
+Let's create a simple document that stores user profile information.
+
+## Creating a Document
+
+Start by creating a new Automerge document:
+
+```csharp
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+```
+
+The document implements `IDisposable`. Use a `using` statement to ensure proper cleanup of native resources.
+
+## Getting the Root Object
+
+Every document has a root object where you store data:
+
+```csharp
+var root = doc.RootId;
+```
+
+The root is a Map container. You can add key-value pairs to it.
+
+## Adding Data
+
+Add different types of data to the root map:
+
+```csharp
+doc.PutString(root, "username", "alice");
+doc.PutInt64(root, "age", 30);
+doc.PutBoolean(root, "is_active", true);
+doc.PutTimestamp(root, "created_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+```
+
+The library supports multiple data types:
+- Strings
+- Integers (Int64, UInt64)
+- Floating-point numbers (Double)
+- Booleans
+- Timestamps (Unix milliseconds)
+- Bytes
+- Null values
+- Counters (CRDT counters)
+- Nested containers (Map, List, Text)
+
+## Committing Changes
+
+Changes remain pending until you commit them:
+
+```csharp
+var commitHash = doc.Commit("Add user profile");
+```
+
+The commit message helps track what changed. The method returns a hash identifying this commit.
+
+Automerge tracks all changes. You can roll back uncommitted changes using `doc.Rollback()`.
+
+## Viewing the Data
+
+Convert the document to JSON to see the current state:
+
+```csharp
+var json = doc.HydrateJson();
+Console.WriteLine(json);
+```
+
+This outputs something like:
+
+```json
+{
+  "username": "alice",
+  "age": 30,
+  "is_active": true,
+  "created_at": 1234567890
+}
+```
+
+# Complete Example
+
+Here's a complete program that creates a user profile:
+
+```csharp
+using System;
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Add user data
+doc.PutString(root, "username", "alice");
+doc.PutString(root, "email", "alice@example.com");
+doc.PutInt64(root, "age", 30);
+doc.PutBoolean(root, "email_verified", true);
+doc.PutTimestamp(root, "joined_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+// Create a nested preferences object
+var preferences = doc.PutObject(root, "preferences", AutomergeContainerType.Map);
+doc.PutString(preferences, "theme", "dark");
+doc.PutBoolean(preferences, "notifications", true);
+
+// Commit the changes
+var hash = doc.Commit("Create user profile");
+Console.WriteLine($"Committed: {hash}");
+
+// View the result
+var json = doc.HydrateJson();
+Console.WriteLine(json);
+
+// Check document state
+Console.WriteLine($"Actor ID: {doc.ActorId}");
+Console.WriteLine($"Pending operations: {doc.PendingOperations}");
+```
+
+# Understanding Actor IDs
+
+Each document has an actor ID that uniquely identifies who made changes:
+
+```csharp
+var actorId = doc.ActorId;
+Console.WriteLine($"This document's actor: {actorId}");
+```
+
+Automerge generates a random actor ID automatically. You can set a custom actor ID:
+
+```csharp
+doc.ActorId = "user-alice-device-1";
+```
+
+Actor IDs become important when syncing documents. They help Automerge track which peer made which changes.
+
+# Working with Nested Structures
+
+You can create nested maps and lists:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Create a list of tags
+var tags = doc.PutObject(root, "tags", AutomergeContainerType.List);
+doc.ListInsertString(tags, 0, "developer");
+doc.ListInsertString(tags, 1, "golang");
+doc.ListInsertString(tags, 2, "rust");
+
+// Create a nested map for address
+var address = doc.PutObject(root, "address", AutomergeContainerType.Map);
+doc.PutString(address, "city", "San Francisco");
+doc.PutString(address, "country", "USA");
+
+doc.Commit("Add tags and address");
+
+var json = doc.HydrateJson();
+Console.WriteLine(json);
+```
+
+This creates a structure like:
+
+```json
+{
+  "tags": ["developer", "golang", "rust"],
+  "address": {
+    "city": "San Francisco",
+    "country": "USA"
+  }
+}
+```
+
+# Next Steps
+
+Now that you can create documents and add data, explore these topics:
+
+- [Core Concepts](/Six.Automerge/guides/core-concepts/) — Learn about documents, actors, and container types in depth.
+- [Maps — Basic Operations](/Six.Automerge/guides/maps/basic-operations/) — Understand all map operations and when to use them.
+- [Lists — Basic Operations](/Six.Automerge/guides/lists/basic-operations/) — Learn how to manipulate list containers effectively.
+- [Text — Basic Operations](/Six.Automerge/guides/text/basic-operations/) — Explore collaborative text editing.

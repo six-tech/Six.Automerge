@@ -1,0 +1,13 @@
+{
+  "id": "20260220150433-2d547a92",
+  "created": "2026-02-20T15:04:33.8053693Z",
+  "runSlug": "introduction-you-have-written-example-applicati",
+  "contentHash": "706A650804EE1F52",
+  "type": "observation",
+  "tags": [
+    "demoapp-shared",
+    "tests",
+    "project-structure",
+    "test-imports"
+  ]
+}

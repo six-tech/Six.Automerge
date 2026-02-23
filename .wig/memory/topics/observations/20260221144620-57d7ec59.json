@@ -1,0 +1,13 @@
+{
+  "id": "20260221144620-57d7ec59",
+  "created": "2026-02-21T14:46:20.4084696Z",
+  "runSlug": "proposal-05-projectnameandnamespacerename",
+  "contentHash": "AFEFC1467FA770C9",
+  "type": "observation",
+  "tags": [
+    "rename-complete",
+    "test-all-passing",
+    "aspire-workload-caching",
+    "cleanup"
+  ]
+}

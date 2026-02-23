@@ -1,0 +1,10 @@
+# Basic `dependabot.yml` file with minimum configuration
+# See: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates
+
+version: 2
+updates:
+  # Enable version updates for nuget
+  - package-ecosystem: "nuget"    
+    directory: "/"
+    schedule:
+      interval: "weekly"

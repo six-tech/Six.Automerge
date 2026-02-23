@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <RootNamespace>DemoApp.CollaborativeDrawing.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\apps\DemoApp.CollaborativeDrawing\DemoApp.CollaborativeDrawing.csproj" />
+    </ItemGroup>
+
+</Project>

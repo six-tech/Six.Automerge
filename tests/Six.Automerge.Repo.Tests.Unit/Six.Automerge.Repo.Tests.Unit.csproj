@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+<!--    <PropertyGroup>-->
+<!--        <xUnitMaxParallelThreads>1</xUnitMaxParallelThreads>-->
+<!--    </PropertyGroup>-->
+
+    <PropertyGroup>
+      <RootNamespace>Six.Automerge.Repo.Tests.Unit</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\libs\Six.Automerge.FFI\Six.Automerge.FFI.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge\Six.Automerge.csproj" />
+    </ItemGroup>
+
+    <Target Name="CopyNativeLibs" BeforeTargets="Build">
+        <Exec Command="dotnet $(MSBuildThisFileDirectory)..\..\scripts\copy-native-libs.cs -- -o $(OutputPath)" />
+    </Target>
+
+</Project>

@@ -1,0 +1,336 @@
+---
+title: Identifiers
+description: API reference for DocumentId, PeerId, StorageKey, StorageId, SessionId, and AutomergeUrl
+---
+
+# Overview
+
+The repository layer uses several identifier types for type safety and validation. All identifier types are `readonly record struct` values with implicit conversions to and from `string`.
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| `DocumentId` | Identifies a document (Base58Check-encoded) | `"4NMNnkMhL8jXrdJ9jamS58PAVdXu"` |
+| `PeerId` | Identifies a peer in the network | `"peer-a1b2c3d4"` |
+| `StorageId` | Identifies a storage location or peer for sync state | `"storage-main"` |
+| `SessionId` | Identifies a session for ephemeral message deduplication | `"a1b2c3d4e5f6..."` |
+| `StorageKey` | Hierarchical key for storage operations | `"doc123/snapshot/abc"` |
+| `AutomergeUrl` | URL format for sharing document references | `"automerge:4NMNnk..."` |
+
+# DocumentId
+
+```csharp
+public readonly record struct DocumentId
+```
+
+A Base58Check-encoded Automerge document identifier. The encoding includes a checksum for validation.
+
+**Namespace:** `Six.Automerge.Repository`
+
+## Properties
+
+### Value
+
+```csharp
+public string Value { get; }
+```
+
+The encoded document identifier string.
+
+## Constructor
+
+```csharp
+public DocumentId(string value)
+```
+
+**Exceptions:**
+- `ArgumentException` — When `value` is null or whitespace.
+
+## Static Methods
+
+### Generate
+
+```csharp
+public static DocumentId Generate()
+```
+
+Generates a new random document ID from a GUID.
+
+```csharp
+var docId = DocumentId.Generate();
+```
+
+### FromBinary
+
+```csharp
+public static DocumentId FromBinary(byte[] bytes)
+public static DocumentId FromBinary(ReadOnlySpan<byte> bytes)
+```
+
+Creates a document ID from binary data (at least 16 bytes). The data is Base58Check-encoded.
+
+**Exceptions:**
+- `ArgumentNullException` — When `bytes` is null.
+- `ArgumentException` — When `bytes` is empty or under 16 bytes.
+
+### ToBinary
+
+```csharp
+public static byte[] ToBinary(DocumentId documentId)
+public static byte[] ToBinary(string value)
+```
+
+Converts a document ID to its binary representation.
+
+### Parse
+
+```csharp
+public static DocumentId Parse(string value)
+```
+
+Parses a string into a `DocumentId`.
+
+**Exceptions:**
+- `ArgumentException` — When `value` is null or whitespace.
+- `FormatException` — When `value` is not a valid Base58Check-encoded ID.
+
+### TryParse
+
+```csharp
+public static bool TryParse(string? value, out DocumentId documentId)
+```
+
+Attempts to parse without throwing.
+
+**Returns:** `true` if valid, `false` otherwise.
+
+### IsValid
+
+```csharp
+public static bool IsValid(string? value)
+```
+
+Checks if a string is a valid document ID.
+
+## Instance Methods
+
+### ToBinary
+
+```csharp
+public byte[] ToBinary()
+```
+
+Converts this document ID to its binary representation.
+
+## Implicit Conversions
+
+```csharp
+// DocumentId → string
+string id = documentId;
+
+// string → DocumentId (throws FormatException if invalid)
+DocumentId docId = "4NMNnkMhL8jXrdJ9jamS58PAVdXu";
+```
+
+# PeerId
+
+```csharp
+public readonly record struct PeerId
+```
+
+Uniquely identifies a peer in the network.
+
+**Namespace:** `Six.Automerge.Repository.Network`
+
+## Constructor
+
+```csharp
+public PeerId(string value)
+```
+
+**Exceptions:**
+- `ArgumentException` — When `value` is null or whitespace.
+
+## Static Methods
+
+### Generate
+
+```csharp
+public static PeerId Generate()
+```
+
+Generates a new peer ID with format `"peer-{random8chars}"`.
+
+```csharp
+var peerId = PeerId.Generate(); // e.g., "peer-a1b2c3d4"
+```
+
+## Implicit Conversions
+
+```csharp
+string id = peerId;           // PeerId → string
+PeerId peer = "my-peer";     // string → PeerId
+```
+
+# StorageId
+
+```csharp
+public readonly record struct StorageId
+```
+
+Identifies a storage location or peer for sync state persistence. Typically derived from a peer ID or storage adapter identifier.
+
+**Namespace:** `Six.Automerge.Repository.Storage`
+
+## Constructor
+
+```csharp
+public StorageId(string value)
+```
+
+**Exceptions:**
+- `ArgumentException` — When `value` is null or whitespace.
+
+## Implicit Conversions
+
+```csharp
+string id = storageId;                  // StorageId → string
+StorageId sid = "storage-main";         // string → StorageId
+```
+
+# SessionId
+
+```csharp
+public readonly record struct SessionId
+```
+
+Identifies a session for ephemeral message deduplication. A new session ID should be generated each time a peer starts.
+
+**Namespace:** `Six.Automerge.Repository.Network`
+
+## Constructor
+
+```csharp
+public SessionId(string value)
+```
+
+**Exceptions:**
+- `ArgumentException` — When `value` is null or whitespace.
+
+## Static Methods
+
+### Generate
+
+```csharp
+public static SessionId Generate()
+```
+
+Generates a new session ID from a GUID (32 hex characters).
+
+```csharp
+var sessionId = SessionId.Generate();
+```
+
+## Implicit Conversions
+
+```csharp
+string id = sessionId;                  // SessionId → string
+SessionId sid = "abc123...";            // string → SessionId
+```
+
+# StorageKey
+
+See [Storage — StorageKey](/Six.Automerge/api/storage/#storagekey) for the full reference. `StorageKey` is a hierarchical key used for storage operations, not an identity type, but it appears in the `Chunk` and `ChunkInfo` types.
+
+# AutomergeUrl
+
+```csharp
+public static class AutomergeUrl
+```
+
+Utilities for parsing and formatting Automerge URLs. Format: `automerge:{documentId}[#head1|head2|...]`
+
+**Namespace:** `Six.Automerge.Repository`
+
+## Methods
+
+### Parse
+
+```csharp
+public static ParsedAutomergeUrl Parse(string url)
+```
+
+Parses an Automerge URL into a document ID and optional heads.
+
+**Returns:** A `ParsedAutomergeUrl` record.
+
+**Exceptions:**
+- `ArgumentException` — When `url` is null or whitespace.
+- `FormatException` — When the URL format is invalid or does not start with `"automerge:"`.
+
+```csharp
+var parsed = AutomergeUrl.Parse("automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu#head1|head2");
+Console.WriteLine(parsed.DocumentId); // "4NMNnkMhL8jXrdJ9jamS58PAVdXu"
+Console.WriteLine(parsed.Heads?.Count); // 2
+```
+
+### Format
+
+```csharp
+public static string Format(DocumentId documentId, IEnumerable<string>? heads = null)
+public static string Format(string documentId, IEnumerable<string>? heads = null)
+```
+
+Formats a document ID and optional heads into an Automerge URL.
+
+```csharp
+var url = AutomergeUrl.Format(docId);
+// "automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu"
+
+var urlWithHeads = AutomergeUrl.Format(docId, new[] { "abc", "def" });
+// "automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu#abc|def"
+```
+
+### IsValid
+
+```csharp
+public static bool IsValid(string url)
+```
+
+Checks if a string is a valid Automerge URL.
+
+### GetDocumentId
+
+```csharp
+public static DocumentId GetDocumentId(string url)
+```
+
+Extracts just the document ID from an Automerge URL.
+
+### Generate
+
+```csharp
+public static string Generate()
+```
+
+Generates a new Automerge URL with a random document ID.
+
+## ParsedAutomergeUrl
+
+```csharp
+public sealed record ParsedAutomergeUrl(
+  DocumentId DocumentId,
+  IReadOnlyList<string>? Heads)
+```
+
+Result of parsing an Automerge URL.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `DocumentId` | `DocumentId` | The document ID from the URL |
+| `Heads` | `IReadOnlyList of string?` | Optional heads from the URL fragment |
+
+# See Also
+
+- [Repo](/Six.Automerge/api/repo/) — Repository using these identifiers
+- [Identifiers Guide](/Six.Automerge/repo/identifiers/) — Conceptual guide to identifier types
+- [Storage](/Six.Automerge/api/storage/) — StorageKey reference

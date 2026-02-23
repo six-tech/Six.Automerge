@@ -1,0 +1,297 @@
+---
+title: "Maps: Counters and Timestamps"
+description: Learn how to use counter and timestamp data types in Automerge maps
+---
+
+# Overview
+
+Counters and timestamps are specialized data types that go beyond basic scalars.
+
+**Counters** are CRDT values that merge by addition — concurrent increments from different peers combine correctly without conflicts. **Timestamps** store Unix milliseconds with semantic meaning for time values.
+
+# Counters
+
+## Creating Counters
+
+Use `PutCounter` to create a counter with an initial value:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutCounter(root, "views", 0);
+doc.Commit("Initialize view counter");
+```
+
+Counters start at the value you provide. Use 0 for a fresh counter.
+
+## Reading Counters
+
+Use `GetCounter` to retrieve the current counter value:
+
+```csharp
+doc.PutCounter(root, "views", 0);
+doc.Commit("init");
+
+var views = doc.GetCounter(root, "views");
+Console.WriteLine($"Views: {views}"); // Views: 0
+```
+
+`GetCounter` returns `long?` — it returns `null` if the key doesn't exist or isn't a counter type.
+
+## Incrementing Counters
+
+Use `Increment` to change a counter's value by a delta:
+
+```csharp
+doc.PutCounter(root, "views", 0);
+doc.Commit("init");
+
+doc.Increment(root, "views", 5);
+doc.Commit("Add 5 views");
+
+var views = doc.GetCounter(root, "views");
+Console.WriteLine($"Views: {views}"); // Views: 5
+```
+
+The delta is added to the current value. This differs from `PutCounter`, which sets the counter to a specific value.
+
+## Negative Increments
+
+Pass a negative delta to decrement:
+
+```csharp
+doc.PutCounter(root, "score", 100);
+doc.Commit("init");
+
+doc.Increment(root, "score", -30);
+doc.Commit("Subtract 30");
+
+var score = doc.GetCounter(root, "score");
+Console.WriteLine($"Score: {score}"); // Score: 70
+```
+
+## Multiple Increments
+
+Multiple increments accumulate within a transaction:
+
+```csharp
+doc.PutCounter(root, "count", 0);
+doc.Commit("init");
+
+doc.Increment(root, "count", 10);
+doc.Increment(root, "count", 20);
+doc.Increment(root, "count", -5);
+doc.Commit("multiple changes");
+
+var count = doc.GetCounter(root, "count");
+Console.WriteLine($"Count: {count}"); // Count: 25
+```
+
+## Zero Increments
+
+Incrementing by zero is a no-op — the value remains unchanged:
+
+```csharp
+doc.PutCounter(root, "stable", 42);
+doc.Commit("init");
+
+doc.Increment(root, "stable", 0);
+doc.Commit("noop");
+
+var stable = doc.GetCounter(root, "stable");
+Console.WriteLine($"Stable: {stable}"); // Stable: 42
+```
+
+## Counter Merge Behavior
+
+Counters merge differently than regular values. When two peers increment the same counter concurrently, the increments add together:
+
+```csharp
+// Alice increments by 10
+using var alice = AutomergeDocument.Create();
+var aliceRoot = alice.RootId;
+alice.PutCounter(aliceRoot, "likes", 0);
+alice.Commit("init");
+
+// Bob gets Alice's state, then both increment independently
+using var bob = AutomergeDocument.Load(alice.Save());
+var bobRoot = bob.RootId;
+
+alice.Increment(aliceRoot, "likes", 10);
+alice.Commit("Alice: +10");
+
+bob.Increment(bobRoot, "likes", 5);
+bob.Commit("Bob: +5");
+
+// After merge, likes = 15 (10 + 5)
+var bobChanges = bob.GetChanges(new string[0]);
+alice.ApplyChanges(bobChanges);
+
+var likes = alice.GetCounter(aliceRoot, "likes");
+Console.WriteLine($"Likes: {likes}"); // Likes: 15
+```
+
+This makes counters ideal for analytics, voting systems, and any value where concurrent changes should accumulate rather than overwrite.
+
+# Timestamps
+
+## Storing Timestamps
+
+Use `PutTimestamp` to store a date/time as Unix milliseconds:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+doc.PutTimestamp(root, "created_at", now);
+doc.Commit("Set creation time");
+```
+
+Timestamps use `Int64` internally but carry semantic meaning — they represent a point in time.
+
+## Reading Timestamps
+
+Use `GetTimestamp` to retrieve the value:
+
+```csharp
+var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+doc.PutTimestamp(root, "created_at", now);
+doc.Commit("Set creation time");
+
+var created = doc.GetTimestamp(root, "created_at");
+if(created.HasValue)
+{
+    var dateTime = DateTimeOffset.FromUnixTimeMilliseconds(created.Value);
+    Console.WriteLine($"Created: {dateTime:u}");
+}
+```
+
+`GetTimestamp` returns `long?` — it returns `null` if the key doesn't exist or isn't a timestamp type.
+
+## Working with .NET DateTime
+
+Convert between `DateTimeOffset` and Unix milliseconds:
+
+```csharp
+// Store a timestamp
+var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+doc.PutTimestamp(root, "last_login", timestamp);
+
+// Store a future date
+var expiresAt = DateTimeOffset.UtcNow.AddDays(30).ToUnixTimeMilliseconds();
+doc.PutTimestamp(root, "expires_at", expiresAt);
+
+doc.Commit("Set timestamps");
+```
+
+## Timestamp Merge Behavior
+
+Timestamps use last-write-wins semantics, like regular scalars. If two peers set the same timestamp key concurrently, one value wins based on the Automerge conflict resolution rules.
+
+For time-based values where you want to keep the latest timestamp across peers, read both values after merge and take the maximum:
+
+```csharp
+// After merging, check which timestamp is more recent
+var lastLogin = doc.GetTimestamp(root, "last_login");
+```
+
+# Complete Example
+
+Here's a page view tracker combining counters and timestamps:
+
+```csharp
+using System;
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Initialize analytics
+doc.PutCounter(root, "page_views", 0);
+doc.PutCounter(root, "unique_visitors", 0);
+doc.PutCounter(root, "likes", 0);
+doc.PutTimestamp(root, "created_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+doc.Commit("Initialize analytics");
+
+// Simulate page views
+doc.Increment(root, "page_views", 1);
+doc.Increment(root, "unique_visitors", 1);
+doc.PutTimestamp(root, "last_viewed_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+doc.Commit("First visit");
+
+// More views
+doc.Increment(root, "page_views", 1);
+doc.Increment(root, "likes", 3);
+doc.PutTimestamp(root, "last_viewed_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+doc.Commit("Second visit with likes");
+
+// Read the analytics
+var pageViews = doc.GetCounter(root, "page_views");
+var uniqueVisitors = doc.GetCounter(root, "unique_visitors");
+var likes = doc.GetCounter(root, "likes");
+var createdAt = doc.GetTimestamp(root, "created_at");
+var lastViewed = doc.GetTimestamp(root, "last_viewed_at");
+
+Console.WriteLine($"Page views: {pageViews}");
+Console.WriteLine($"Unique visitors: {uniqueVisitors}");
+Console.WriteLine($"Likes: {likes}");
+
+if(createdAt.HasValue)
+{
+    Console.WriteLine($"Created: {DateTimeOffset.FromUnixTimeMilliseconds(createdAt.Value):u}");
+}
+
+if(lastViewed.HasValue)
+{
+    Console.WriteLine($"Last viewed: {DateTimeOffset.FromUnixTimeMilliseconds(lastViewed.Value):u}");
+}
+```
+
+# Best Practices
+
+## Use Counters for Concurrent Numeric Updates
+
+When multiple peers might update the same number, always use counters:
+
+```csharp
+// Good: Counter for concurrent increments
+doc.PutCounter(root, "vote_count", 0);
+doc.Increment(root, "vote_count", 1);
+
+// Problematic: Regular int with concurrent updates
+doc.PutInt64(root, "vote_count", currentValue + 1); // May lose updates
+```
+
+## Use Increment, Not PutCounter, for Updates
+
+After creating a counter, use `Increment` to change its value:
+
+```csharp
+// Good: Increment preserves merge semantics
+doc.PutCounter(root, "views", 0);
+doc.Commit("init");
+doc.Increment(root, "views", 1);
+
+// Avoid: PutCounter again resets the counter
+doc.PutCounter(root, "views", 1);
+```
+
+## Store Timestamps as UTC
+
+Always convert to UTC before storing:
+
+```csharp
+// Good: UTC timestamp
+doc.PutTimestamp(root, "created_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+// Avoid: Local time creates ambiguity across time zones
+doc.PutTimestamp(root, "created_at", DateTimeOffset.Now.ToUnixTimeMilliseconds());
+```
+
+# Next Steps
+
+- [Maps — Advanced Queries](/Six.Automerge/guides/maps/advanced-queries/) — Learn about MapRange, Values, Parents, and PathToObject.
+- [Maps — Basic Operations](/Six.Automerge/guides/maps/basic-operations/) — Review core map operations.
+- [Lists — Basic Operations](/Six.Automerge/guides/lists/basic-operations/) — Learn how to use list containers.

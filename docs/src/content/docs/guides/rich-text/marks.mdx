@@ -1,0 +1,220 @@
+---
+title: "Rich Text: Marks"
+description: Apply and remove formatting annotations on text ranges using Mark and Unmark
+---
+
+# Overview
+
+Marks are the fundamental building block of rich text in Automerge. A mark attaches a named value to a range of characters — bold, italic, links, font size, or any custom annotation you define.
+
+# Applying Marks
+
+## Boolean Marks
+
+Use `Mark` with a boolean value for toggle-style formatting:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello World");
+
+// Mark "Hello" as bold (characters 0–5)
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Commit("mark bold");
+```
+
+Common boolean marks: `"bold"`, `"italic"`, `"underline"`, `"strikethrough"`, `"code"`.
+
+## String Marks
+
+Use `Mark` with a string value for marks that carry data:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Click here for info");
+doc.Commit("write text");
+
+// Mark "Click here" as a link
+doc.Mark(textId, 0, 10, "link", "https://example.com");
+doc.Commit("mark link");
+```
+
+String marks are useful for links, colors, font families, or any annotation that needs a value.
+
+## Integer Marks
+
+Use `Mark` with a `long` value for numeric formatting:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Large text here");
+doc.Commit("write text");
+
+// Mark with a font size
+doc.Mark(textId, 0, 10, "fontSize", 24L);
+doc.Commit("mark fontSize");
+```
+
+Integer marks are useful for font sizes, heading levels, or indent depths.
+
+# Removing Marks
+
+Use `Unmark` to remove a mark from a range:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Commit("mark bold");
+
+// Remove the bold mark from "Hello"
+doc.Unmark(textId, "bold", 0, 5);
+doc.Commit("unmark bold");
+```
+
+`Unmark` takes the mark name and the range to clear. You can unmark a subset of the original range — for example, unmark only characters 2–4 of a range that was marked 0–5.
+
+# Overlapping Marks
+
+## Different Names Coexist
+
+Marks with different names can overlap on the same characters:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello World");
+
+// "Hello" is bold
+doc.Mark(textId, 0, 5, "bold", true);
+// "lo Wo" is italic (overlaps with bold on "lo")
+doc.Mark(textId, 3, 8, "italic", true);
+doc.Commit("overlapping marks");
+```
+
+The characters "lo" at positions 3–4 have both bold and italic marks. Different-name marks never conflict — they stack.
+
+## Same Name Overwrites
+
+Marks with the same name on overlapping ranges use last-writer-wins:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello World");
+
+// Mark entire text red
+doc.Mark(textId, 0, 11, "color", "red");
+doc.Commit("mark red");
+
+// Mark middle section blue (overwrites red on that range)
+doc.Mark(textId, 3, 8, "color", "blue");
+doc.Commit("mark blue");
+
+// Result:
+// "Hel" → color: red
+// "lo Wo" → color: blue
+// "rld" → color: red
+```
+
+The second mark overwrites the first on the overlapping region. Characters outside the overlap keep their original value.
+
+# Mark Persistence
+
+Marks survive save/load cycles:
+
+```csharp
+byte[] saved;
+using (var doc = AutomergeDocument.Create())
+{
+    var root = doc.RootId;
+    var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+    doc.SpliceText(textId, 0, 0, "Hello World");
+    doc.Mark(textId, 0, 5, "bold", true);
+    doc.Commit("write and mark");
+    saved = doc.Save();
+}
+
+using var loaded = AutomergeDocument.Load(saved);
+// Bold mark is preserved in the loaded document
+```
+
+# Mark Synchronization
+
+Marks sync between peers like any other Automerge operation:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root1 = doc1.RootId;
+
+var textId = doc1.PutObject(root1, "content", AutomergeContainerType.Text);
+doc1.SpliceText(textId, 0, 0, "Hello World");
+doc1.Commit("write text");
+
+// Fork to create a second peer
+using var doc2 = doc1.Fork();
+
+// Doc1 adds bold
+doc1.Mark(textId, 0, 5, "bold", true);
+doc1.Commit("mark bold");
+
+// Merge into doc2
+doc2.Merge(doc1);
+
+// Both documents now have the bold mark
+```
+
+# Error Handling
+
+## Range Exceeds Text Length
+
+Marking beyond the text length throws an exception:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hi");
+doc.Commit("write text");
+
+// Text has 2 characters — marking 0..100 throws
+doc.Mark(textId, 0, 100, "bold", true); // throws
+```
+
+## Empty Text
+
+Marking an empty text container with a non-zero range throws:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.Commit("empty text");
+
+doc.Mark(textId, 0, 5, "bold", true); // throws — no characters to mark
+```
+
+## Zero-Length Range
+
+Marking with start equal to end is valid but a no-op:
+
+```csharp
+doc.Mark(textId, 3, 3, "bold", true); // valid, marks nothing
+```
+
+## Inverted Range
+
+When start is greater than end, Automerge treats it as an empty range (no-op):
+
+```csharp
+doc.Mark(textId, 5, 2, "bold", true); // no-op
+```
+
+# API Reference
+
+| Method | Description |
+|--------|-------------|
+| `doc.Mark(textId, start, end, name, boolValue)` | Apply a boolean mark to a range |
+| `doc.Mark(textId, start, end, name, stringValue)` | Apply a string mark to a range |
+| `doc.Mark(textId, start, end, name, longValue)` | Apply an integer mark to a range |
+| `doc.Mark(textId, start, end, name, value, expandMode)` | Apply a mark with explicit expand mode |
+| `doc.Unmark(textId, name, start, end)` | Remove a mark from a range |
+| `doc.Unmark(textId, name, start, end, expandMode)` | Remove a mark with explicit expand mode |
+
+# Next Steps
+
+- [Expand Modes](/Six.Automerge/guides/rich-text/expand-modes/) — Control how marks behave when text is inserted at mark boundaries.
+- [Reading Marks](/Six.Automerge/guides/rich-text/reading-marks/) — Query marks and spans from text containers.
+- [Rich Text — Overview](/Six.Automerge/guides/rich-text/) — Return to the rich text overview.

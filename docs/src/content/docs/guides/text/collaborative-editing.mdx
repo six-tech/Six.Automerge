@@ -1,0 +1,189 @@
+---
+title: "Text: Collaborative Editing"
+description: How concurrent text edits merge in Automerge — non-overlapping edits, nearby changes, and deletions
+---
+
+# Overview
+
+Text containers shine when multiple users edit simultaneously. Automerge tracks character-level operations and merges them intelligently, preserving both users' intent.
+
+This guide covers how concurrent text edits from different peers combine during synchronization.
+
+# Non-Overlapping Edits
+
+When users edit different parts of the text, both changes apply cleanly:
+
+```csharp
+// Alice's document
+using var alice = AutomergeDocument.Create();
+var aliceRoot = alice.RootId;
+var aliceText = alice.PutObject(aliceRoot, "doc", AutomergeContainerType.Text);
+alice.SpliceText(aliceText, 0, 0, "Hello, world!");
+alice.Commit("Alice: Initial");
+
+// Bob gets Alice's version
+var aliceChanges = alice.GetChanges(new string[0]);
+var bob = AutomergeDocument.Create();
+bob.ApplyChanges(aliceChanges);
+var bobRoot = bob.RootId;
+var bobText = bob.PutObject(bobRoot, "doc", AutomergeContainerType.Text);
+
+// Alice adds prefix
+alice.SpliceText(aliceText, 0, 0, "Greeting: ");
+alice.Commit("Alice: Add prefix");
+// Alice's version: "Greeting: Hello, world!"
+
+// Bob adds suffix
+bob.SpliceText(bobText, 13, 0, " How are you?");
+bob.Commit("Bob: Add question");
+// Bob's version: "Hello, world! How are you?"
+
+// Sync
+var bobNewChanges = bob.GetChanges(alice.GetHeads());
+alice.ApplyChanges(bobNewChanges);
+
+// Result: "Greeting: Hello, world! How are you?"
+// Both edits appear in the merged version
+```
+
+Each user's edit targets a specific position in the text. Because they modified different regions, both changes apply without conflict.
+
+# Nearby Edits
+
+When users edit near each other, Automerge merges intelligently:
+
+```csharp
+// Start with: "The quick fox"
+var alice = AutomergeDocument.Create();
+var aliceRoot = alice.RootId;
+var aliceText = alice.PutObject(aliceRoot, "text", AutomergeContainerType.Text);
+alice.SpliceText(aliceText, 0, 0, "The quick fox");
+alice.Commit("Initial");
+
+// Bob gets the same starting point
+var aliceChanges = alice.GetChanges(new string[0]);
+var bob = AutomergeDocument.Create();
+bob.ApplyChanges(aliceChanges);
+var bobRoot = bob.RootId;
+var bobText = bob.PutObject(bobRoot, "text", AutomergeContainerType.Text);
+
+// Alice adds "brown " after "quick "
+alice.SpliceText(aliceText, 10, 0, "brown ");
+alice.Commit("Alice: Add brown");
+// Alice's version: "The quick brown fox"
+
+// Bob adds "jumps" after "fox"
+bob.SpliceText(bobText, 13, 0, " jumps");
+bob.Commit("Bob: Add jumps");
+// Bob's version: "The quick fox jumps"
+
+// Sync
+var bobNewChanges = bob.GetChanges(alice.GetHeads());
+alice.ApplyChanges(bobNewChanges);
+
+// Result: "The quick brown fox jumps"
+// Both insertions preserved
+```
+
+Automerge uses each operation's unique position identifier (not the index) to determine where insertions land after merge. This means nearby edits compose naturally.
+
+# Concurrent Deletions
+
+When both users delete text, Automerge applies both deletions:
+
+```csharp
+// Start with: "The very very quick fox"
+alice.SpliceText(aliceText, 4, 5, ""); // Delete first "very "
+// Alice's version: "The very quick fox"
+
+bob.SpliceText(bobText, 9, 5, ""); // Delete second "very "
+// Bob's version: "The very quick fox"
+
+// After sync: "The quick fox"
+// Both "very" instances removed
+```
+
+If both users delete the same region, the deletion applies once — not twice:
+
+```csharp
+// Both delete the same word
+alice.SpliceText(aliceText, 4, 5, ""); // Delete "very "
+bob.SpliceText(bobText, 4, 5, "");     // Delete same "very "
+
+// After sync: "very " removed once
+// No double-deletion
+```
+
+# Concurrent Insert and Delete
+
+When one user inserts text while another deletes nearby text:
+
+```csharp
+// Start with: "Hello world"
+
+// Alice inserts " beautiful" after "Hello"
+alice.SpliceText(aliceText, 5, 0, " beautiful");
+alice.Commit("Alice: Add adjective");
+// Alice's version: "Hello beautiful world"
+
+// Bob deletes "world" (5 chars at index 6)
+bob.SpliceText(bobText, 6, 5, "");
+bob.Commit("Bob: Delete world");
+// Bob's version: "Hello "
+
+// After sync: "Hello beautiful "
+// Alice's insertion preserved, Bob's deletion applied
+```
+
+Each operation applies independently. Insertions and deletions don't interfere with each other.
+
+# How Position Tracking Works
+
+Automerge doesn't use raw indices for tracking positions internally. Each character gets a unique identifier when inserted. Operations reference these identifiers, not array indices.
+
+This means:
+- An insertion "after character X" stays after character X regardless of other edits
+- A deletion of "characters X through Y" removes exactly those characters
+- Concurrent edits to different regions never interfere
+
+You work with indices in the API (`SpliceText(text, 7, 0, "...")`) but Automerge translates these to stable position references internally.
+
+# Practical Patterns
+
+## Real-Time Collaborative Editor
+
+A typical collaborative editing flow:
+
+```csharp
+// 1. Create or load a document
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+var content = doc.PutObject(root, "content", AutomergeContainerType.Text);
+
+// 2. Apply local edits as the user types
+doc.SpliceText(content, cursorPosition, 0, typedText);
+doc.Commit("User edit");
+
+// 3. Generate sync message for peers
+using var syncState = doc.CreateSyncState();
+var message = doc.GenerateSyncMessage(syncState);
+
+// 4. Send message to peer, receive their message
+if (peerMessage != null)
+{
+    doc.ReceiveSyncMessage(syncState, peerMessage);
+}
+
+// 5. Read merged state
+var json = doc.HydrateJson();
+```
+
+## Conflict Visibility
+
+After merging, the text reflects both users' changes. There's no "conflict" state for text — all concurrent edits compose together. If two users type at the exact same position, both characters appear (in a deterministic order based on actor IDs).
+
+# Next Steps
+
+- [Text — Basic Operations](/Six.Automerge/guides/text/basic-operations/) — Review SpliceText, reading text, and text vs string basics.
+- [Core Concepts](/Six.Automerge/guides/core-concepts/) — Understand the conflict-free merging model in depth.
+- [Lists — Basic Operations](/Six.Automerge/guides/lists/basic-operations/) — Compare list merge behavior with text merging.

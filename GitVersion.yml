@@ -1,0 +1,50 @@
+# See: https://gitversion.net/docs/reference/modes
+mode: ContinuousDeployment
+tag-prefix: '[vV]'
+
+# Automatic increments on conventional commit messages
+# See: https://gitversion.net/docs/reference/version-increments
+commit-message-incrementing: Enabled
+major-version-bump-message: "^(build|chore|ci|docs|feat|fix|perf|refactor|ref|revert|style|test)(\\([\\w\\s-]*\\))?(!:|:.*\\n\\n((.+\\n)+\\n)?BREAKING CHANGE:\\s.+)"
+minor-version-bump-message: "^(feat)(\\([\\w\\s-]*\\))?:"
+patch-version-bump-message: "^(build|chore|ci|docs|fix|perf|refactor|ref|revert|style|test)(\\([\\w\\s-]*\\))?:"
+
+branches:
+  main:
+    regex: ^master$|^main$
+    mode: ContinuousDeployment
+    tag: ''
+    increment: Inherit
+    prevent-increment-of-merged-branch-version: true
+    is-mainline: true
+
+  release:
+    regex: ^release(s?)?[/-]
+    mode: ContinuousDeployment
+    tag: useBranchName
+    increment: Inherit
+    source-branches: [ 'main', 'master' ]
+    is-mainline: true
+
+  pull-request:
+    regex: ^(pull|pull\-requests|pr)[/-]
+    mode: ContinuousDeployment
+    tag: 'pr-'
+    increment: Inherit
+    tag-number-pattern: '[/-](?<number>\d+)[/-]'
+    source-branches: [ 'develop', 'main', 'master', 'release', 'feature', 'hotfix' ]
+
+  feature:
+    regex: ^feat(ures?)?[/-]
+    mode: ContinuousDeployment
+    tag: useBranchName
+    increment: None
+    track-merge-target: true
+    source-branches: [ 'main', 'master', 'feature' ]
+
+  hotfix:
+    regex: ^hotfix(es)?[/-]
+    mode: ContinuousDeployment
+    tag: 'hotfix-'
+    increment: Patch
+    source-branches: [ 'main', 'master', 'release' ]

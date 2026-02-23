@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Description>Low-level P/Invoke bindings for the Automerge native library generated via Interoptopus.</Description>
+        <RootNamespace>Six.Automerge.FFI</RootNamespace>
+        <!-- Allow CI to skip Rust compilation when artifacts are pre-built -->
+        <SkipRustBuild Condition="'$(SkipRustBuild)' == ''">false</SkipRustBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ArtefactsRustRoot>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)/../..', 'artefacts-rust'))</ArtefactsRustRoot>
+        <NativeLibBaseName>libsix_automerge</NativeLibBaseName>
+        <BuildNativeScript>$(MSBuildProjectDirectory)/../../scripts/build-native.cs</BuildNativeScript>
+        <CopyNativeScript>$(MSBuildProjectDirectory)/../../scripts/copy-native-libs.cs</CopyNativeScript>
+    </PropertyGroup>
+
+    <!-- Build Rust native library (incremental, skippable in CI) -->
+    <Target Name="BuildRustNative"
+            BeforeTargets="Compile"
+            Condition="'$(DesignTimeBuild)' != 'true'
+                       and '$(SkipRustBuild)' != 'true'
+                       and Exists('$(BuildNativeScript)')">
+        <Exec Command="dotnet &quot;$(BuildNativeScript)&quot; -- --run-codegen" />
+    </Target>
+
+    <!-- Copy native libs from artefacts-rust/ to output directory -->
+    <Target Name="CopyNativeToOutput"
+            AfterTargets="Build"
+            Condition="'$(DesignTimeBuild)' != 'true' and Exists('$(CopyNativeScript)')">
+        <PropertyGroup>
+            <ResolvedOutDir>$([System.String]::Copy('$(TargetDir)').Replace('\','/'))</ResolvedOutDir>
+        </PropertyGroup>
+        <Exec Command="dotnet &quot;$(CopyNativeScript)&quot; -- --output-dir &quot;$(ResolvedOutDir)&quot; --artefacts-dir &quot;$(ArtefactsRustRoot)&quot;" />
+    </Target>
+
+    <!-- NuGet: Include native libs for all available platforms -->
+    <!-- Windows x64 -->
+    <ItemGroup Condition="Exists('$(ArtefactsRustRoot)/windows-x64/$(NativeLibBaseName)-windows-x64.dll')">
+        <None Include="$(ArtefactsRustRoot)/windows-x64/$(NativeLibBaseName)-windows-x64.dll"
+              Pack="true"
+              PackagePath="runtimes/win-x64/native/$(NativeLibBaseName).dll" />
+    </ItemGroup>
+    <!-- Windows arm64 -->
+    <ItemGroup Condition="Exists('$(ArtefactsRustRoot)/windows-arm64/$(NativeLibBaseName)-windows-arm64.dll')">
+        <None Include="$(ArtefactsRustRoot)/windows-arm64/$(NativeLibBaseName)-windows-arm64.dll"
+              Pack="true"
+              PackagePath="runtimes/win-arm64/native/$(NativeLibBaseName).dll" />
+    </ItemGroup>
+    <!-- Linux x64 -->
+    <ItemGroup Condition="Exists('$(ArtefactsRustRoot)/linux-x64/$(NativeLibBaseName)-linux-x64.so')">
+        <None Include="$(ArtefactsRustRoot)/linux-x64/$(NativeLibBaseName)-linux-x64.so"
+              Pack="true"
+              PackagePath="runtimes/linux-x64/native/$(NativeLibBaseName).so" />
+    </ItemGroup>
+    <!-- Linux arm64 -->
+    <ItemGroup Condition="Exists('$(ArtefactsRustRoot)/linux-arm64/$(NativeLibBaseName)-linux-arm64.so')">
+        <None Include="$(ArtefactsRustRoot)/linux-arm64/$(NativeLibBaseName)-linux-arm64.so"
+              Pack="true"
+              PackagePath="runtimes/linux-arm64/native/$(NativeLibBaseName).so" />
+    </ItemGroup>
+    <!-- macOS x64 -->
+    <ItemGroup Condition="Exists('$(ArtefactsRustRoot)/macos-x64/$(NativeLibBaseName)-macos-x64.dylib')">
+        <None Include="$(ArtefactsRustRoot)/macos-x64/$(NativeLibBaseName)-macos-x64.dylib"
+              Pack="true"
+              PackagePath="runtimes/osx-x64/native/$(NativeLibBaseName).dylib" />
+    </ItemGroup>
+    <!-- macOS arm64 -->
+    <ItemGroup Condition="Exists('$(ArtefactsRustRoot)/macos-arm64/$(NativeLibBaseName)-macos-arm64.dylib')">
+        <None Include="$(ArtefactsRustRoot)/macos-arm64/$(NativeLibBaseName)-macos-arm64.dylib"
+              Pack="true"
+              PackagePath="runtimes/osx-arm64/native/$(NativeLibBaseName).dylib" />
+    </ItemGroup>
+</Project>

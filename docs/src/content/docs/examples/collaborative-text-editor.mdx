@@ -1,0 +1,289 @@
+---
+title: "Collaborative Text Editor"
+description: Build a real-time collaborative text editor with Avalonia and Automerge CRDTs
+---
+
+# Overview
+
+This walkthrough builds a desktop application where two Automerge documents sync in real time, demonstrating the complete text CRDT workflow: creating a Text container, splicing edits, running the sync protocol, and rendering the result.
+
+The finished app has a split-pane UI: an editable local document on the left and a read-only peer view on the right. Edits propagate automatically via the Automerge sync protocol on a 500ms timer.
+
+# Architecture
+
+```
+TextEditorViewModel
+  |
+  +-- AutomergeService (local)   -- wraps AutomergeDocument
+  |     |
+  +-- AutomergeService (peer)    -- simulated remote peer
+  |     |
+  +-- SyncService                -- bidirectional sync on 500ms timer
+        |
+        +-- AutomergeSyncState (local to peer)
+        +-- AutomergeSyncState (peer to local)
+```
+
+**AutomergeService** wraps an `AutomergeDocument` and exposes text CRDT operations.
+**SyncService** runs the Automerge sync protocol between two `AutomergeService` instances on a timer.
+**TextEditorViewModel** bridges the CRDT layer to the Avalonia UI with reactive bindings.
+
+# Step 1: Project Setup
+
+Create an Avalonia Desktop project that references the Automerge libraries:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\Six.Automerge\Six.Automerge.csproj"/>
+    <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj"/>
+  </ItemGroup>
+</Project>
+```
+
+# Step 2: AutomergeService
+
+The service wraps `AutomergeDocument` and creates a Text container at the root:
+
+```csharp
+sealed class AutomergeService : IDisposable
+{
+  readonly AutomergeDocument _document;
+  readonly AutomergeObjectId _textId;
+
+  public AutomergeService()
+  {
+    _document = AutomergeDocument.Create();
+    _textId = _document.PutObject(
+      _document.RootId, "content", AutomergeContainerType.Text);
+    _document.Commit("Initialize text field");
+  }
+
+  public AutomergeDocument Document => _document;
+
+  public string GetText() => _document.GetText(_textId);
+
+  public void SpliceText(ulong index, long deleteCount, string insertText)
+  {
+    _document.SpliceText(_textId, index, deleteCount, insertText);
+    _document.Commit($"Edit at {index}");
+  }
+
+  public AutomergeCursor GetCursor(ulong index)
+    => _document.GetCursor(_textId, index);
+
+  public ulong GetCursorPosition(AutomergeCursor cursor)
+    => _document.GetCursorPosition(_textId, cursor);
+
+  public byte[] Save() => _document.Save();
+  // ... Load, Dispose omitted for brevity
+}
+```
+
+Key points:
+
+- `PutObject(root, "content", AutomergeContainerType.Text)` creates a Text CRDT container stored at the `"content"` key in the root map.
+- `SpliceText` inserts and deletes characters at a position, then commits the change. Each commit creates a new entry in the change history.
+- `GetCursor` / `GetCursorPosition` demonstrate cursor tracking: a cursor anchored at a position will follow that logical location even as concurrent edits shift indices.
+
+# Step 3: SyncService
+
+The sync service manages the bidirectional Automerge sync protocol between two documents:
+
+```csharp
+sealed class SyncService : IDisposable
+{
+  readonly AutomergeService _local;
+  readonly AutomergeService _peer;
+  readonly AutomergeSyncState _syncLocalToPeer;
+  readonly AutomergeSyncState _syncPeerToLocal;
+  readonly Timer _syncTimer;
+  readonly object _syncLock = new();
+
+  public event Action? SyncCompleted;
+
+  public SyncService(AutomergeService local, AutomergeService peer)
+  {
+    _local = local;
+    _peer = peer;
+    _syncLocalToPeer = _local.Document.CreateSyncState();
+    _syncPeerToLocal = _peer.Document.CreateSyncState();
+    _syncTimer = new Timer(500);
+    _syncTimer.Elapsed += OnSyncTimerElapsed;
+  }
+
+  public bool RunSyncRound()
+  {
+    lock(_syncLock)
+    {
+      bool exchanged = false;
+      for(int i = 0; i < 10; i++)
+      {
+        var msgA = _local.Document.GenerateSyncMessage(_syncLocalToPeer);
+        var msgB = _peer.Document.GenerateSyncMessage(_syncPeerToLocal);
+        if(msgA is null && msgB is null) break;
+        if(msgA is not null)
+        {
+          _peer.Document.ReceiveSyncMessage(_syncPeerToLocal, msgA);
+          exchanged = true;
+        }
+        if(msgB is not null)
+        {
+          _local.Document.ReceiveSyncMessage(_syncLocalToPeer, msgB);
+          exchanged = true;
+        }
+      }
+      return exchanged;
+    }
+  }
+}
+```
+
+The sync protocol works by exchanging messages in rounds:
+
+1. Each side calls `GenerateSyncMessage` to produce a message describing what it has.
+2. The other side receives the message with `ReceiveSyncMessage`.
+3. Repeat until both sides return `null` (fully converged).
+
+The `lock` ensures thread safety since the timer fires on a background thread.
+
+# Step 4: ViewModel
+
+The ViewModel bridges the CRDT layer to the UI:
+
+```csharp
+public class TextEditorViewModel : ViewModelBase, IDisposable
+{
+  readonly AutomergeService _localService;
+  readonly SyncService _syncService;
+  string _documentText = string.Empty;
+
+  public string DocumentText
+  {
+    get => _documentText;
+    set
+    {
+      if(_documentText == value) return;
+      ApplyTextChange(value);
+      this.RaiseAndSetIfChanged(ref _documentText, value);
+    }
+  }
+
+  void ApplyTextChange(string newText)
+  {
+    string currentText = _localService.GetText();
+
+    // Find common prefix
+    int prefixLen = 0;
+    int minLen = Math.Min(currentText.Length, newText.Length);
+    while(prefixLen < minLen
+      && currentText[prefixLen] == newText[prefixLen])
+    {
+      prefixLen++;
+    }
+
+    // Find common suffix
+    int suffixLen = 0;
+    int maxSuffix = minLen - prefixLen;
+    while(suffixLen < maxSuffix
+      && currentText[currentText.Length - 1 - suffixLen]
+        == newText[newText.Length - 1 - suffixLen])
+    {
+      suffixLen++;
+    }
+
+    int deleteCount = currentText.Length - prefixLen - suffixLen;
+    string insertText = newText.Substring(
+      prefixLen, newText.Length - prefixLen - suffixLen);
+
+    if(deleteCount > 0 || insertText.Length > 0)
+    {
+      _localService.SpliceText(
+        (ulong)prefixLen, deleteCount, insertText);
+    }
+  }
+}
+```
+
+The key technique is **text diffing**: when the TextBox reports a new value, the ViewModel computes the minimal edit (common prefix and suffix) and issues a single `SpliceText` call. This converts standard text input into CRDT operations.
+
+# Step 5: View
+
+The XAML uses a two-pane layout with compiled bindings:
+
+```xml
+<Window x:DataType="vm:TextEditorViewModel"
+        Title="Collaborative Text Editor">
+  <DockPanel>
+    <!-- Status bar -->
+    <Border DockPanel.Dock="Bottom" Background="#F0F0F0" Padding="8,4">
+      <DockPanel>
+        <TextBlock Text="{Binding SyncStatus}"/>
+        <TextBlock Text="{Binding PeerCount, StringFormat='Peers: {0}'}"/>
+      </DockPanel>
+    </Border>
+
+    <!-- Toolbar -->
+    <Border DockPanel.Dock="Top" Padding="8">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Content="Simulate Peer Edit"
+                Command="{Binding SimulatePeerEditCommand}"/>
+        <Button Content="Save"
+                Command="{Binding SaveCommand}"/>
+        <Button Content="Toggle Sync"
+                Command="{Binding ToggleSyncCommand}"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Two-pane editor -->
+    <Grid ColumnDefinitions="*,8,*">
+      <TextBox Grid.Column="0"
+               Text="{Binding DocumentText, Mode=TwoWay}"
+               AcceptsReturn="True" TextWrapping="Wrap"/>
+      <GridSplitter Grid.Column="1"/>
+      <TextBox Grid.Column="2"
+               Text="{Binding PeerText}" IsReadOnly="True"
+               AcceptsReturn="True" TextWrapping="Wrap"/>
+    </Grid>
+  </DockPanel>
+</Window>
+```
+
+# APIs Demonstrated
+
+This example exercises the following Six.Automerge APIs:
+
+| API | Purpose |
+|-----|---------|
+| `AutomergeDocument.Create()` | Create a new CRDT document |
+| `PutObject(root, key, Text)` | Create a Text container |
+| `SpliceText(id, index, del, ins)` | Insert and delete text |
+| `GetText(id)` | Read current text |
+| `GetCursor(id, index)` | Create a stable cursor |
+| `GetCursorPosition(id, cursor)` | Resolve cursor to index |
+| `Commit(message)` | Commit pending changes |
+| `Save()` / `Load(bytes)` | Full document persistence |
+| `CreateSyncState()` | Initialize sync protocol |
+| `GenerateSyncMessage(state)` | Produce a sync message |
+| `ReceiveSyncMessage(state, msg)` | Apply a sync message |
+
+# Running the App
+
+```bash
+dotnet run --project apps/DemoApp.CollaborativeTextEditor
+```
+
+Type in the left pane and watch the peer view update after the next sync round. Click **Simulate Peer Edit** to inject text from the simulated peer, then observe both panes converge through the sync protocol.

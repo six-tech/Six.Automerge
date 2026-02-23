@@ -1,0 +1,143 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:DemoApp.Shared.Controls"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
+             x:Class="DemoApp.Shared.Controls.DocumentSessionDialog"
+             x:DataType="controls:DocumentSessionDialogViewModel">
+
+    <Design.DataContext>
+        <controls:DocumentSessionDialogViewModel/>
+    </Design.DataContext>
+
+    <Border Padding="24" CornerRadius="8" Background="#111111" BorderBrush="#333333" BorderThickness="1">
+        <StackPanel Spacing="24">
+            <!-- Header -->
+            <TextBlock Text="Document Session" FontSize="24" FontWeight="Bold"
+                       HorizontalAlignment="Center" Name="HeaderText"/>
+
+            <!-- Error message -->
+            <Border CornerRadius="4" Padding="12" Background="#331111"
+                    BorderBrush="#993333" BorderThickness="1"
+                    IsVisible="{Binding HasError}"
+                    Name="ErrorBorder">
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF6666"
+                           TextWrapping="Wrap" Name="ErrorText"/>
+            </Border>
+
+            <!-- Loading indicator -->
+            <StackPanel Spacing="8" IsVisible="{Binding IsLoading}"
+                        HorizontalAlignment="Center"
+                        Name="LoadingPanel">
+                <ProgressBar IsIndeterminate="True" Width="200" Name="LoadingProgress"/>
+                <TextBlock Text="Connecting..." HorizontalAlignment="Center"
+                           FontStyle="Italic" Name="LoadingText"/>
+            </StackPanel>
+
+            <!-- Create New Document -->
+            <Border CornerRadius="4" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Start Fresh" FontWeight="SemiBold" FontSize="14"/>
+                    <TextBlock Text="Create a new collaborative document" />
+                    <Button Content="Create New Document" HorizontalAlignment="Stretch"
+                            IsEnabled="{Binding !IsLoading}"
+                            Click="OnCreateNew"
+                            Name="CreateNewButton"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Join Existing Document -->
+            <Border CornerRadius="4" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Join Existing" FontWeight="SemiBold" FontSize="14"/>
+                    <TextBlock Text="Enter a document ID to join a session" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Join" Margin="8,0,0,0"
+                                IsEnabled="{Binding CanJoin}"
+                                Click="OnJoin"
+                                Name="JoinButton"/>
+                        <TextBox Text="{Binding JoinDocumentId, Mode=TwoWay}"
+                                 Watermark="Enter document ID..."
+                                 IsEnabled="{Binding !IsLoading}"
+                                 Name="JoinDocumentIdInput"/>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Available Documents (merged local + server) -->
+            <Border CornerRadius="4" Padding="16"
+                    Name="DocumentsSection">
+                <StackPanel Spacing="8">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Refresh"
+                                FontSize="11" Padding="8,4"
+                                Click="OnRefreshServerDocuments"
+                                IsEnabled="{Binding !IsLoadingServerDocuments}"
+                                Name="RefreshButton"/>
+                        <TextBlock Text="Available Documents" FontWeight="SemiBold" FontSize="14"
+                                   VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <TextBlock Text="Resume a local or server document" />
+
+                    <!-- Server loading indicator -->
+                    <StackPanel Orientation="Horizontal" Spacing="8"
+                                IsVisible="{Binding IsLoadingServerDocuments}"
+                                Name="ServerLoadingPanel">
+                        <ProgressBar IsIndeterminate="True" Width="100" Height="4"/>
+                        <TextBlock Text="Loading server documents..." FontStyle="Italic" FontSize="11"/>
+                    </StackPanel>
+
+                    <!-- Empty state -->
+                    <TextBlock Text="No documents found" FontStyle="Italic"
+                               IsVisible="{Binding !AllDocuments.Count}"
+                               Name="EmptyStateText"/>
+
+                    <!-- Merged document list -->
+                    <ItemsControl ItemsSource="{Binding AllDocuments}"
+                                  IsEnabled="{Binding !IsLoading}"
+                                  Name="AllDocumentsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="controls:DocumentEntry">
+                                <Border Margin="0,2" Padding="8,4" CornerRadius="2">
+                                    <DockPanel>
+                                        <Button DockPanel.Dock="Right" Content="Resume"
+                                                FontSize="11" Padding="8,4"
+                                                Click="OnResumeDocumentEntry"
+                                                Tag="{Binding DocumentId}"/>
+                                        <!-- Source indicator: filled circle for server, open circle for local-only -->
+                                        <Panel DockPanel.Dock="Left"
+                                               Width="8" Height="8"
+                                               Margin="0,0,8,0"
+                                               VerticalAlignment="Center">
+                                            <Ellipse Width="8" Height="8"
+                                                     Fill="#4A90D9" Stroke="#4A90D9" StrokeThickness="1.5"
+                                                     IsVisible="{Binding IsServer}"
+                                                     Name="ServerIndicator"/>
+                                            <Ellipse Width="8" Height="8"
+                                                     Fill="Transparent" Stroke="#888888" StrokeThickness="1.5"
+                                                     IsVisible="{Binding !IsServer}"
+                                                     Name="LocalIndicator"/>
+                                        </Panel>
+                                        <StackPanel Orientation="Horizontal" Spacing="6"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding DocumentId}"
+                                                       FontFamily="Consolas,Courier New,monospace"
+                                                       FontSize="12"/>
+                                            <TextBlock Text="{Binding DisplayLabel}"
+                                                       FontSize="10" FontStyle="Italic"
+                                                       Foreground="#888888"
+                                                       IsVisible="{Binding DisplayLabel.Length}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+
+</UserControl>

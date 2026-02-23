@@ -1,0 +1,15 @@
+{
+  "id": "20260221065646-bd75f297",
+  "created": "2026-02-21T06:56:46.8108158Z",
+  "runSlug": "introduction-we-have-created-demo-apps-in-app",
+  "contentHash": "40AA58CF973CAACE",
+  "type": "observation",
+  "tags": [
+    "ui-threading",
+    "dispatcher",
+    "timeout",
+    "avalonia",
+    "async",
+    "viewmodel"
+  ]
+}

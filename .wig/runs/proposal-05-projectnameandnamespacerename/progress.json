@@ -1,0 +1,310 @@
+{
+  "tasks": [
+    {
+      "id": "sprint-1-task-1",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update \u0060libs/Six.Automerge.FFI/native/Cargo.toml\u0060: change \u0060[package] name\u0060 from \u0060ray_automerge\u0060 to \u0060six_automerge\u0060 and \u0060[lib] name\u0060 from \u0060ray_automerge\u0060 to \u0060six_automerge\u0060",
+      "description": "Update \u0060libs/Six.Automerge.FFI/native/Cargo.toml\u0060: change \u0060[package] name\u0060 from \u0060ray_automerge\u0060 to \u0060six_automerge\u0060 and \u0060[lib] name\u0060 from \u0060ray_automerge\u0060 to \u0060six_automerge\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-2",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update \u0060libs/Six.Automerge.FFI/codegen/Cargo.toml\u0060: change package name from \u0060ray_automerge_codegen\u0060 to \u0060six_automerge_codegen\u0060, and dependency \u0060ray_automerge = { path = \u0022../native\u0022 }\u0060 to \u0060six_automerge = { path = \u0022../native\u0022 }\u0060",
+      "description": "Update \u0060libs/Six.Automerge.FFI/codegen/Cargo.toml\u0060: change package name from \u0060ray_automerge_codegen\u0060 to \u0060six_automerge_codegen\u0060, and dependency \u0060ray_automerge = { path = \u0022../native\u0022 }\u0060 to \u0060six_automerge = { path = \u0022../native\u0022 }\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-3",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update \u0060libs/Six.Automerge.FFI/codegen/src/main.rs\u0060: change \u0060ray_automerge::ffi_inventory()\u0060 to \u0060six_automerge::ffi_inventory()\u0060, namespace from \u0060\u0022Ray.Automerge.FFI.Native\u0022\u0060 to \u0060\u0022Six.Automerge.FFI.Native\u0022\u0060, and \u0060.dll_name(\u0022ray_automerge\u0022)\u0060 to \u0060.dll_name(\u0022libsix_automerge\u0022)\u0060",
+      "description": "Update \u0060libs/Six.Automerge.FFI/codegen/src/main.rs\u0060: change \u0060ray_automerge::ffi_inventory()\u0060 to \u0060six_automerge::ffi_inventory()\u0060, namespace from \u0060\u0022Ray.Automerge.FFI.Native\u0022\u0060 to \u0060\u0022Six.Automerge.FFI.Native\u0022\u0060, and \u0060.dll_name(\u0022ray_automerge\u0022)\u0060 to \u0060.dll_name(\u0022libsix_automerge\u0022)\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-4",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update \u0060libs/Six.Automerge.FFI/native/src/util.rs\u0060: change version string from \u0060\u0022Ray.Automerge FFI v{}\u0022\u0060 to \u0060\u0022Six.Automerge FFI v{}\u0022\u0060",
+      "description": "Update \u0060libs/Six.Automerge.FFI/native/src/util.rs\u0060: change version string from \u0060\u0022Ray.Automerge FFI v{}\u0022\u0060 to \u0060\u0022Six.Automerge FFI v{}\u0022\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-5",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Rename build script file from \u0060scripts/build-ray-automerge-ffi.cs\u0060 to \u0060scripts/build-six-automerge-ffi.cs\u0060 and update its contents: \u0060LibraryName\u0060 to \u0060\u0022Six.Automerge.FFI\u0022\u0060, \u0060NativeCrateName\u0060 to \u0060\u0022six_automerge\u0022\u0060, \u0060GetNativeLibraryName\u0060 to produce \u0060lib\u0060 prefix on all platforms (including Windows), and \u0060CopyNativeOutputs\u0060 to handle the Windows rename from \u0060six_automerge.dll\u0060 to \u0060libsix_automerge.dll\u0060",
+      "description": "Rename build script file from \u0060scripts/build-ray-automerge-ffi.cs\u0060 to \u0060scripts/build-six-automerge-ffi.cs\u0060 and update its contents: \u0060LibraryName\u0060 to \u0060\u0022Six.Automerge.FFI\u0022\u0060, \u0060NativeCrateName\u0060 to \u0060\u0022six_automerge\u0022\u0060, \u0060GetNativeLibraryName\u0060 to produce \u0060lib\u0060 prefix on all platforms (including Windows), and \u0060CopyNativeOutputs\u0060 to handle the Windows rename from \u0060six_automerge.dll\u0060 to \u0060libsix_automerge.dll\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-6",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update \u0060libs/Six.Automerge.FFI/Six.Automerge.FFI.csproj\u0060: change \u0060RustBuildScript\u0060 path to \u0060../../scripts/build-six-automerge-ffi.cs\u0060, and update ALL native artifact references in \u0060\u003CNativeOutputs\u003E\u0060 and \u0060\u003CNone\u003E\u0060 items from \u0060ray_automerge.dll\u0060/\u0060libray_automerge.so\u0060/\u0060libray_automerge.dylib\u0060 to \u0060libsix_automerge.dll\u0060/\u0060libsix_automerge.so\u0060/\u0060libsix_automerge.dylib\u0060",
+      "description": "Update \u0060libs/Six.Automerge.FFI/Six.Automerge.FFI.csproj\u0060: change \u0060RustBuildScript\u0060 path to \u0060../../scripts/build-six-automerge-ffi.cs\u0060, and update ALL native artifact references in \u0060\u003CNativeOutputs\u003E\u0060 and \u0060\u003CNone\u003E\u0060 items from \u0060ray_automerge.dll\u0060/\u0060libray_automerge.so\u0060/\u0060libray_automerge.dylib\u0060 to \u0060libsix_automerge.dll\u0060/\u0060libsix_automerge.so\u0060/\u0060libsix_automerge.dylib\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-7",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Clean all cargo target directories: delete \u0060libs/Six.Automerge.FFI/native/target*/\u0060, \u0060libs/Six.Automerge.FFI/codegen/target*/\u0060, and \u0060libs/Six.Automerge.FFI/native/target/\u0060, \u0060libs/Six.Automerge.FFI/codegen/target/\u0060 \u2014 these contain stale \u0060ray_automerge\u0060 fingerprints. Also delete \u0060libs/Six.Automerge.FFI/build-info.json\u0060 to force full rebuild",
+      "description": "Clean all cargo target directories: delete \u0060libs/Six.Automerge.FFI/native/target*/\u0060, \u0060libs/Six.Automerge.FFI/codegen/target*/\u0060, and \u0060libs/Six.Automerge.FFI/native/target/\u0060, \u0060libs/Six.Automerge.FFI/codegen/target/\u0060 \u2014 these contain stale \u0060ray_automerge\u0060 fingerprints. Also delete \u0060libs/Six.Automerge.FFI/build-info.json\u0060 to force full rebuild",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-2-task-1",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Write and execute a shell script (using \u0060sed\u0060 or \u0060find ... -exec sed\u0060) to replace ALL occurrences of \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 across every \u0060.cs\u0060 file in \u0060libs/\u0060, \u0060apps/\u0060, \u0060tests/\u0060 directories. Exclude \u0060.references/\u0060, \u0060node_modules/\u0060, \u0060obj/\u0060, \u0060bin/\u0060 directories. This handles both \u0060namespace\u0060 declarations and \u0060using\u0060 directives in one pass",
+      "description": "Write and execute a shell script (using \u0060sed\u0060 or \u0060find ... -exec sed\u0060) to replace ALL occurrences of \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 across every \u0060.cs\u0060 file in \u0060libs/\u0060, \u0060apps/\u0060, \u0060tests/\u0060 directories. Exclude \u0060.references/\u0060, \u0060node_modules/\u0060, \u0060obj/\u0060, \u0060bin/\u0060 directories. This handles both \u0060namespace\u0060 declarations and \u0060using\u0060 directives in one pass",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-2",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Run a second pass to replace \u0060Ray.SignalR\u0060 with \u0060Six.SignalR\u0060 in all \u0060.cs\u0060 files (affects \u0060tests/Six.SignalR.TestServer/\u0060 and related test files)",
+      "description": "Run a second pass to replace \u0060Ray.SignalR\u0060 with \u0060Six.SignalR\u0060 in all \u0060.cs\u0060 files (affects \u0060tests/Six.SignalR.TestServer/\u0060 and related test files)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-3",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Check for and replace any remaining \u0060Ray.Toolkit\u0060 references in \u0060.cs\u0060 files (e.g., \u0060Ray.Toolkit.Automerge\u0060 -\u003E \u0060Six.Automerge\u0060)",
+      "description": "Check for and replace any remaining \u0060Ray.Toolkit\u0060 references in \u0060.cs\u0060 files (e.g., \u0060Ray.Toolkit.Automerge\u0060 -\u003E \u0060Six.Automerge\u0060)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-4",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Run \u0060cargo build --release\u0060 in \u0060libs/Six.Automerge.FFI/native/\u0060 to verify the Rust native crate builds with the new name",
+      "description": "Run \u0060cargo build --release\u0060 in \u0060libs/Six.Automerge.FFI/native/\u0060 to verify the Rust native crate builds with the new name",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-5",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Run \u0060cargo run --release\u0060 in \u0060libs/Six.Automerge.FFI/codegen/\u0060 to regenerate \u0060libs/Six.Automerge.FFI/generated/Interop.g.cs\u0060 with \u0060Six.Automerge.FFI.Native\u0060 namespace and \u0060libsix_automerge\u0060 DllImport name",
+      "description": "Run \u0060cargo run --release\u0060 in \u0060libs/Six.Automerge.FFI/codegen/\u0060 to regenerate \u0060libs/Six.Automerge.FFI/generated/Interop.g.cs\u0060 with \u0060Six.Automerge.FFI.Native\u0060 namespace and \u0060libsix_automerge\u0060 DllImport name",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-6",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Run \u0060dotnet build\u0060 from the repo root to verify the entire solution compiles successfully",
+      "description": "Run \u0060dotnet build\u0060 from the repo root to verify the entire solution compiles successfully",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-7",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Run all unit tests (\u0060dotnet test tests/Six.Automerge.FFI.Tests.Unit\u0060, \u0060dotnet test tests/Six.Automerge.Repo.Tests.Unit\u0060, \u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060) and verify pass counts match baseline (145 \u002B 259 \u002B 18 = 422 total, with 1 known pre-existing failure)",
+      "description": "Run all unit tests (\u0060dotnet test tests/Six.Automerge.FFI.Tests.Unit\u0060, \u0060dotnet test tests/Six.Automerge.Repo.Tests.Unit\u0060, \u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060) and verify pass counts match baseline (145 \u002B 259 \u002B 18 = 422 total, with 1 known pre-existing failure)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-3-task-1",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Write and execute a shell script to replace \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 and \u0060Ray.Toolkit.Automerge\u0060 with \u0060Six.Automerge\u0060 across all \u0060.mdx\u0060 and \u0060.md\u0060 files in \u0060docs/src/content/docs/\u0060. Also replace \u0060Ray.Automerge.Repository\u0060 with \u0060Six.Automerge.Repository\u0060 (used in docs API references)",
+      "description": "Write and execute a shell script to replace \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 and \u0060Ray.Toolkit.Automerge\u0060 with \u0060Six.Automerge\u0060 across all \u0060.mdx\u0060 and \u0060.md\u0060 files in \u0060docs/src/content/docs/\u0060. Also replace \u0060Ray.Automerge.Repository\u0060 with \u0060Six.Automerge.Repository\u0060 (used in docs API references)",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-2",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update \u0060docs/astro.config.mjs\u0060: change \u0060base\u0060 from \u0060\u0027/Ray.Toolkit.Automerge/\u0027\u0060 to \u0060\u0027/Six.Automerge/\u0027\u0060, \u0060site\u0060 from \u0060\u0027https://ray-platform.github.io\u0027\u0060 to \u0060\u0027https://six-tech.github.io\u0027\u0060, and \u0060title\u0060 from \u0060\u0027Ray.Toolkit.Automerge\u0027\u0060 to \u0060\u0027Six.Automerge\u0027\u0060",
+      "description": "Update \u0060docs/astro.config.mjs\u0060: change \u0060base\u0060 from \u0060\u0027/Ray.Toolkit.Automerge/\u0027\u0060 to \u0060\u0027/Six.Automerge/\u0027\u0060, \u0060site\u0060 from \u0060\u0027https://ray-platform.github.io\u0027\u0060 to \u0060\u0027https://six-tech.github.io\u0027\u0060, and \u0060title\u0060 from \u0060\u0027Ray.Toolkit.Automerge\u0027\u0060 to \u0060\u0027Six.Automerge\u0027\u0060",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-3",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update \u0060README.md\u0060: replace all \u0060Ray.Automerge\u0060 references with \u0060Six.Automerge\u0060, update project structure tree, update build commands, remove \u0060Ray.Toolkit.Automerge\u0060 references",
+      "description": "Update \u0060README.md\u0060: replace all \u0060Ray.Automerge\u0060 references with \u0060Six.Automerge\u0060, update project structure tree, update build commands, remove \u0060Ray.Toolkit.Automerge\u0060 references",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-4",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update \u0060CLAUDE.md\u0060: replace all \u0060Ray.Automerge\u0060 and \u0060Ray.\u0060 references with \u0060Six.Automerge\u0060 and \u0060Six.\u0060 respectively throughout the project overview, architecture diagram, build instructions, and code examples",
+      "description": "Update \u0060CLAUDE.md\u0060: replace all \u0060Ray.Automerge\u0060 and \u0060Ray.\u0060 references with \u0060Six.Automerge\u0060 and \u0060Six.\u0060 respectively throughout the project overview, architecture diagram, build instructions, and code examples",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-5",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update \u0060libs/Six.Automerge.FFI/BUILD.md\u0060: replace all \u0060Ray.Automerge\u0060 and \u0060Ray.Toolkit.Automerge\u0060 references with \u0060Six.Automerge\u0060",
+      "description": "Update \u0060libs/Six.Automerge.FFI/BUILD.md\u0060: replace all \u0060Ray.Automerge\u0060 and \u0060Ray.Toolkit.Automerge\u0060 references with \u0060Six.Automerge\u0060",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-6",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update remaining markdown files at repo root: \u0060API_SURFACE_COVERAGE.md\u0060, \u0060PROPOSAL-01-API.md\u0060, \u0060PROPOSAL-04.md\u0060, \u0060PROPOSAL-05-ProjectNameAndNamespaceRename.md\u0060 \u2014 replace \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 throughout",
+      "description": "Update remaining markdown files at repo root: \u0060API_SURFACE_COVERAGE.md\u0060, \u0060PROPOSAL-01-API.md\u0060, \u0060PROPOSAL-04.md\u0060, \u0060PROPOSAL-05-ProjectNameAndNamespaceRename.md\u0060 \u2014 replace \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 throughout",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-7",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update \u0060.wig/\u0060 files: run a script to replace \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 across all \u0060.md\u0060 and \u0060.json\u0060 files in \u0060.wig/specs/\u0060, \u0060.wig/runs/\u0060, and \u0060.wig/memory/\u0060 directories",
+      "description": "Update \u0060.wig/\u0060 files: run a script to replace \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 across all \u0060.md\u0060 and \u0060.json\u0060 files in \u0060.wig/specs/\u0060, \u0060.wig/runs/\u0060, and \u0060.wig/memory/\u0060 directories",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-4-task-1",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Run a comprehensive \u0060grep\u0060 scan for any remaining \u0060ray_automerge\u0060, \u0060Ray.Automerge\u0060, \u0060Ray.Toolkit\u0060, \u0060Ray.SignalR\u0060, \u0060Ray\\.\u0060 across all source files (\u0060.cs\u0060, \u0060.rs\u0060, \u0060.toml\u0060, \u0060.csproj\u0060, \u0060.props\u0060, \u0060.targets\u0060, \u0060.slnx\u0060, \u0060.md\u0060, \u0060.mdx\u0060, \u0060.mjs\u0060, \u0060.json\u0060), excluding \u0060.references/\u0060, \u0060node_modules/\u0060, \u0060obj/\u0060, \u0060bin/\u0060, cargo \u0060target*/\u0060 directories",
+      "description": "Run a comprehensive \u0060grep\u0060 scan for any remaining \u0060ray_automerge\u0060, \u0060Ray.Automerge\u0060, \u0060Ray.Toolkit\u0060, \u0060Ray.SignalR\u0060, \u0060Ray\\.\u0060 across all source files (\u0060.cs\u0060, \u0060.rs\u0060, \u0060.toml\u0060, \u0060.csproj\u0060, \u0060.props\u0060, \u0060.targets\u0060, \u0060.slnx\u0060, \u0060.md\u0060, \u0060.mdx\u0060, \u0060.mjs\u0060, \u0060.json\u0060), excluding \u0060.references/\u0060, \u0060node_modules/\u0060, \u0060obj/\u0060, \u0060bin/\u0060, cargo \u0060target*/\u0060 directories",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-2",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Fix any remaining references found by the scan",
+      "description": "Fix any remaining references found by the scan",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-3",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Run \u0060dotnet build\u0060 from repo root to verify clean build",
+      "description": "Run \u0060dotnet build\u0060 from repo root to verify clean build",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-4",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Run all unit test suites and confirm pass counts match pre-rename baseline",
+      "description": "Run all unit test suites and confirm pass counts match pre-rename baseline",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-5",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Run all demo app test suites (\u0060tests/DemoApp.*.Tests/\u0060) to verify they compile and pass",
+      "description": "Run all demo app test suites (\u0060tests/DemoApp.*.Tests/\u0060) to verify they compile and pass",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-6",
+      "specFile": ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md",
+      "title": "Update memory files: update \u0060/home/dinko/.claude/projects/-mnt-d-Work-projects-RayX-RayX-Automerge/memory/MEMORY.md\u0060 to reflect the completed rename (remove Ray references, update project structure notes)",
+      "description": "Update memory files: update \u0060/home/dinko/.claude/projects/-mnt-d-Work-projects-RayX-RayX-Automerge/memory/MEMORY.md\u0060 to reflect the completed rename (remove Ray references, update project structure notes)",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "sprint-1",
+      "title": "Rust Crate \u0026 Build Infrastructure Rename",
+      "description": "Rename all Rust crate names, codegen configuration, and the build script. This sprint does NOT rebuild \u2014 Sprint 2 handles the full rebuild after C# namespaces are also renamed.\r\n\r\n- [ ] Update \u0060libs/Six.Automerge.FFI/native/Cargo.toml\u0060: change \u0060[package] name\u0060 from \u0060ray_automerge\u0060 to \u0060six_automerge\u0060 and \u0060[lib] name\u0060 from \u0060ray_automerge\u0060 to \u0060six_automerge\u0060\r\n- [ ] Update \u0060libs/Six.Automerge.FFI/codegen/Cargo.toml\u0060: change package name from \u0060ray_automerge_codegen\u0060 to \u0060six_automerge_codegen\u0060, and dependency \u0060ray_automerge = { path = \u0022../native\u0022 }\u0060 to \u0060six_automerge = { path = \u0022../native\u0022 }\u0060\r\n- [ ] Update \u0060libs/Six.Automerge.FFI/codegen/src/main.rs\u0060: change \u0060ray_automerge::ffi_inventory()\u0060 to \u0060six_automerge::ffi_inventory()\u0060, namespace from \u0060\u0022Ray.Automerge.FFI.Native\u0022\u0060 to \u0060\u0022Six.Automerge.FFI.Native\u0022\u0060, and \u0060.dll_name(\u0022ray_automerge\u0022)\u0060 to \u0060.dll_name(\u0022libsix_automerge\u0022)\u0060\r\n- [ ] Update \u0060libs/Six.Automerge.FFI/native/src/util.rs\u0060: change version string from \u0060\u0022Ray.Automerge FFI v{}\u0022\u0060 to \u0060\u0022Six.Automerge FFI v{}\u0022\u0060\r\n- [ ] Rename build script file from \u0060scripts/build-ray-automerge-ffi.cs\u0060 to \u0060scripts/build-six-automerge-ffi.cs\u0060 and update its contents: \u0060LibraryName\u0060 to \u0060\u0022Six.Automerge.FFI\u0022\u0060, \u0060NativeCrateName\u0060 to \u0060\u0022six_automerge\u0022\u0060, \u0060GetNativeLibraryName\u0060 to produce \u0060lib\u0060 prefix on all platforms (including Windows), and \u0060CopyNativeOutputs\u0060 to handle the Windows rename from \u0060six_automerge.dll\u0060 to \u0060libsix_automerge.dll\u0060\r\n- [ ] Update \u0060libs/Six.Automerge.FFI/Six.Automerge.FFI.csproj\u0060: change \u0060RustBuildScript\u0060 path to \u0060../../scripts/build-six-automerge-ffi.cs\u0060, and update ALL native artifact references in \u0060\u003CNativeOutputs\u003E\u0060 and \u0060\u003CNone\u003E\u0060 items from \u0060ray_automerge.dll\u0060/\u0060libray_automerge.so\u0060/\u0060libray_automerge.dylib\u0060 to \u0060libsix_automerge.dll\u0060/\u0060libsix_automerge.so\u0060/\u0060libsix_automerge.dylib\u0060\r\n- [ ] Clean all cargo target directories: delete \u0060libs/Six.Automerge.FFI/native/target*/\u0060, \u0060libs/Six.Automerge.FFI/codegen/target*/\u0060, and \u0060libs/Six.Automerge.FFI/native/target/\u0060, \u0060libs/Six.Automerge.FFI/codegen/target/\u0060 \u2014 these contain stale \u0060ray_automerge\u0060 fingerprints. Also delete \u0060libs/Six.Automerge.FFI/build-info.json\u0060 to force full rebuild",
+      "taskIds": [
+        "sprint-1-task-1",
+        "sprint-1-task-2",
+        "sprint-1-task-3",
+        "sprint-1-task-4",
+        "sprint-1-task-5",
+        "sprint-1-task-6",
+        "sprint-1-task-7"
+      ]
+    },
+    {
+      "id": "sprint-2",
+      "title": "C# Namespace Mass Rename \u0026 Rebuild",
+      "description": "Script-based mass rename of all C# namespaces and usings, then rebuild everything including Rust codegen to verify.\r\n\r\n- [ ] Write and execute a shell script (using \u0060sed\u0060 or \u0060find ... -exec sed\u0060) to replace ALL occurrences of \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 across every \u0060.cs\u0060 file in \u0060libs/\u0060, \u0060apps/\u0060, \u0060tests/\u0060 directories. Exclude \u0060.references/\u0060, \u0060node_modules/\u0060, \u0060obj/\u0060, \u0060bin/\u0060 directories. This handles both \u0060namespace\u0060 declarations and \u0060using\u0060 directives in one pass\r\n- [ ] Run a second pass to replace \u0060Ray.SignalR\u0060 with \u0060Six.SignalR\u0060 in all \u0060.cs\u0060 files (affects \u0060tests/Six.SignalR.TestServer/\u0060 and related test files)\r\n- [ ] Check for and replace any remaining \u0060Ray.Toolkit\u0060 references in \u0060.cs\u0060 files (e.g., \u0060Ray.Toolkit.Automerge\u0060 -\u003E \u0060Six.Automerge\u0060)\r\n- [ ] Run \u0060cargo build --release\u0060 in \u0060libs/Six.Automerge.FFI/native/\u0060 to verify the Rust native crate builds with the new name\r\n- [ ] Run \u0060cargo run --release\u0060 in \u0060libs/Six.Automerge.FFI/codegen/\u0060 to regenerate \u0060libs/Six.Automerge.FFI/generated/Interop.g.cs\u0060 with \u0060Six.Automerge.FFI.Native\u0060 namespace and \u0060libsix_automerge\u0060 DllImport name\r\n- [ ] Run \u0060dotnet build\u0060 from the repo root to verify the entire solution compiles successfully\r\n- [ ] Run all unit tests (\u0060dotnet test tests/Six.Automerge.FFI.Tests.Unit\u0060, \u0060dotnet test tests/Six.Automerge.Repo.Tests.Unit\u0060, \u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060) and verify pass counts match baseline (145 \u002B 259 \u002B 18 = 422 total, with 1 known pre-existing failure)",
+      "taskIds": [
+        "sprint-2-task-1",
+        "sprint-2-task-2",
+        "sprint-2-task-3",
+        "sprint-2-task-4",
+        "sprint-2-task-5",
+        "sprint-2-task-6",
+        "sprint-2-task-7"
+      ]
+    },
+    {
+      "id": "sprint-3",
+      "title": "Documentation \u0026 Configuration Updates",
+      "description": "Update all documentation files, site config, and metadata to use Six naming.\r\n\r\n- [ ] Write and execute a shell script to replace \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 and \u0060Ray.Toolkit.Automerge\u0060 with \u0060Six.Automerge\u0060 across all \u0060.mdx\u0060 and \u0060.md\u0060 files in \u0060docs/src/content/docs/\u0060. Also replace \u0060Ray.Automerge.Repository\u0060 with \u0060Six.Automerge.Repository\u0060 (used in docs API references)\r\n- [ ] Update \u0060docs/astro.config.mjs\u0060: change \u0060base\u0060 from \u0060\u0027/Ray.Toolkit.Automerge/\u0027\u0060 to \u0060\u0027/Six.Automerge/\u0027\u0060, \u0060site\u0060 from \u0060\u0027https://ray-platform.github.io\u0027\u0060 to \u0060\u0027https://six-tech.github.io\u0027\u0060, and \u0060title\u0060 from \u0060\u0027Ray.Toolkit.Automerge\u0027\u0060 to \u0060\u0027Six.Automerge\u0027\u0060\r\n- [ ] Update \u0060README.md\u0060: replace all \u0060Ray.Automerge\u0060 references with \u0060Six.Automerge\u0060, update project structure tree, update build commands, remove \u0060Ray.Toolkit.Automerge\u0060 references\r\n- [ ] Update \u0060CLAUDE.md\u0060: replace all \u0060Ray.Automerge\u0060 and \u0060Ray.\u0060 references with \u0060Six.Automerge\u0060 and \u0060Six.\u0060 respectively throughout the project overview, architecture diagram, build instructions, and code examples\r\n- [ ] Update \u0060libs/Six.Automerge.FFI/BUILD.md\u0060: replace all \u0060Ray.Automerge\u0060 and \u0060Ray.Toolkit.Automerge\u0060 references with \u0060Six.Automerge\u0060\r\n- [ ] Update remaining markdown files at repo root: \u0060API_SURFACE_COVERAGE.md\u0060, \u0060PROPOSAL-01-API.md\u0060, \u0060PROPOSAL-04.md\u0060, \u0060PROPOSAL-05-ProjectNameAndNamespaceRename.md\u0060 \u2014 replace \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 throughout\r\n- [ ] Update \u0060.wig/\u0060 files: run a script to replace \u0060Ray.Automerge\u0060 with \u0060Six.Automerge\u0060 across all \u0060.md\u0060 and \u0060.json\u0060 files in \u0060.wig/specs/\u0060, \u0060.wig/runs/\u0060, and \u0060.wig/memory/\u0060 directories",
+      "taskIds": [
+        "sprint-3-task-1",
+        "sprint-3-task-2",
+        "sprint-3-task-3",
+        "sprint-3-task-4",
+        "sprint-3-task-5",
+        "sprint-3-task-6",
+        "sprint-3-task-7"
+      ]
+    },
+    {
+      "id": "sprint-4",
+      "title": "Final Verification \u0026 Cleanup",
+      "description": "Comprehensive verification that no \u0060Ray\u0060 references remain, full build and test pass.\r\n\r\n- [ ] Run a comprehensive \u0060grep\u0060 scan for any remaining \u0060ray_automerge\u0060, \u0060Ray.Automerge\u0060, \u0060Ray.Toolkit\u0060, \u0060Ray.SignalR\u0060, \u0060Ray\\.\u0060 across all source files (\u0060.cs\u0060, \u0060.rs\u0060, \u0060.toml\u0060, \u0060.csproj\u0060, \u0060.props\u0060, \u0060.targets\u0060, \u0060.slnx\u0060, \u0060.md\u0060, \u0060.mdx\u0060, \u0060.mjs\u0060, \u0060.json\u0060), excluding \u0060.references/\u0060, \u0060node_modules/\u0060, \u0060obj/\u0060, \u0060bin/\u0060, cargo \u0060target*/\u0060 directories\r\n- [ ] Fix any remaining references found by the scan\r\n- [ ] Run \u0060dotnet build\u0060 from repo root to verify clean build\r\n- [ ] Run all unit test suites and confirm pass counts match pre-rename baseline\r\n- [ ] Run all demo app test suites (\u0060tests/DemoApp.*.Tests/\u0060) to verify they compile and pass\r\n- [ ] Update memory files: update \u0060/home/dinko/.claude/projects/-mnt-d-Work-projects-RayX-RayX-Automerge/memory/MEMORY.md\u0060 to reflect the completed rename (remove Ray references, update project structure notes)",
+      "taskIds": [
+        "sprint-4-task-1",
+        "sprint-4-task-2",
+        "sprint-4-task-3",
+        "sprint-4-task-4",
+        "sprint-4-task-5",
+        "sprint-4-task-6"
+      ]
+    }
+  ],
+  "currentSprintIndex": 4,
+  "currentTaskId": "sprint-4-task-6",
+  "completedCount": 27,
+  "totalCount": 27,
+  "completionPercent": 100,
+  "hasSprints": true
+}

@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:DemoApp.Shared.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="32"
+             x:Class="DemoApp.Shared.Controls.ConnectionStatusBar"
+             x:DataType="controls:ConnectionStatusBarViewModel">
+
+    <Design.DataContext>
+        <controls:ConnectionStatusBarViewModel/>
+    </Design.DataContext>
+
+    <Border Padding="8,4" Name="StatusBarBorder">
+        <DockPanel>
+            <!-- Right side: peer count and server URL -->
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="16">
+                <TextBlock VerticalAlignment="Center" Name="PeerCountText">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="Peers: {0}">
+                            <Binding Path="PeerCount"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+                <TextBlock Text="{Binding ServerUrl}" VerticalAlignment="Center" FontSize="11" Name="ServerUrlText"/>
+            </StackPanel>
+
+            <!-- Left side: connection indicator, state, peer ID, document ID -->
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <!-- Connection state indicator dot -->
+                <Ellipse Width="10" Height="10" VerticalAlignment="Center" Name="ConnectionDot">
+                    <Ellipse.Styles>
+                        <Style Selector="Ellipse">
+                            <Setter Property="Fill" Value="#CC0000"/>
+                        </Style>
+                    </Ellipse.Styles>
+                </Ellipse>
+
+                <TextBlock Text="{Binding ConnectionStateText}" VerticalAlignment="Center"
+                           FontWeight="SemiBold" Name="ConnectionStateText"/>
+
+                <Separator Width="1" Height="16" />
+
+                <TextBlock VerticalAlignment="Center" Name="PeerIdText">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="Peer: {0}">
+                            <Binding Path="TruncatedPeerId"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+
+                <Separator Width="1" Height="16" />
+
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock VerticalAlignment="Center" Name="DocumentIdText">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Doc: {0}">
+                                <Binding Path="DocumentId"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <Button Content="Copy" FontSize="10" Padding="4,2"
+                            VerticalAlignment="Center"
+                            Name="CopyDocIdButton"
+                            Click="OnCopyDocumentId"/>
+                </StackPanel>
+            </StackPanel>
+        </DockPanel>
+    </Border>
+
+</UserControl>

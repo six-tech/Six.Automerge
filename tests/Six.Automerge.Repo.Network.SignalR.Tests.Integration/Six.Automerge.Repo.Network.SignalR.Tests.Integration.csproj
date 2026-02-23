@@ -1,0 +1,24 @@
+<!--<Project Sdk="Microsoft.NET.Sdk.Web">-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <xUnitMaxParallelThreads>1</xUnitMaxParallelThreads>
+        <RootNamespace>Six.Automerge.Repo.Network.SignalR.Tests.Integration</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting.Testing" Version="13.1.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.3"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Network.SignalR.Abstractions\Six.Automerge.Repo.Network.SignalR.Abstractions.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Network.SignalR.Client\Six.Automerge.Repo.Network.SignalR.Client.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Network.SignalR.Server\Six.Automerge.Repo.Network.SignalR.Server.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Abstractions\Six.Automerge.Repo.Abstractions.csproj" />
+        <ProjectReference Include="..\Six.Tests.AppHost\Six.Tests.AppHost.csproj" />
+    </ItemGroup>
+
+</Project>

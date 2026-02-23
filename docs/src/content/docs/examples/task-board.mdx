@@ -1,0 +1,261 @@
+---
+title: "Task Board"
+description: Build a Kanban-style task board with Avalonia and Automerge CRDTs using maps, lists, and counters
+---
+
+# Overview
+
+This walkthrough builds a Kanban-style task board desktop application using Automerge CRDTs. It demonstrates structured data operations: maps for columns and tasks, lists for ordering, and counters for vote tracking.
+
+The finished app displays three default columns (To Do, In Progress, Done) with the ability to add columns, add tasks, remove items, upvote tasks, and move tasks between columns.
+
+# Architecture
+
+```
+BoardViewModel
+  └── AutomergeService
+        └── AutomergeDocument
+              └── root (map)
+                    └── "columns" (list)
+                          └── column (map)
+                                ├── "name", "order"
+                                └── "tasks" (list)
+                                      └── task (map)
+                                            ├── "title", "description", "status"
+                                            └── "votes" (counter)
+```
+
+**AutomergeService** wraps an `AutomergeDocument` and exposes typed CRUD operations for columns and tasks.
+**BoardViewModel** bridges the service layer to the Avalonia UI with observable collections and commands.
+
+# Step 1: Project Setup
+
+Create an Avalonia Desktop project that references the Automerge libraries:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\Six.Automerge\Six.Automerge.csproj"/>
+    <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj"/>
+  </ItemGroup>
+</Project>
+```
+
+# Step 2: AutomergeService
+
+The service initializes the document with a `columns` list at the root and provides typed operations:
+
+```csharp
+sealed class AutomergeService : IDisposable
+{
+  readonly AutomergeDocument _document;
+  readonly AutomergeObjectId _columnsListId;
+
+  public AutomergeService()
+  {
+    _document = AutomergeDocument.Create();
+    _columnsListId = _document.PutObject(
+      _document.RootId, "columns", AutomergeContainerType.List);
+    _document.Commit("Initialize board");
+  }
+
+  public Column AddColumn(string name)
+  {
+    ulong index = _document.ListLength(_columnsListId);
+    var columnId = _document.ListInsertObject(
+      _columnsListId, index, AutomergeContainerType.Map);
+    _document.PutString(columnId, "name", name);
+    _document.PutInt64(columnId, "order", (long)index);
+    var tasksListId = _document.PutObject(
+      columnId, "tasks", AutomergeContainerType.List);
+    _document.Commit($"Add column: {name}");
+    // return Column model...
+  }
+}
+```
+
+Key patterns:
+
+- `PutObject(root, "columns", List)` creates the top-level columns list.
+- `ListInsertObject(list, index, Map)` appends a new column as a map at the end of the list.
+- `PutObject(column, "tasks", List)` nests a tasks list inside each column map.
+
+# Step 3: Task CRUD
+
+Adding a task inserts a new map into a column's tasks list:
+
+```csharp
+public TaskItem AddTask(
+  AutomergeObjectId tasksListId,
+  string title,
+  string description,
+  string status)
+{
+  ulong index = _document.ListLength(tasksListId);
+  var taskId = _document.ListInsertObject(
+    tasksListId, index, AutomergeContainerType.Map);
+  _document.PutString(taskId, "title", title);
+  _document.PutString(taskId, "description", description);
+  _document.PutString(taskId, "status", status);
+  _document.PutCounter(taskId, "votes", 0);
+  _document.Commit($"Add task: {title}");
+  // return TaskItem model...
+}
+```
+
+The `PutCounter` call initializes a counter CRDT at the `"votes"` key. Counters automatically merge concurrent increments without conflicts.
+
+# Step 4: Counter Increments
+
+Upvoting a task uses the `Increment` operation:
+
+```csharp
+public void IncrementVotes(AutomergeObjectId taskId, long delta = 1)
+{
+  _document.Increment(taskId, "votes", delta);
+  _document.Commit("Vote");
+}
+```
+
+Unlike `PutInt64` which would cause last-writer-wins conflicts, `Increment` is commutative: if two peers both upvote concurrently, both increments are preserved after sync.
+
+# Step 5: Moving Tasks
+
+Moving a task between columns requires removing from the source list and inserting into the destination:
+
+```csharp
+public TaskItem MoveTask(
+  AutomergeObjectId sourceTasksListId,
+  ulong sourceIndex,
+  AutomergeObjectId destTasksListId,
+  ulong destIndex,
+  TaskItem task)
+{
+  _document.ListRemove(sourceTasksListId, sourceIndex);
+
+  var newTaskId = _document.ListInsertObject(
+    destTasksListId, destIndex, AutomergeContainerType.Map);
+  _document.PutString(newTaskId, "title", task.Title);
+  _document.PutString(newTaskId, "description", task.Description);
+  _document.PutString(newTaskId, "status", task.Status);
+  _document.PutCounter(newTaskId, "votes", task.Votes);
+  _document.Commit($"Move task: {task.Title}");
+  // return new TaskItem...
+}
+```
+
+Since Automerge does not support moving objects between lists natively, the move is implemented as a delete-and-reinsert. The task data is copied to a new map in the destination list.
+
+# Step 6: Reading the Board
+
+The `ReadBoard` method iterates the document structure to produce a list of columns with their tasks:
+
+```csharp
+public List<Column> ReadBoard()
+{
+  var columns = new List<Column>();
+  ulong columnCount = _document.ListLength(_columnsListId);
+
+  for(ulong i = 0; i < columnCount; i++)
+  {
+    var columnId = _document.ListGetObject(_columnsListId, i);
+    var tasksListId = _document.GetObject(columnId, "tasks");
+    var column = new Column
+    {
+      ObjectId = columnId,
+      TasksListId = tasksListId,
+      Name = _document.GetString(columnId, "name") ?? string.Empty,
+      Order = _document.GetInt64(columnId, "order") ?? 0,
+    };
+
+    ulong taskCount = _document.ListLength(tasksListId);
+    for(ulong j = 0; j < taskCount; j++)
+    {
+      var taskId = _document.ListGetObject(tasksListId, j);
+      column.Tasks.Add(new TaskItem
+      {
+        ObjectId = taskId,
+        Title = _document.GetString(taskId, "title") ?? string.Empty,
+        Votes = _document.GetCounter(taskId, "votes") ?? 0,
+        // ... other properties
+      });
+    }
+
+    columns.Add(column);
+  }
+
+  return columns;
+}
+```
+
+# Step 7: View
+
+The XAML uses a horizontal `ItemsControl` for columns, each containing a vertical task list:
+
+```xml
+<ScrollViewer HorizontalScrollBarVisibility="Auto">
+  <ItemsControl ItemsSource="{Binding Columns}">
+    <ItemsControl.ItemsPanel>
+      <ItemsPanelTemplate>
+        <StackPanel Orientation="Horizontal" Spacing="8"/>
+      </ItemsPanelTemplate>
+    </ItemsControl.ItemsPanel>
+    <ItemsControl.ItemTemplate>
+      <DataTemplate x:DataType="vm:ColumnViewModel">
+        <Border Background="#F5F5F5" CornerRadius="8" Width="300">
+          <DockPanel>
+            <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+            <Button Content="+ Add Task" DockPanel.Dock="Bottom"/>
+            <ItemsControl ItemsSource="{Binding Tasks}">
+              <!-- Task card template with title, status, vote button -->
+            </ItemsControl>
+          </DockPanel>
+        </Border>
+      </DataTemplate>
+    </ItemsControl.ItemTemplate>
+  </ItemsControl>
+</ScrollViewer>
+```
+
+Each task card displays the title, status, a vote button with counter, and a delete button.
+
+# APIs Demonstrated
+
+| API | Purpose |
+|-----|---------|
+| `PutObject(id, key, Map)` | Create column and task maps |
+| `PutObject(id, key, List)` | Create ordered task lists |
+| `PutString(id, key, value)` | Set text properties |
+| `PutInt64(id, key, value)` | Set numeric properties |
+| `PutCounter(id, key, value)` | Initialize a counter |
+| `Increment(id, key, delta)` | Increment a counter |
+| `ListInsertObject(list, idx, Map)` | Add items to lists |
+| `ListRemove(list, idx)` | Remove items from lists |
+| `ListLength(list)` | Get list size |
+| `ListGetObject(list, idx)` | Read nested objects |
+| `GetString(id, key)` | Read string properties |
+| `GetInt64(id, key)` | Read integer properties |
+| `GetCounter(id, key)` | Read counter value |
+| `GetObject(id, key)` | Navigate nested containers |
+| `Commit(message)` | Commit pending changes |
+| `Save()` / `Load(bytes)` | Full document persistence |
+
+# Running the App
+
+```bash
+dotnet run --project apps/DemoApp.TaskBoard
+```
+
+The board starts with three default columns: To Do, In Progress, and Done. Use the toolbar buttons to add columns, click "+ Add Task" to add tasks to columns, click the up arrow to upvote, and click "X" to remove items.

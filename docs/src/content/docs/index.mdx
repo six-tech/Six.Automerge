@@ -1,0 +1,58 @@
+---
+title: Six.Automerge
+description: Automerge CRDT Bindings
+head:
+  - tag: title
+editUrl: false
+template: splash
+---
+
+import {Card, CardGrid} from '@astrojs/starlight/components'
+import {ContainerSection, HeroX} from '@six-tech/starlight-theme-six/components'
+import heroImage from '../../assets/six-solution-hero-banner-blank.png'
+
+<HeroX
+    height="400px"
+    mt="2rem"
+    mb="0"
+    px="4rem"
+    radius="1.5rem"
+    image={{
+        background: heroImage,
+        alt: "Hero background image",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        contentPosition: "bottom-left"
+    }}
+    actions={[
+        {
+            text: "Get Started",
+            link: "/Six.Automerge/guides/getting-started/"
+        },
+        {
+            text: "API Reference",
+            link: "/Six.Automerge/api/"
+        }
+    ]}
+/>
+
+<ContainerSection>
+    <CardGrid>
+        <Card title="Conflict-Free Data Types" icon="rocket">
+            Maps, lists, text, and rich text CRDTs with automatic conflict resolution. Multiple users edit the same data simultaneously and changes merge deterministically.
+        </Card>
+
+        <Card title="Real-Time Sync" icon="setting">
+            Built-in sync protocol exchanges only differences between documents. Pluggable network adapters for InMemory, SignalR, and Orleans transports.
+        </Card>
+
+        <Card title="Offline-First" icon="laptop">
+            Users work without connectivity. Changes accumulate locally and merge seamlessly when peers reconnect. No central server required.
+        </Card>
+
+        <Card title="Full History" icon="document">
+            Every change is tracked with commits, timestamps, and actor IDs. Time-travel queries, diffing, branching, and fork-and-merge workflows are built in.
+        </Card>
+    </CardGrid>
+</ContainerSection>

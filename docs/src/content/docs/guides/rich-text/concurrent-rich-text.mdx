@@ -1,0 +1,328 @@
+---
+title: "Rich Text: Concurrent Editing"
+description: How marks merge across multiple peers — overlapping marks, LWW conflict resolution, bidirectional convergence, and the sync protocol
+---
+
+# Overview
+
+When multiple peers edit the same rich text document concurrently, their marks must merge correctly. Automerge's rich text model (based on Peritext) defines clear rules for how concurrent mark operations compose:
+
+- **Different mark names coexist** — Bold from peer A and italic from peer B are both preserved.
+- **Same mark name uses last-writer-wins (LWW)** — If both peers set `"color"` on the same range, one value wins deterministically.
+- **Text edits and marks compose** — Inserting text shifts mark ranges; marks applied to different text regions merge without conflict.
+
+# Overlapping Marks from Different Peers
+
+The most common concurrent scenario: two peers apply different marks to overlapping text regions. Both marks are preserved after merge.
+
+```csharp
+// Create base document with shared text
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+var textId = doc1.PutObject(root, "content", AutomergeContainerType.Text);
+doc1.SpliceText(textId, 0, 0, "Hello World from Automerge");
+doc1.Commit("shared text");
+
+// Fork to create second peer
+using var doc2 = doc1.Fork();
+
+// Peer 1: bold on "Hello World" (0–11)
+doc1.Mark(textId, 0, 11, "bold", true);
+doc1.Commit("doc1: mark bold");
+
+// Peer 2: italic on "World from" (6–16) — overlaps with bold
+doc2.Mark(textId, 6, 16, "italic", true);
+doc2.Commit("doc2: mark italic");
+
+// Merge peer 2 into peer 1
+doc1.Merge(doc2);
+
+// Both marks are preserved
+var marks = doc1.GetMarks(textId);
+// marks.Count == 2
+
+var bold = marks.First(m => m.Name == "bold");
+// bold: range 0–11
+
+var italic = marks.First(m => m.Name == "italic");
+// italic: range 6–16
+
+// Text is unchanged
+// doc1.GetText(textId) == "Hello World from Automerge"
+```
+
+After merge, `GetSpans` returns spans that reflect both marks. Characters in the overlap region (positions 6–11, "World") carry both bold and italic.
+
+# Same Mark Name: Last-Writer-Wins
+
+When two peers set the **same mark name** on the same range with different values, Automerge resolves the conflict using LWW semantics. One value wins deterministically based on actor ordering:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+var textId = doc1.PutObject(root, "content", AutomergeContainerType.Text);
+doc1.SpliceText(textId, 0, 0, "Hello World");
+doc1.Commit("shared text");
+
+using var doc2 = doc1.Fork();
+
+// Peer 1: color = "red" on "Hello" (0–5)
+doc1.Mark(textId, 0, 5, "color", "red");
+doc1.Commit("doc1: color red");
+
+// Peer 2: color = "blue" on "Hello" (0–5) — same range, same name
+doc2.Mark(textId, 0, 5, "color", "blue");
+doc2.Commit("doc2: color blue");
+
+// Merge
+doc1.Merge(doc2);
+
+// One color wins — determined by actor ordering
+var marks = doc1.GetMarks(textId);
+var colorMark = marks.First(m => m.Name == "color");
+// colorMark.Value.StringValue is either "red" or "blue"
+```
+
+**Key point:** The winning value is deterministic — both peers will resolve to the same value after merging in both directions. You don't need to handle the conflict manually.
+
+# Multiple Marks from Multiple Peers
+
+Marks with different names from different peers always coexist. Here, peer 1 applies bold and a link, while peer 2 applies italic — all three survive the merge:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+var textId = doc1.PutObject(root, "content", AutomergeContainerType.Text);
+doc1.SpliceText(textId, 0, 0, "The quick brown fox jumps");
+doc1.Commit("shared text");
+
+using var doc2 = doc1.Fork();
+
+// Peer 1: bold on "quick" (4–9) + link on "brown fox" (10–19)
+doc1.Mark(textId, 4, 9, "bold", true);
+doc1.Mark(textId, 10, 19, "link", "https://fox.example.com");
+doc1.Commit("doc1 marks");
+
+// Peer 2: italic on "brown fox jumps" (10–25)
+doc2.Mark(textId, 10, 25, "italic", true);
+doc2.Commit("doc2 marks");
+
+// Merge
+doc1.Merge(doc2);
+
+var marks = doc1.GetMarks(textId);
+// All 3 marks preserved: bold (4–9), link (10–19), italic (10–25)
+```
+
+# Bidirectional Merge: Convergence
+
+When both peers merge each other's changes, they converge to identical state — same text, same marks, same spans:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+var textId = doc1.PutObject(root, "content", AutomergeContainerType.Text);
+doc1.SpliceText(textId, 0, 0, "Hello World");
+doc1.Commit("shared text");
+
+using var doc2 = doc1.Fork();
+
+// Peer 1: bold on "Hello"
+doc1.Mark(textId, 0, 5, "bold", true);
+doc1.Commit("doc1: bold");
+
+// Peer 2: italic on "World"
+doc2.Mark(textId, 6, 11, "italic", true);
+doc2.Commit("doc2: italic");
+
+// Merge both directions
+doc1.Merge(doc2);
+doc2.Merge(doc1);
+
+// Both documents have identical marks
+var marks1 = doc1.GetMarks(textId);
+var marks2 = doc2.GetMarks(textId);
+// marks1.Count == marks2.Count
+
+// Both documents have identical text
+// doc1.GetText(textId) == doc2.GetText(textId)
+
+// Both documents have identical spans
+var spans1 = doc1.GetSpans(textId);
+var spans2 = doc2.GetSpans(textId);
+// spans1.Count == spans2.Count
+```
+
+This convergence guarantee is fundamental to CRDTs — regardless of the order in which changes arrive, all peers reach the same final state.
+
+# Sync Protocol Convergence
+
+The same convergence applies when using the sync protocol (instead of `Merge`). This is how real applications sync over the network:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+var textId = doc1.PutObject(root, "content", AutomergeContainerType.Text);
+doc1.SpliceText(textId, 0, 0, "Hello World");
+doc1.Commit("shared text");
+
+// Create doc2 from the same initial state
+var saved = doc1.Save();
+using var doc2 = AutomergeDocument.Load(saved);
+
+// Peer 1: bold
+doc1.Mark(textId, 0, 5, "bold", true);
+doc1.Commit("doc1 bold");
+
+// Peer 2: link on overlapping range
+doc2.Mark(textId, 3, 11, "link", "https://example.com");
+doc2.Commit("doc2 link");
+
+// Sync via protocol
+using var sync12 = doc1.CreateSyncState();
+using var sync21 = doc2.CreateSyncState();
+
+for (var i = 0; i < 10; i++)
+{
+    var msg1 = doc1.GenerateSyncMessage(sync12);
+    var msg2 = doc2.GenerateSyncMessage(sync21);
+    if (msg1 is null && msg2 is null) break;
+    if (msg1 is not null) doc2.ReceiveSyncMessage(sync21, msg1);
+    if (msg2 is not null) doc1.ReceiveSyncMessage(sync12, msg2);
+}
+
+// Both docs converge: same text, same marks
+// Both have "bold" and "link" marks
+```
+
+# Concurrent Text Edits and Marks
+
+Marks adjust correctly when concurrent text edits change character positions:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+var textId = doc1.PutObject(root, "content", AutomergeContainerType.Text);
+doc1.SpliceText(textId, 0, 0, "ABCDEFGHIJ");
+doc1.Commit("shared text");
+
+using var doc2 = doc1.Fork();
+
+// Peer 1: mark "CDEF" (2–6) as bold, then insert "XX" at start
+doc1.Mark(textId, 2, 6, "bold", true);
+doc1.SpliceText(textId, 0, 0, "XX");
+doc1.Commit("doc1: mark + insert");
+
+// Peer 2: mark "EFGH" (4–8) as italic
+doc2.Mark(textId, 4, 8, "italic", true);
+doc2.Commit("doc2: mark italic");
+
+// Merge
+doc1.Merge(doc2);
+
+// Text now starts with "XX"
+var text = doc1.GetText(textId);
+// text starts with "XX" and contains "ABCDEFGHIJ"
+
+// Both marks are present — positions adjusted for the insertion
+var marks = doc1.GetMarks(textId);
+// Contains "bold" and "italic"
+```
+
+Automerge tracks mark ranges by character identity, not by index. When text is inserted or deleted, mark boundaries shift to stay attached to the correct characters.
+
+# Marks Survive Splice Then Sync
+
+Splicing text within a marked region expands the mark to include the new characters, and this expanded range syncs correctly:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+var textId = doc1.PutObject(root, "content", AutomergeContainerType.Text);
+doc1.SpliceText(textId, 0, 0, "ABCDEFGHIJ");
+doc1.Mark(textId, 2, 8, "bold", true); // bold on "CDEFGH"
+doc1.Commit("text with bold");
+
+// Splice within the bold region
+doc1.SpliceText(textId, 5, 0, "XX");
+doc1.Commit("splice in bold region");
+
+// Text is now "ABCDEXXFGHIJ"
+// Bold expanded from range 2–8 to 2–10 (includes "XX")
+var marks = doc1.GetMarks(textId);
+var bold = marks.First(m => m.Name == "bold");
+// bold.Start == 2, bold.End == 10
+
+// Sync to second doc — expanded range transfers correctly
+using var doc2 = doc1.Fork();
+var marks2 = doc2.GetMarks(textId);
+var bold2 = marks2.First(m => m.Name == "bold");
+// bold2.Start == bold.Start, bold2.End == bold.End
+```
+
+# Full Pipeline: Text, Blocks, Marks, and Sync
+
+A complete end-to-end scenario combining all rich text features:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+
+// 1. Insert text
+doc.SpliceText(textId, 0, 0, "Hello World. This is paragraph one.");
+doc.Commit("insert text");
+
+// 2. Add a block marker to split into paragraphs
+doc.SplitBlock(textId, 13);
+doc.Commit("split block");
+
+// 3. Apply bold to "Hello" and italic to "World"
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Mark(textId, 6, 11, "italic", true);
+doc.Commit("mark formatting");
+
+// 4. Splice within the marked region
+doc.SpliceText(textId, 6, 0, "Beautiful ");
+doc.Commit("splice");
+
+// Bold still covers "Hello" (0–5)
+// Italic shifted right by 10 chars to cover "World" (16–21)
+
+// 5. Sync to a second document
+using var doc2 = AutomergeDocument.Create();
+using var syncAB = doc.CreateSyncState();
+using var syncBA = doc2.CreateSyncState();
+
+for (var i = 0; i < 10; i++)
+{
+    var msgA = doc.GenerateSyncMessage(syncAB);
+    var msgB = doc2.GenerateSyncMessage(syncBA);
+    if (msgA is null && msgB is null) break;
+    if (msgA is not null) doc2.ReceiveSyncMessage(syncBA, msgA);
+    if (msgB is not null) doc.ReceiveSyncMessage(syncAB, msgB);
+}
+
+// Both documents have identical text, marks, and spans
+var spans1 = doc.GetSpans(textId);
+var spans2 = doc2.GetSpans(textId);
+// spans1.Count == spans2.Count
+```
+
+# Merge Semantics Summary
+
+| Scenario | Result |
+|----------|--------|
+| Different mark names on overlapping ranges | Both marks preserved |
+| Same mark name, different values, same range | Last-writer-wins (deterministic) |
+| Multiple marks from multiple peers | All distinct marks preserved |
+| Text insertion within marked region | Mark expands to include new text |
+| Text insertion outside marked region | Mark range shifts by insertion length |
+| Bidirectional merge | Both peers converge to identical state |
+| Sync protocol | Same convergence as direct merge |
+
+# Next Steps
+
+- [Marks](/Six.Automerge/guides/rich-text/marks/) — Review how to apply and remove marks.
+- [Expand Modes](/Six.Automerge/guides/rich-text/expand-modes/) — Control boundary behavior when text is inserted at mark edges.
+- [Spans](/Six.Automerge/guides/rich-text/spans/) — Understand the span model for rendering merged rich text.

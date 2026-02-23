@@ -1,0 +1,15 @@
+{
+  "id": "20260222142259-9293c81a",
+  "created": "2026-02-22T14:22:59.6334458Z",
+  "runSlug": "demoapp-collaborativeeditor-issues-3-the-dem",
+  "contentHash": "D8CC30E4247854F2",
+  "type": "observation",
+  "tags": [
+    "signalr",
+    "hub",
+    "peer-tracking",
+    "dto",
+    "architecture",
+    "concurrent-collections"
+  ]
+}

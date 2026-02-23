@@ -1,0 +1,228 @@
+---
+title: "Lists: ListPut Operations"
+description: Learn how to replace list elements at specific indices using ListPut methods
+---
+
+# Overview
+
+`ListPut` methods replace an existing element at a given index without changing the list length.
+
+Unlike `ListInsert` (which adds a new element and shifts others), `ListPut` overwrites the value at an index in place.
+
+# ListPutString
+
+Replace an element with a string value:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "original");
+doc.Commit("init");
+
+doc.ListPutString(list, 0, "replaced");
+doc.Commit("update");
+
+Console.WriteLine(doc.ListGetString(list, 0)); // "replaced"
+Console.WriteLine(doc.ListLength(list));        // 1 (unchanged)
+```
+
+The list length stays the same — the value at index 0 is overwritten.
+
+# ListPutInt64
+
+Replace an element with a signed integer:
+
+```csharp
+var list = doc.PutObject(root, "scores", AutomergeContainerType.List);
+doc.ListInsertInt64(list, 0, 100);
+doc.Commit("init");
+
+doc.ListPutInt64(list, 0, 999);
+doc.Commit("update");
+
+Console.WriteLine(doc.ListGetInt64(list, 0)); // 999
+```
+
+# ListPutUInt64
+
+Replace an element with an unsigned integer:
+
+```csharp
+var list = doc.PutObject(root, "ids", AutomergeContainerType.List);
+doc.ListInsertUInt64(list, 0, 10);
+doc.Commit("init");
+
+doc.ListPutUInt64(list, 0, 999);
+doc.Commit("update");
+
+Console.WriteLine(doc.ListGetUInt64(list, 0)); // 999
+```
+
+# ListPutDouble
+
+Replace an element with a floating-point value:
+
+```csharp
+var list = doc.PutObject(root, "measurements", AutomergeContainerType.List);
+doc.ListInsertDouble(list, 0, 1.5);
+doc.Commit("init");
+
+doc.ListPutDouble(list, 0, 3.14);
+doc.Commit("update");
+
+Console.WriteLine(doc.ListGetDouble(list, 0)); // 3.14
+```
+
+# ListPutBoolean
+
+Replace an element with a boolean:
+
+```csharp
+var list = doc.PutObject(root, "flags", AutomergeContainerType.List);
+doc.ListInsertBoolean(list, 0, false);
+doc.Commit("init");
+
+doc.ListPutBoolean(list, 0, true);
+doc.Commit("update");
+
+Console.WriteLine(doc.ListGetBoolean(list, 0)); // True
+```
+
+# ListPutBytes
+
+Replace an element with binary data:
+
+```csharp
+var list = doc.PutObject(root, "data", AutomergeContainerType.List);
+doc.ListInsertBytes(list, 0, new byte[] { 1, 2, 3 });
+doc.Commit("init");
+
+byte[] newBytes = [4, 5, 6, 7];
+doc.ListPutBytes(list, 0, newBytes);
+doc.Commit("update");
+
+var result = doc.ListGetBytes(list, 0); // [4, 5, 6, 7]
+```
+
+# ListPutNull
+
+Replace an element with null:
+
+```csharp
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "something");
+doc.Commit("init");
+
+doc.ListPutNull(list, 0);
+doc.Commit("clear value");
+
+Console.WriteLine(doc.ListGetString(list, 0)); // null
+Console.WriteLine(doc.ListLength(list));        // 1 (element still exists)
+```
+
+The element still exists at index 0 — it's just set to null. This differs from `ListRemove`, which removes the element entirely.
+
+# ListPutObject
+
+Replace an element with a nested container (map, list, or text):
+
+```csharp
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "placeholder");
+doc.Commit("init");
+
+var nested = doc.ListPutObject(list, 0, AutomergeContainerType.Map);
+doc.PutString(nested, "key", "value");
+doc.Commit("replace with map");
+
+var retrieved = doc.ListGetObject(list, 0);
+Console.WriteLine(doc.GetString(retrieved!, "key")); // "value"
+```
+
+`ListPutObject` returns the new object's ID so you can immediately populate it.
+
+# ListPut vs ListInsert
+
+The key difference:
+
+| Method | Effect | Length Change |
+|--------|--------|------|
+| `ListInsert*` | Adds a new element, shifts others right | +1 |
+| `ListPut*` | Overwrites element at index | 0 |
+| `ListRemove` | Removes element, shifts others left | -1 |
+
+```csharp
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "a");
+doc.ListInsertString(list, 1, "b");
+doc.ListInsertString(list, 2, "c");
+doc.Commit("init");
+// List: ["a", "b", "c"], length: 3
+
+doc.ListPutString(list, 1, "B");
+doc.Commit("put");
+// List: ["a", "B", "c"], length: 3 (unchanged)
+
+doc.ListInsertString(list, 1, "new");
+doc.Commit("insert");
+// List: ["a", "new", "B", "c"], length: 4
+
+doc.ListRemove(list, 1);
+doc.Commit("remove");
+// List: ["a", "B", "c"], length: 3
+```
+
+# Complete Example
+
+Here's a settings panel where list items are updated in place:
+
+```csharp
+using System;
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Create a list of configuration entries
+var config = doc.PutObject(root, "config", AutomergeContainerType.List);
+
+// Add entries as nested maps
+var entry0 = doc.ListInsertObject(config, 0, AutomergeContainerType.Map);
+doc.PutString(entry0, "key", "theme");
+doc.PutString(entry0, "value", "light");
+
+var entry1 = doc.ListInsertObject(config, 1, AutomergeContainerType.Map);
+doc.PutString(entry1, "key", "font_size");
+doc.PutInt64(entry1, "value", 14);
+
+var entry2 = doc.ListInsertObject(config, 2, AutomergeContainerType.Map);
+doc.PutString(entry2, "key", "notifications");
+doc.PutBoolean(entry2, "value", true);
+
+doc.Commit("Initial config");
+
+// Update the theme entry by replacing it
+var updatedEntry = doc.ListPutObject(config, 0, AutomergeContainerType.Map);
+doc.PutString(updatedEntry, "key", "theme");
+doc.PutString(updatedEntry, "value", "dark");
+doc.Commit("Switch to dark theme");
+
+// Update font size
+var updatedFont = doc.ListPutObject(config, 1, AutomergeContainerType.Map);
+doc.PutString(updatedFont, "key", "font_size");
+doc.PutInt64(updatedFont, "value", 16);
+doc.Commit("Increase font size");
+
+Console.WriteLine($"Config entries: {doc.ListLength(config)}"); // 3 (unchanged)
+
+var json = doc.HydrateJson();
+Console.WriteLine(json);
+```
+
+# Next Steps
+
+- [Lists — Splice Operations](/Six.Automerge/guides/lists/list-splice/) — Learn about batch insert, delete, and replace.
+- [Lists — Advanced Queries](/Six.Automerge/guides/lists/advanced-queries/) — Learn about ListRange and LengthAtHeads.
+- [Lists — Basic Operations](/Six.Automerge/guides/lists/basic-operations/) — Review core list operations.

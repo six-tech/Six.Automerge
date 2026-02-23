@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "runSlug": "demoapp-collaborativeeditor-issues-the-collab",
+  "status": "completed",
+  "currentIteration": 5,
+  "sessionId": "dc436cc3-57f1-4a35-bf17-55cb0bc812d9",
+  "specFiles": [
+    ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md"
+  ],
+  "startedAt": "2026-02-21T19:44:45.4339959Z",
+  "lastIterationAt": "2026-02-21T21:31:34.6971625Z",
+  "stopReason": "All sprints completed"
+}

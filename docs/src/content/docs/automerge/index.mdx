@@ -1,0 +1,108 @@
+---
+title: Six.Automerge
+description: Production-ready C# bindings for building collaborative applications with conflict-free data structures
+---
+
+# Overview
+
+Six.Automerge provides C# bindings for the Automerge library, which implements Conflict-free Replicated Data Types (CRDTs).
+
+CRDTs let multiple users edit the same data simultaneously without conflicts. When changes merge, the system automatically resolves conflicts in predictable ways. This means you can build collaborative applications where users work offline and sync later.
+
+The library wraps a Rust-based implementation, giving you high performance with a clean C# API.
+
+# What You Can Build
+
+This library works well for applications where multiple users modify shared data:
+
+- Collaborative document editors
+- Real-time task management systems
+- Distributed configuration systems
+- Offline-first mobile applications
+- Multi-user data synchronization
+
+# Key Capabilities
+
+**Automatic Conflict Resolution**
+
+Multiple users can edit the same document at the same time. The library merges changes automatically without requiring manual conflict resolution.
+
+**Offline Support**
+
+Users can work completely offline. Changes sync and merge when connectivity returns.
+
+**Complete History**
+
+Every change is tracked with commit history. You can inspect what changed, when, and by whom.
+
+**Efficient Synchronization**
+
+The sync protocol exchanges only the differences between documents, minimizing network traffic.
+
+**Type-Safe API**
+
+The C# API provides type safety and follows .NET conventions, making it feel natural to .NET developers.
+
+# Quick Example
+
+Here's a minimal example showing document creation and synchronization between two peers:
+
+```csharp
+using Six.Automerge;
+
+// Alice creates a document
+using var alice = AutomergeDocument.Create();
+var root = alice.RootId;
+
+alice.PutString(root, "title", "Meeting Notes");
+alice.PutBoolean(root, "published", false);
+alice.Commit("Initial draft");
+
+// Bob creates his own document
+using var bob = AutomergeDocument.Create();
+var bobRoot = bob.RootId;
+bob.PutString(bobRoot, "author", "Bob");
+bob.Commit("Add author");
+
+// Sync the documents
+using var aliceSync = alice.CreateSyncState();
+using var bobSync = bob.CreateSyncState();
+
+var msg1 = alice.GenerateSyncMessage(aliceSync);
+if (msg1 != null) bob.ReceiveSyncMessage(bobSync, msg1);
+
+var msg2 = bob.GenerateSyncMessage(bobSync);
+if (msg2 != null) alice.ReceiveSyncMessage(aliceSync, msg2);
+
+// Both documents now contain all changes
+// alice has: title, published, author
+// bob has: title, published, author
+```
+
+# How It Works
+
+Automerge uses CRDTs to track changes at a fine-grained level. Each modification gets a unique identifier based on the actor (user) and a logical timestamp.
+
+When you merge documents, Automerge looks at these identifiers to determine the order of operations. It applies mathematical rules to combine changes, ensuring all peers converge to the same state.
+
+This approach differs from traditional operational transformation or manual conflict resolution. You don't need to write conflict handlers or choose between competing changes.
+
+# Architecture
+
+The library consists of two main packages:
+
+**Six.Automerge**
+
+The high-level API you'll use in your applications. It provides managed types and .NET-friendly methods.
+
+**Six.Automerge.FFI**
+
+The low-level FFI bindings to the Rust implementation. You typically don't interact with this directly.
+
+# Next Steps
+
+Start with the [Getting Started](/Six.Automerge/guides/getting-started/) guide to install the library and create your first document.
+
+Then explore [Core Concepts](/Six.Automerge/guides/core-concepts/) to understand documents, containers, and the data model.
+
+Finally, check the specific guides for working with [maps](/Six.Automerge/guides/maps/basic-operations/), [lists](/Six.Automerge/guides/lists/basic-operations/), [text](/Six.Automerge/guides/text/basic-operations/), synchronization, and [repository doc handles](/Six.Automerge/repo/doc-handles/).

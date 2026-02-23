@@ -1,0 +1,14 @@
+{
+  "id": "20260220054555-d0b45df0",
+  "created": "2026-02-20T05:45:55.7485205Z",
+  "runSlug": "we-have-documentation-in-docs-src-content-docs",
+  "contentHash": "B41FD88A2ABB3C4B",
+  "type": "observation",
+  "tags": [
+    "astro",
+    "starlight",
+    "documentation",
+    "sidebar",
+    "configuration"
+  ]
+}

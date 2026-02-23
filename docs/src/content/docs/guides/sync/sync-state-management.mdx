@@ -1,0 +1,211 @@
+---
+title: "Sync State Management"
+description: Encode, decode, reset, and persist AutomergeSyncState for efficient synchronization across sessions
+---
+
+# Overview
+
+`AutomergeSyncState` tracks what a peer knows about a document. Managing sync state correctly is essential for efficient synchronization — it prevents re-sending data the peer already has. This guide covers encoding, decoding, resetting, and querying sync state.
+
+# Creating Sync State
+
+Create a sync state from a document:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+using var syncState = doc.CreateSyncState();
+```
+
+A fresh sync state assumes the peer knows nothing. The first `GenerateSyncMessage` call will produce a message containing bloom filters to efficiently discover which changes the peer needs.
+
+# Encoding Sync State
+
+Encode sync state to bytes for persistence:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+using var syncState = doc.CreateSyncState();
+
+// Perform sync rounds...
+
+// Save sync state
+var encoded = syncState.Encode();
+File.WriteAllBytes("sync-state.bin", encoded);
+```
+
+The encoded bytes capture everything the sync protocol needs to resume: shared heads, last sent heads, and bloom filters.
+
+# Decoding Sync State
+
+Restore a previously saved sync state:
+
+```csharp
+var loadedBytes = File.ReadAllBytes("sync-state.bin");
+using var restoredState = AutomergeSyncState.Decode(loadedBytes);
+
+// Continue syncing with the restored state
+var message = doc.GenerateSyncMessage(restoredState);
+```
+
+:::note
+`Decode` is a static method on `AutomergeSyncState`. The decoded state is fully functional and can be used immediately with `GenerateSyncMessage` and `ReceiveSyncMessage`.
+:::
+
+# Persisting Across Sessions
+
+Save and restore sync state between application restarts to avoid re-sending all changes:
+
+```csharp
+// On shutdown: save sync state for each peer
+async Task SaveSyncStates(Dictionary<string, AutomergeSyncState> peerStates)
+{
+    foreach(var (peerId, state) in peerStates)
+    {
+        var encoded = state.Encode();
+        await File.WriteAllBytesAsync($"sync-{peerId}.bin", encoded);
+    }
+}
+
+// On startup: restore sync states
+Dictionary<string, AutomergeSyncState> LoadSyncStates(string[] peerIds)
+{
+    var states = new Dictionary<string, AutomergeSyncState>();
+
+    foreach(var peerId in peerIds)
+    {
+        var path = $"sync-{peerId}.bin";
+        if(File.Exists(path))
+        {
+            var bytes = File.ReadAllBytes(path);
+            states[peerId] = AutomergeSyncState.Decode(bytes);
+        }
+        else
+        {
+            // No saved state - create fresh
+            states[peerId] = doc.CreateSyncState();
+        }
+    }
+
+    return states;
+}
+```
+
+With persisted sync state, the next sync only transfers changes made since the last session.
+
+# Resetting Sync State
+
+Reset sync state to force a full resync:
+
+```csharp
+using var syncState = doc.CreateSyncState();
+
+// Use the sync state...
+
+// Reset to initial state
+syncState.Reset();
+
+// Next sync will discover what the peer has from scratch
+var message = doc.GenerateSyncMessage(syncState);
+```
+
+Reset is useful when:
+- The peer's state is unknown or suspected to be corrupted
+- You want to force a complete resync
+- The peer has been offline for a very long time and the sync state may be stale
+
+After reset, the next `GenerateSyncMessage` call produces a fresh discovery message, as if the sync state was just created.
+
+# Querying Shared Heads
+
+Query which commits both peers agree they share:
+
+```csharp
+using var syncState = doc.CreateSyncState();
+
+// Perform sync rounds...
+
+var sharedHeads = syncState.SharedHeads;
+Console.WriteLine($"Peer has acknowledged {sharedHeads.Count} heads:");
+foreach(var head in sharedHeads)
+{
+    Console.WriteLine($"  {head}");
+}
+```
+
+Shared heads represent the commits both peers have confirmed. This is useful for:
+- **Monitoring sync progress** — Compare shared heads with the document's current heads
+- **Detecting sync completion** — When shared heads match the document's heads, the peer is fully up to date
+- **Debugging sync issues** — Identify which commits a peer is missing
+
+# Sync State Lifecycle
+
+A typical sync state lifecycle:
+
+```csharp
+// 1. Create or restore
+AutomergeSyncState syncState;
+var savedPath = $"sync-{peerId}.bin";
+if(File.Exists(savedPath))
+{
+    var bytes = File.ReadAllBytes(savedPath);
+    syncState = AutomergeSyncState.Decode(bytes);
+}
+else
+{
+    syncState = doc.CreateSyncState();
+}
+
+// 2. Sync with peer
+for(int i = 0; i < 10; i++)
+{
+    var msg = doc.GenerateSyncMessage(syncState);
+    if(msg == null) break;
+
+    var response = await SendToPeerAndGetResponse(peerId, msg);
+    if(response != null)
+    {
+        doc.ReceiveSyncMessage(syncState, response);
+    }
+}
+
+// 3. Save for next session
+var encoded = syncState.Encode();
+File.WriteAllBytes(savedPath, encoded);
+
+// 4. Dispose when done
+syncState.Dispose();
+```
+
+# Best Practices
+
+- **Always persist sync states** for long-running applications — this avoids redundant data transfer on reconnect
+- **Use separate files per peer** — Each peer needs its own sync state
+- **Handle decode failures** — If the saved state is corrupted, fall back to a fresh sync state
+- **Dispose sync states** — Always dispose when done. Use `using` for automatic cleanup.
+
+```csharp
+AutomergeSyncState LoadOrCreate(AutomergeDocument doc, string peerId)
+{
+    try
+    {
+        var path = $"sync-{peerId}.bin";
+        if(File.Exists(path))
+        {
+            var bytes = File.ReadAllBytes(path);
+            return AutomergeSyncState.Decode(bytes);
+        }
+    }
+    catch(AutomergeException)
+    {
+        // Corrupted state file, start fresh
+    }
+
+    return doc.CreateSyncState();
+}
+```
+
+# Next Steps
+
+- [Sync Protocol](/Six.Automerge/guides/sync/sync-protocol/) — Basics of the two-peer sync protocol
+- [Multi-Peer Sync](/Six.Automerge/guides/sync/multi-peer-sync/) — Sync documents across three or more peers
+- [Advanced Sync](/Six.Automerge/guides/sync/advanced-sync/) — Bundles, differential changes, and dependency tracking

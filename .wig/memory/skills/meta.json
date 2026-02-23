@@ -1,0 +1,18 @@
+{
+  "slug": "",
+  "tags": [
+    "codegen",
+    "parameter-naming",
+    "FFI",
+    "Interoptopus",
+    "error-prevention"
+  ],
+  "effectiveness": 0,
+  "timesApplied": 0,
+  "timesSucceeded": 0,
+  "currentVersion": 23,
+  "promoted": false,
+  "evolvedFrom": [],
+  "created": "2026-02-20T01:38:49.3100059Z",
+  "lastApplied": "2026-02-20T01:38:49.3100197Z"
+}

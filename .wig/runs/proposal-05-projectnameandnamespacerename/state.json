@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "runSlug": "proposal-05-projectnameandnamespacerename",
+  "status": "completed",
+  "currentIteration": 4,
+  "sessionId": "b67d3073-6295-4812-9e2c-a6f73061b8e0",
+  "specFiles": [
+    ".wig/specs/proposal-05-projectnameandnamespacerename/implementation-plan.md"
+  ],
+  "startedAt": "2026-02-21T14:14:20.686363Z",
+  "lastIterationAt": "2026-02-21T14:39:16.338279Z",
+  "stopReason": "All sprints completed"
+}

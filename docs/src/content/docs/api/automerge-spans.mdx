@@ -1,0 +1,170 @@
+---
+title: Spans
+description: API reference for AutomergeSpan, AutomergeTextSpan, and AutomergeBlockSpan — rich text span types
+---
+
+# Overview
+
+Spans represent the rich text structure of a Text container. When you call `AutomergeDocument.GetSpans`, the text is split into segments based on formatting marks and block boundaries. Each span is either an `AutomergeTextSpan` (text with marks) or an `AutomergeBlockSpan` (a block-level marker).
+
+```csharp
+using Six.Automerge;
+
+var spans = doc.GetSpans(textId);
+foreach(var span in spans)
+{
+  if(span is AutomergeTextSpan textSpan)
+    Console.WriteLine($"Text: \"{textSpan.Text}\" marks: {textSpan.Marks.Count}");
+  else if(span is AutomergeBlockSpan blockSpan)
+    Console.WriteLine($"Block: {blockSpan.BlockType}");
+}
+```
+
+# AutomergeSpan
+
+```csharp
+public abstract class AutomergeSpan
+```
+
+Abstract base class for all span types. Use pattern matching to determine the concrete type.
+
+**Namespace:** `Six.Automerge`
+
+**Subclasses:**
+- `AutomergeTextSpan` — a run of text with formatting marks
+- `AutomergeBlockSpan` — a block-level structural marker
+
+# AutomergeTextSpan
+
+```csharp
+public sealed class AutomergeTextSpan : AutomergeSpan
+```
+
+A span of text with its associated marks (formatting annotations). Consecutive characters sharing the same set of marks are grouped into a single `AutomergeTextSpan`.
+
+## Properties
+
+### Text
+
+```csharp
+public string Text { get; }
+```
+
+The text content of this span. May be empty if the span represents a zero-width boundary.
+
+### Marks
+
+```csharp
+public IReadOnlyList<AutomergeMarkInfo> Marks { get; }
+```
+
+The marks (formatting annotations) active on this span. An empty list means the text is unformatted. See [AutomergeMarkInfo](/Six.Automerge/api/automerge-marks/) for mark details.
+
+## Constructor
+
+```csharp
+public AutomergeTextSpan(string text, IReadOnlyList<AutomergeMarkInfo> marks)
+```
+
+**Parameters:**
+- `text` — The text content.
+- `marks` — The active marks on this text.
+
+## Example
+
+```csharp
+var spans = doc.GetSpans(textId);
+foreach(var span in spans)
+{
+  if(span is AutomergeTextSpan ts)
+  {
+    Console.Write(ts.Text);
+    foreach(var mark in ts.Marks)
+    {
+      Console.Write($" [{mark.Name}]");
+    }
+    Console.WriteLine();
+  }
+}
+```
+
+# AutomergeBlockSpan
+
+```csharp
+public sealed class AutomergeBlockSpan : AutomergeSpan
+```
+
+A block-level marker that separates paragraphs, headings, or other structural elements. Block spans are inserted via `AutomergeDocument.SplitBlock` and carry metadata about the block type and attributes.
+
+## Properties
+
+### BlockType
+
+```csharp
+public string BlockType { get; }
+```
+
+The type of block (e.g., `"paragraph"`, `"heading"`, `"ordered-list-item"`). Set by writing a `"type"` key on the block object.
+
+### Parents
+
+```csharp
+public IReadOnlyList<string> Parents { get; }
+```
+
+The parent block types in the nesting hierarchy. Used for nested structures like list items inside ordered or unordered lists.
+
+### AttributesJson
+
+```csharp
+public string AttributesJson { get; }
+```
+
+Additional attributes serialized as a JSON string. Contains any extra properties set on the block object beyond `"type"` and `"parents"`.
+
+## Constructor
+
+```csharp
+public AutomergeBlockSpan(
+  string blockType,
+  IReadOnlyList<string> parents,
+  string attributesJson)
+```
+
+**Parameters:**
+- `blockType` — The block type identifier.
+- `parents` — The parent block type chain.
+- `attributesJson` — Extra attributes as JSON.
+
+## Example
+
+```csharp
+// Create a text with two paragraphs
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "First paragraph");
+var blockId = doc.SplitBlock(textId, 15);
+doc.PutString(blockId, "type", "paragraph");
+doc.SpliceText(textId, 16, 0, "Second paragraph");
+doc.Commit("add paragraphs");
+
+var spans = doc.GetSpans(textId);
+// spans[0] = AutomergeTextSpan("First paragraph", [])
+// spans[1] = AutomergeBlockSpan("paragraph", [], "{}")
+// spans[2] = AutomergeTextSpan("Second paragraph", [])
+```
+
+# Related Methods
+
+These `AutomergeDocument` methods return or accept spans:
+
+| Method | Description |
+|--------|-------------|
+| `GetSpans(textId)` | Gets all spans for a Text container |
+| `GetSpansAtHeads(textId, heads)` | Gets spans at a historical point |
+| `UpdateSpans(textId, spans)` | Replaces text content via minimal diff |
+
+# See Also
+
+- [AutomergeMarkInfo](/Six.Automerge/api/automerge-marks/) — Mark details on text spans
+- [Spans Guide](/Six.Automerge/guides/rich-text/spans/) — Conceptual guide to working with spans
+- [Blocks Guide](/Six.Automerge/guides/rich-text/blocks/) — Block-level rich text structure

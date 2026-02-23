@@ -1,0 +1,347 @@
+{
+  "tasks": [
+    {
+      "id": "sprint-1-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Read \u0060libs/Six.Automerge/src/AutomergeDocument.cs\u0060 and identify all public methods missing \u0060ThrowIfDisposed()\u0060 \u2014 confirm the 23\u002B methods listed in design.md (map writes: \u0060PutBoolean\u0060, \u0060PutInt64\u0060, \u0060PutUInt64\u0060, \u0060PutDouble\u0060, \u0060PutBytes\u0060, \u0060PutNull\u0060, \u0060PutCounter\u0060, \u0060PutTimestamp\u0060; list writes: all \u0060ListInsert*\u0060, \u0060ListRemove\u0060, \u0060ListPut*\u0060, \u0060ListSplice\u0060; text: \u0060SpliceText\u0060, \u0060Mark\u0060 overloads; mutations: \u0060Delete\u0060, \u0060Increment\u0060 overloads, \u0060ApplyChange\u0060, \u0060ApplyChanges\u0060; sync: \u0060ReceiveSyncMessage\u0060, \u0060GenerateSyncMessage\u0060)",
+      "description": "Read \u0060libs/Six.Automerge/src/AutomergeDocument.cs\u0060 and identify all public methods missing \u0060ThrowIfDisposed()\u0060 \u2014 confirm the 23\u002B methods listed in design.md (map writes: \u0060PutBoolean\u0060, \u0060PutInt64\u0060, \u0060PutUInt64\u0060, \u0060PutDouble\u0060, \u0060PutBytes\u0060, \u0060PutNull\u0060, \u0060PutCounter\u0060, \u0060PutTimestamp\u0060; list writes: all \u0060ListInsert*\u0060, \u0060ListRemove\u0060, \u0060ListPut*\u0060, \u0060ListSplice\u0060; text: \u0060SpliceText\u0060, \u0060Mark\u0060 overloads; mutations: \u0060Delete\u0060, \u0060Increment\u0060 overloads, \u0060ApplyChange\u0060, \u0060ApplyChanges\u0060; sync: \u0060ReceiveSyncMessage\u0060, \u0060GenerateSyncMessage\u0060)",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Add \u0060ThrowIfDisposed()\u0060 as the first line of every identified public method in \u0060AutomergeDocument.cs\u0060 \u2014 follow the existing pattern used by \u0060PutString()\u0060 (line ~488) and \u0060GetString()\u0060 (line ~525)",
+      "description": "Add \u0060ThrowIfDisposed()\u0060 as the first line of every identified public method in \u0060AutomergeDocument.cs\u0060 \u2014 follow the existing pattern used by \u0060PutString()\u0060 (line ~488) and \u0060GetString()\u0060 (line ~525)",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Read \u0060libs/Six.Automerge/src/AutomergeSyncState.cs\u0060 and add a \u0060bool _disposed\u0060 field, a \u0060ThrowIfDisposed()\u0060 method, update \u0060Dispose()\u0060 to set the flag, and add checks to \u0060Reset()\u0060, \u0060SharedHeads\u0060 getter, \u0060Encode()\u0060, and \u0060Decode()\u0060",
+      "description": "Read \u0060libs/Six.Automerge/src/AutomergeSyncState.cs\u0060 and add a \u0060bool _disposed\u0060 field, a \u0060ThrowIfDisposed()\u0060 method, update \u0060Dispose()\u0060 to set the flag, and add checks to \u0060Reset()\u0060, \u0060SharedHeads\u0060 getter, \u0060Encode()\u0060, and \u0060Decode()\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Run \u0060dotnet test tests/Six.Automerge.FFI.Tests.Unit\u0060 to verify all 379 FFI tests still pass",
+      "description": "Run \u0060dotnet test tests/Six.Automerge.FFI.Tests.Unit\u0060 to verify all 379 FFI tests still pass",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Run \u0060dotnet build\u0060 from repo root to verify full build succeeds with no warnings",
+      "description": "Run \u0060dotnet build\u0060 from repo root to verify full build succeeds with no warnings",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-2-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Read \u0060libs/Six.Automerge.Repo/src/Synchronizer/DocSynchronizer.cs\u0060 fully. Identify all locations where \u0060_getDocumentLock()\u0060 is called and where the lock is nullable-conditional (\u0060docLock?.Wait()\u0060)",
+      "description": "Read \u0060libs/Six.Automerge.Repo/src/Synchronizer/DocSynchronizer.cs\u0060 fully. Identify all locations where \u0060_getDocumentLock()\u0060 is called and where the lock is nullable-conditional (\u0060docLock?.Wait()\u0060)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Fix \u0060ReceiveSyncMessage()\u0060: (a) make lock acquisition non-nullable \u2014 throw \u0060InvalidOperationException\u0060 if \u0060_getDocumentLock()\u0060 returns null, (b) move \u0060_updateDocument(doc)\u0060 callback inside the lock scope so the document state is consistent when the callback fires",
+      "description": "Fix \u0060ReceiveSyncMessage()\u0060: (a) make lock acquisition non-nullable \u2014 throw \u0060InvalidOperationException\u0060 if \u0060_getDocumentLock()\u0060 returns null, (b) move \u0060_updateDocument(doc)\u0060 callback inside the lock scope so the document state is consistent when the callback fires",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Fix \u0060SendSyncMessage()\u0060: consolidate the two separate lock acquisitions into a single lock scope covering both \u0060GenerateSyncMessage()\u0060 and the conditional \u0060Save()\u0060 call",
+      "description": "Fix \u0060SendSyncMessage()\u0060: consolidate the two separate lock acquisitions into a single lock scope covering both \u0060GenerateSyncMessage()\u0060 and the conditional \u0060Save()\u0060 call",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Add \u0060ILogger\u003CDocSynchronizer\u003E\u0060 \u2014 log lock acquire/release at \u0060Debug\u0060 level, sync message send/receive at \u0060Debug\u0060 level (include DocumentId, PeerId, message byte length), and errors at \u0060Error\u0060 level. Accept logger via constructor injection.",
+      "description": "Add \u0060ILogger\u003CDocSynchronizer\u003E\u0060 \u2014 log lock acquire/release at \u0060Debug\u0060 level, sync message send/receive at \u0060Debug\u0060 level (include DocumentId, PeerId, message byte length), and errors at \u0060Error\u0060 level. Accept logger via constructor injection.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Update \u0060tests/Six.Automerge.Repo.Tests.Unit/src/Synchronizer/DocSynchronizerTests.cs\u0060 \u2014 fix any tests broken by the non-nullable lock change (tests may pass null locks that now need to be real \u0060SemaphoreSlim\u0060 instances). Run the test project and verify all tests pass.",
+      "description": "Update \u0060tests/Six.Automerge.Repo.Tests.Unit/src/Synchronizer/DocSynchronizerTests.cs\u0060 \u2014 fix any tests broken by the non-nullable lock change (tests may pass null locks that now need to be real \u0060SemaphoreSlim\u0060 instances). Run the test project and verify all tests pass.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-3-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Read \u0060libs/Six.Automerge.Repo/src/DocHandle.cs\u0060 and \u0060libs/Six.Automerge.Repo/src/IDocHandle.cs\u0060. Convert \u0060NotifyRemoteChange(AutomergeDocument document)\u0060 from synchronous (blocking \u0060_documentLock.Wait()\u0060) to async (\u0060_documentLock.WaitAsync()\u0060). Update the interface signature if \u0060IDocHandle\u0060 declares it. Update the \u0060_updateDocument\u0060 delegate in \u0060DocSynchronizer\u0060 to be \u0060Func\u003CAutomergeDocument, Task\u003E\u0060 and await the callback.",
+      "description": "Read \u0060libs/Six.Automerge.Repo/src/DocHandle.cs\u0060 and \u0060libs/Six.Automerge.Repo/src/IDocHandle.cs\u0060. Convert \u0060NotifyRemoteChange(AutomergeDocument document)\u0060 from synchronous (blocking \u0060_documentLock.Wait()\u0060) to async (\u0060_documentLock.WaitAsync()\u0060). Update the interface signature if \u0060IDocHandle\u0060 declares it. Update the \u0060_updateDocument\u0060 delegate in \u0060DocSynchronizer\u0060 to be \u0060Func\u003CAutomergeDocument, Task\u003E\u0060 and await the callback.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Fix the \u0060_state\u0060 read in \u0060NotifyRemoteChange\u0060 \u2014 wrap the \u0060_state != HandleState.Ready\u0060 check inside \u0060lock(_stateGate)\u0060 to avoid reading stale state",
+      "description": "Fix the \u0060_state\u0060 read in \u0060NotifyRemoteChange\u0060 \u2014 wrap the \u0060_state != HandleState.Ready\u0060 check inside \u0060lock(_stateGate)\u0060 to avoid reading stale state",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Add \u0060ILogger\u003CDocHandle\u003E\u0060 \u2014 log state transitions at \u0060Information\u0060 level, lock acquire/release at \u0060Debug\u0060, disposal at \u0060Debug\u0060. Include DocumentId in all messages.",
+      "description": "Add \u0060ILogger\u003CDocHandle\u003E\u0060 \u2014 log state transitions at \u0060Information\u0060 level, lock acquire/release at \u0060Debug\u0060, disposal at \u0060Debug\u0060. Include DocumentId in all messages.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Read \u0060libs/Six.Automerge.Repo/src/Repo.cs\u0060 \u2014 fix \u0060Find\u003CT\u003E()\u0060 method\u0027s \u0060_handleLock\u0060 double-release: introduce a \u0060bool lockHeld\u0060 tracking variable, set to \u0060false\u0060 when released early for in-progress finds, check in \u0060finally\u0060 block before releasing",
+      "description": "Read \u0060libs/Six.Automerge.Repo/src/Repo.cs\u0060 \u2014 fix \u0060Find\u003CT\u003E()\u0060 method\u0027s \u0060_handleLock\u0060 double-release: introduce a \u0060bool lockHeld\u0060 tracking variable, set to \u0060false\u0060 when released early for in-progress finds, check in \u0060finally\u0060 block before releasing",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Add \u0060ILogger\u003CRepo\u003E\u0060 logging to all fire-and-forget \u0060Task.Run\u0060 blocks \u2014 \u0060UpdateDocument\u0060, \u0060RequestDocument\u0060, \u0060OnSynchronizerSyncStateChanged\u0060, \u0060Delete\u0060. Replace silent \u0060catch {}\u0060 with \u0060catch(Exception ex) { _logger.LogError(ex, ...) }\u0060. Include operation name and DocumentId.",
+      "description": "Add \u0060ILogger\u003CRepo\u003E\u0060 logging to all fire-and-forget \u0060Task.Run\u0060 blocks \u2014 \u0060UpdateDocument\u0060, \u0060RequestDocument\u0060, \u0060OnSynchronizerSyncStateChanged\u0060, \u0060Delete\u0060. Replace silent \u0060catch {}\u0060 with \u0060catch(Exception ex) { _logger.LogError(ex, ...) }\u0060. Include operation name and DocumentId.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Run \u0060dotnet test tests/Six.Automerge.Repo.Tests.Unit\u0060 to verify all 263 Repo tests still pass",
+      "description": "Run \u0060dotnet test tests/Six.Automerge.Repo.Tests.Unit\u0060 to verify all 263 Repo tests still pass",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-4-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Read \u0060apps/DemoApp.CollaborativeEditor/src/ViewModels/EditorViewModel.cs\u0060. Change \u0060_isRemoteUpdate\u0060 from \u0060bool\u0060 to \u0060int\u0060 (for \u0060Interlocked\u0060 compatibility). Update \u0060RefreshFromDocument()\u0060 to use \u0060Interlocked.CompareExchange(ref _isRemoteUpdate, 1, 0)\u0060 for setting and \u0060Interlocked.Exchange(ref _isRemoteUpdate, 0)\u0060 for unsetting. Update the \u0060DocumentText\u0060 setter to check \u0060Volatile.Read(ref _isRemoteUpdate) != 0\u0060.",
+      "description": "Read \u0060apps/DemoApp.CollaborativeEditor/src/ViewModels/EditorViewModel.cs\u0060. Change \u0060_isRemoteUpdate\u0060 from \u0060bool\u0060 to \u0060int\u0060 (for \u0060Interlocked\u0060 compatibility). Update \u0060RefreshFromDocument()\u0060 to use \u0060Interlocked.CompareExchange(ref _isRemoteUpdate, 1, 0)\u0060 for setting and \u0060Interlocked.Exchange(ref _isRemoteUpdate, 0)\u0060 for unsetting. Update the \u0060DocumentText\u0060 setter to check \u0060Volatile.Read(ref _isRemoteUpdate) != 0\u0060.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Add \u0060ILogger\u0060 to \u0060EditorViewModel\u0060 \u2014 log text changes at \u0060Debug\u0060 (include char count, delete count), remote updates at \u0060Debug\u0060, and any caught exceptions at \u0060Warning\u0060",
+      "description": "Add \u0060ILogger\u0060 to \u0060EditorViewModel\u0060 \u2014 log text changes at \u0060Debug\u0060 (include char count, delete count), remote updates at \u0060Debug\u0060, and any caught exceptions at \u0060Warning\u0060",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Review \u0060EditorWindow.axaml.cs\u0060 for any silent catch blocks \u2014 replace with logged warnings. Ensure document create/join/resume operations log their outcomes.",
+      "description": "Review \u0060EditorWindow.axaml.cs\u0060 for any silent catch blocks \u2014 replace with logged warnings. Ensure document create/join/resume operations log their outcomes.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Add logging to \u0060CollectionSynchronizer.cs\u0060 \u2014 add \u0060ILogger\u003CCollectionSynchronizer\u003E\u0060, log \u0060AddDocument\u0060, \u0060OnPeerConnected\u0060, \u0060OnPeerDisconnected\u0060 at \u0060Information\u0060 level with DocumentId and PeerId",
+      "description": "Add logging to \u0060CollectionSynchronizer.cs\u0060 \u2014 add \u0060ILogger\u003CCollectionSynchronizer\u003E\u0060, log \u0060AddDocument\u0060, \u0060OnPeerConnected\u0060, \u0060OnPeerDisconnected\u0060 at \u0060Information\u0060 level with DocumentId and PeerId",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Run \u0060dotnet test tests/DemoApp.CollaborativeEditor.Tests\u0060 to verify all 61 tests pass",
+      "description": "Run \u0060dotnet test tests/DemoApp.CollaborativeEditor.Tests\u0060 to verify all 61 tests pass",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Run \u0060dotnet build\u0060 from repo root \u2014 verify zero warnings, zero errors across the full solution",
+      "description": "Run \u0060dotnet build\u0060 from repo root \u2014 verify zero warnings, zero errors across the full solution",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-5-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Kill any orphaned instances of CollaborativeEditor or MCP server processes. Check \u0060Infra.AppHost/AppHost.cs\u0060 \u2014 verify CollaborativeEditor replicas are set to at least 3 (currently 4). Build the full solution with \u0060dotnet build\u0060.",
+      "description": "Kill any orphaned instances of CollaborativeEditor or MCP server processes. Check \u0060Infra.AppHost/AppHost.cs\u0060 \u2014 verify CollaborativeEditor replicas are set to at least 3 (currently 4). Build the full solution with \u0060dotnet build\u0060.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Start the Aspire host: \u0060dotnet run --project apps/Infra.AppHost\u0060. Wait for all services (Azurite, Server.Silo, Server.Api, and all CollaborativeEditor replicas) to be healthy in the Aspire dashboard.",
+      "description": "Start the Aspire host: \u0060dotnet run --project apps/Infra.AppHost\u0060. Wait for all services (Azurite, Server.Silo, Server.Api, and all CollaborativeEditor replicas) to be healthy in the Aspire dashboard.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Connect to Client 1 via \u0060six-avalonia-mcp\u0060. Create a new document. Copy the document ID from the UI.",
+      "description": "Connect to Client 1 via \u0060six-avalonia-mcp\u0060. Create a new document. Copy the document ID from the UI.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Connect to Client 2 via \u0060six-avalonia-mcp\u0060. Join the document using the copied ID. Verify the document loads and text area is visible.",
+      "description": "Connect to Client 2 via \u0060six-avalonia-mcp\u0060. Join the document using the copied ID. Verify the document loads and text area is visible.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "In Client 1: type a substantial amount of text via \u0060six-avalonia-mcp\u0060 \u2014 multiple paragraphs with newlines (\u0060\\n\u0060), backspaces (\u0060\\b\u0060), and mixed content. Type at least 200\u002B characters with varied operations. After each burst of typing, take a screenshot of Client 1 and Client 2 to verify sync.",
+      "description": "In Client 1: type a substantial amount of text via \u0060six-avalonia-mcp\u0060 \u2014 multiple paragraphs with newlines (\u0060\\n\u0060), backspaces (\u0060\\b\u0060), and mixed content. Type at least 200\u002B characters with varied operations. After each burst of typing, take a screenshot of Client 1 and Client 2 to verify sync.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Check Aspire dashboard traces and logs \u2014 search for any \u0060Error\u0060 or \u0060Warning\u0060 level entries from the CollaborativeEditor, Repo, DocSynchronizer, or DocHandle loggers. Verify no crashes, no deadlocks, no silent sync failures. Document findings.",
+      "description": "Check Aspire dashboard traces and logs \u2014 search for any \u0060Error\u0060 or \u0060Warning\u0060 level entries from the CollaborativeEditor, Repo, DocSynchronizer, or DocHandle loggers. Verify no crashes, no deadlocks, no silent sync failures. Document findings.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-7",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "If any client crashed or stopped syncing: capture the error from Aspire logs, identify the root cause, fix it, rebuild, and re-test. Repeat until all clients survive heavy editing for 2\u002B minutes.",
+      "description": "If any client crashed or stopped syncing: capture the error from Aspire logs, identify the root cause, fix it, rebuild, and re-test. Repeat until all clients survive heavy editing for 2\u002B minutes.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-8",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-the-collab/implementation-plan.md",
+      "title": "Take final screenshots showing all clients with synced content. Stop the Aspire host.",
+      "description": "Take final screenshots showing all clients with synced content. Stop the Aspire host.",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "sprint-1",
+      "title": "AutomergeDocument \u0026 AutomergeSyncState Disposal Safety",
+      "description": "Foundation layer \u2014 fix the FFI bindings so disposed documents don\u0027t segfault. This is the lowest layer and must be fixed first since all higher layers depend on it.\r\n\r\n- [ ] Read \u0060libs/Six.Automerge/src/AutomergeDocument.cs\u0060 and identify all public methods missing \u0060ThrowIfDisposed()\u0060 \u2014 confirm the 23\u002B methods listed in design.md (map writes: \u0060PutBoolean\u0060, \u0060PutInt64\u0060, \u0060PutUInt64\u0060, \u0060PutDouble\u0060, \u0060PutBytes\u0060, \u0060PutNull\u0060, \u0060PutCounter\u0060, \u0060PutTimestamp\u0060; list writes: all \u0060ListInsert*\u0060, \u0060ListRemove\u0060, \u0060ListPut*\u0060, \u0060ListSplice\u0060; text: \u0060SpliceText\u0060, \u0060Mark\u0060 overloads; mutations: \u0060Delete\u0060, \u0060Increment\u0060 overloads, \u0060ApplyChange\u0060, \u0060ApplyChanges\u0060; sync: \u0060ReceiveSyncMessage\u0060, \u0060GenerateSyncMessage\u0060)\r\n- [ ] Add \u0060ThrowIfDisposed()\u0060 as the first line of every identified public method in \u0060AutomergeDocument.cs\u0060 \u2014 follow the existing pattern used by \u0060PutString()\u0060 (line ~488) and \u0060GetString()\u0060 (line ~525)\r\n- [ ] Read \u0060libs/Six.Automerge/src/AutomergeSyncState.cs\u0060 and add a \u0060bool _disposed\u0060 field, a \u0060ThrowIfDisposed()\u0060 method, update \u0060Dispose()\u0060 to set the flag, and add checks to \u0060Reset()\u0060, \u0060SharedHeads\u0060 getter, \u0060Encode()\u0060, and \u0060Decode()\u0060\r\n- [ ] Run \u0060dotnet test tests/Six.Automerge.FFI.Tests.Unit\u0060 to verify all 379 FFI tests still pass\r\n- [ ] Run \u0060dotnet build\u0060 from repo root to verify full build succeeds with no warnings",
+      "taskIds": [
+        "sprint-1-task-1",
+        "sprint-1-task-2",
+        "sprint-1-task-3",
+        "sprint-1-task-4",
+        "sprint-1-task-5"
+      ]
+    },
+    {
+      "id": "sprint-2",
+      "title": "DocSynchronizer Lock \u0026 Thread Safety Fixes",
+      "description": "Fix the critical lock gaps in the per-document synchronizer \u2014 the most likely crash vector.\r\n\r\n- [ ] Read \u0060libs/Six.Automerge.Repo/src/Synchronizer/DocSynchronizer.cs\u0060 fully. Identify all locations where \u0060_getDocumentLock()\u0060 is called and where the lock is nullable-conditional (\u0060docLock?.Wait()\u0060)\r\n- [ ] Fix \u0060ReceiveSyncMessage()\u0060: (a) make lock acquisition non-nullable \u2014 throw \u0060InvalidOperationException\u0060 if \u0060_getDocumentLock()\u0060 returns null, (b) move \u0060_updateDocument(doc)\u0060 callback inside the lock scope so the document state is consistent when the callback fires\r\n- [ ] Fix \u0060SendSyncMessage()\u0060: consolidate the two separate lock acquisitions into a single lock scope covering both \u0060GenerateSyncMessage()\u0060 and the conditional \u0060Save()\u0060 call\r\n- [ ] Add \u0060ILogger\u003CDocSynchronizer\u003E\u0060 \u2014 log lock acquire/release at \u0060Debug\u0060 level, sync message send/receive at \u0060Debug\u0060 level (include DocumentId, PeerId, message byte length), and errors at \u0060Error\u0060 level. Accept logger via constructor injection.\r\n- [ ] Update \u0060tests/Six.Automerge.Repo.Tests.Unit/src/Synchronizer/DocSynchronizerTests.cs\u0060 \u2014 fix any tests broken by the non-nullable lock change (tests may pass null locks that now need to be real \u0060SemaphoreSlim\u0060 instances). Run the test project and verify all tests pass.",
+      "taskIds": [
+        "sprint-2-task-1",
+        "sprint-2-task-2",
+        "sprint-2-task-3",
+        "sprint-2-task-4",
+        "sprint-2-task-5"
+      ]
+    },
+    {
+      "id": "sprint-3",
+      "title": "DocHandle Async Fix \u0026 Repo Lock Safety",
+      "description": "Fix the blocking \u0060NotifyRemoteChange\u0060 deadlock and the \u0060Repo.Find()\u0060 double-release bug.\r\n\r\n- [ ] Read \u0060libs/Six.Automerge.Repo/src/DocHandle.cs\u0060 and \u0060libs/Six.Automerge.Repo/src/IDocHandle.cs\u0060. Convert \u0060NotifyRemoteChange(AutomergeDocument document)\u0060 from synchronous (blocking \u0060_documentLock.Wait()\u0060) to async (\u0060_documentLock.WaitAsync()\u0060). Update the interface signature if \u0060IDocHandle\u0060 declares it. Update the \u0060_updateDocument\u0060 delegate in \u0060DocSynchronizer\u0060 to be \u0060Func\u003CAutomergeDocument, Task\u003E\u0060 and await the callback.\r\n- [ ] Fix the \u0060_state\u0060 read in \u0060NotifyRemoteChange\u0060 \u2014 wrap the \u0060_state != HandleState.Ready\u0060 check inside \u0060lock(_stateGate)\u0060 to avoid reading stale state\r\n- [ ] Add \u0060ILogger\u003CDocHandle\u003E\u0060 \u2014 log state transitions at \u0060Information\u0060 level, lock acquire/release at \u0060Debug\u0060, disposal at \u0060Debug\u0060. Include DocumentId in all messages.\r\n- [ ] Read \u0060libs/Six.Automerge.Repo/src/Repo.cs\u0060 \u2014 fix \u0060Find\u003CT\u003E()\u0060 method\u0027s \u0060_handleLock\u0060 double-release: introduce a \u0060bool lockHeld\u0060 tracking variable, set to \u0060false\u0060 when released early for in-progress finds, check in \u0060finally\u0060 block before releasing\r\n- [ ] Add \u0060ILogger\u003CRepo\u003E\u0060 logging to all fire-and-forget \u0060Task.Run\u0060 blocks \u2014 \u0060UpdateDocument\u0060, \u0060RequestDocument\u0060, \u0060OnSynchronizerSyncStateChanged\u0060, \u0060Delete\u0060. Replace silent \u0060catch {}\u0060 with \u0060catch(Exception ex) { _logger.LogError(ex, ...) }\u0060. Include operation name and DocumentId.\r\n- [ ] Run \u0060dotnet test tests/Six.Automerge.Repo.Tests.Unit\u0060 to verify all 263 Repo tests still pass",
+      "taskIds": [
+        "sprint-3-task-1",
+        "sprint-3-task-2",
+        "sprint-3-task-3",
+        "sprint-3-task-4",
+        "sprint-3-task-5",
+        "sprint-3-task-6"
+      ]
+    },
+    {
+      "id": "sprint-4",
+      "title": "EditorViewModel Thread Safety \u0026 Error Visibility",
+      "description": "Fix the UI-layer race condition and make silent errors visible.\r\n\r\n- [ ] Read \u0060apps/DemoApp.CollaborativeEditor/src/ViewModels/EditorViewModel.cs\u0060. Change \u0060_isRemoteUpdate\u0060 from \u0060bool\u0060 to \u0060int\u0060 (for \u0060Interlocked\u0060 compatibility). Update \u0060RefreshFromDocument()\u0060 to use \u0060Interlocked.CompareExchange(ref _isRemoteUpdate, 1, 0)\u0060 for setting and \u0060Interlocked.Exchange(ref _isRemoteUpdate, 0)\u0060 for unsetting. Update the \u0060DocumentText\u0060 setter to check \u0060Volatile.Read(ref _isRemoteUpdate) != 0\u0060.\r\n- [ ] Add \u0060ILogger\u0060 to \u0060EditorViewModel\u0060 \u2014 log text changes at \u0060Debug\u0060 (include char count, delete count), remote updates at \u0060Debug\u0060, and any caught exceptions at \u0060Warning\u0060\r\n- [ ] Review \u0060EditorWindow.axaml.cs\u0060 for any silent catch blocks \u2014 replace with logged warnings. Ensure document create/join/resume operations log their outcomes.\r\n- [ ] Add logging to \u0060CollectionSynchronizer.cs\u0060 \u2014 add \u0060ILogger\u003CCollectionSynchronizer\u003E\u0060, log \u0060AddDocument\u0060, \u0060OnPeerConnected\u0060, \u0060OnPeerDisconnected\u0060 at \u0060Information\u0060 level with DocumentId and PeerId\r\n- [ ] Run \u0060dotnet test tests/DemoApp.CollaborativeEditor.Tests\u0060 to verify all 61 tests pass\r\n- [ ] Run \u0060dotnet build\u0060 from repo root \u2014 verify zero warnings, zero errors across the full solution",
+      "taskIds": [
+        "sprint-4-task-1",
+        "sprint-4-task-2",
+        "sprint-4-task-3",
+        "sprint-4-task-4",
+        "sprint-4-task-5",
+        "sprint-4-task-6"
+      ]
+    },
+    {
+      "id": "sprint-5",
+      "title": "E2E Integration Testing via Aspire",
+      "description": "Start the full stack, create documents, type heavily across clients, and verify stability using Aspire observability.\r\n\r\n- [ ] Kill any orphaned instances of CollaborativeEditor or MCP server processes. Check \u0060Infra.AppHost/AppHost.cs\u0060 \u2014 verify CollaborativeEditor replicas are set to at least 3 (currently 4). Build the full solution with \u0060dotnet build\u0060.\r\n- [ ] Start the Aspire host: \u0060dotnet run --project apps/Infra.AppHost\u0060. Wait for all services (Azurite, Server.Silo, Server.Api, and all CollaborativeEditor replicas) to be healthy in the Aspire dashboard.\r\n- [ ] Connect to Client 1 via \u0060six-avalonia-mcp\u0060. Create a new document. Copy the document ID from the UI.\r\n- [ ] Connect to Client 2 via \u0060six-avalonia-mcp\u0060. Join the document using the copied ID. Verify the document loads and text area is visible.\r\n- [ ] In Client 1: type a substantial amount of text via \u0060six-avalonia-mcp\u0060 \u2014 multiple paragraphs with newlines (\u0060\\n\u0060), backspaces (\u0060\\b\u0060), and mixed content. Type at least 200\u002B characters with varied operations. After each burst of typing, take a screenshot of Client 1 and Client 2 to verify sync.\r\n- [ ] Check Aspire dashboard traces and logs \u2014 search for any \u0060Error\u0060 or \u0060Warning\u0060 level entries from the CollaborativeEditor, Repo, DocSynchronizer, or DocHandle loggers. Verify no crashes, no deadlocks, no silent sync failures. Document findings.\r\n- [ ] If any client crashed or stopped syncing: capture the error from Aspire logs, identify the root cause, fix it, rebuild, and re-test. Repeat until all clients survive heavy editing for 2\u002B minutes.\r\n- [ ] Take final screenshots showing all clients with synced content. Stop the Aspire host.",
+      "taskIds": [
+        "sprint-5-task-1",
+        "sprint-5-task-2",
+        "sprint-5-task-3",
+        "sprint-5-task-4",
+        "sprint-5-task-5",
+        "sprint-5-task-6",
+        "sprint-5-task-7",
+        "sprint-5-task-8"
+      ]
+    }
+  ],
+  "currentSprintIndex": 5,
+  "currentTaskId": "sprint-5-task-5",
+  "completedCount": 30,
+  "totalCount": 30,
+  "completionPercent": 100,
+  "hasSprints": true
+}

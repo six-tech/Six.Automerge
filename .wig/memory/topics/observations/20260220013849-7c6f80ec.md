@@ -1,0 +1,1 @@
+Interoptopus forbids parameter name `value` — use `delta` or another name instead. Codegen panics with "has a forbidden name that might cause issues in other languages" error.

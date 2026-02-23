@@ -1,0 +1,174 @@
+---
+title: "Fork and Merge"
+description: Create independent document branches with Fork and combine them back with Merge
+---
+
+# Overview
+
+**Fork** creates an independent copy of a document that shares the same history. Changes to the fork do not affect the original, and vice versa. **Merge** combines changes from one document into another, enabling a branch-and-merge workflow similar to Git.
+
+# Forking a Document
+
+`Fork` creates a new document with the same content and history but a different actor ID:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "title", "Original");
+doc.Commit("init");
+
+using var forked = doc.Fork();
+
+// Both have the same content
+var originalJson = doc.HydrateJson();
+var forkedJson = forked.HydrateJson();
+// originalJson == forkedJson
+```
+
+## Independent Changes
+
+Changes to the fork do not affect the original:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "value", "original");
+doc.Commit("init");
+
+using var forked = doc.Fork();
+forked.PutString(forked.RootId, "value", "modified in fork");
+forked.Commit("fork change");
+
+// Original is unchanged
+var origJson = doc.HydrateJson();
+// Contains "original"
+
+var forkJson = forked.HydrateJson();
+// Contains "modified in fork"
+```
+
+## Different Actor IDs
+
+Fork creates a new actor identity, so the two documents are treated as different peers:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "key", "value");
+doc.Commit("init");
+
+using var forked = doc.Fork();
+
+// Each document has its own actor ID
+// doc.ActorId != forked.ActorId
+```
+
+## Shared History
+
+Fork shares the history up to the point of forking:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "key", "value");
+doc.Commit("init");
+var originalHeads = doc.GetHeads();
+
+using var forked = doc.Fork();
+var forkedHeads = forked.GetHeads();
+
+// Both have the same heads (same history)
+// originalHeads == forkedHeads
+```
+
+# Merging Changes
+
+`Merge` combines another document's changes into the current document. This is how you bring fork changes back together:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "base", "value");
+doc.Commit("init");
+
+using var forked = doc.Fork();
+
+// Make independent changes
+doc.PutString(doc.RootId, "main_change", "from main");
+doc.Commit("main");
+
+forked.PutString(forked.RootId, "fork_change", "from fork");
+forked.Commit("fork");
+
+// Merge fork back into the original
+doc.Merge(forked);
+
+var json = doc.HydrateJson();
+// Contains all three keys:
+// "base": "value"
+// "main_change": "from main"
+// "fork_change": "from fork"
+```
+
+When both documents modify different keys, all changes are preserved. When both modify the same key concurrently, Automerge resolves the conflict deterministically using its built-in conflict resolution rules.
+
+# Isolation Verification
+
+Fork creates a truly independent document. You can verify isolation by making changes in both directions:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "value", "shared");
+doc.Commit("init");
+
+using var forked = doc.Fork();
+
+// Change the original
+doc.PutString(doc.RootId, "value", "changed in original");
+doc.Commit("original change");
+
+// Fork doesn't see the original's change
+var forkJson = forked.HydrateJson();
+// Contains "shared", not "changed in original"
+
+// Change the fork
+forked.PutString(forked.RootId, "value", "changed in fork");
+forked.Commit("fork change");
+
+// Original doesn't see the fork's change
+var origJson = doc.HydrateJson();
+// Contains "changed in original", not "changed in fork"
+```
+
+# Complete Example
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Set up a shared document
+doc.PutString(root, "title", "Project Plan");
+doc.PutString(root, "status", "draft");
+var tags = doc.PutObject(root, "tags", AutomergeContainerType.List);
+doc.ListInsertString(tags, 0, "planning");
+doc.Commit("Initial project");
+
+// Alice forks to work independently
+using var aliceFork = doc.Fork();
+aliceFork.PutString(aliceFork.RootId, "status", "in-progress");
+aliceFork.PutString(aliceFork.RootId, "assignee", "Alice");
+aliceFork.Commit("Alice starts work");
+
+// Bob forks to work independently
+using var bobFork = doc.Fork();
+bobFork.PutString(bobFork.RootId, "reviewer", "Bob");
+bobFork.Commit("Bob volunteers to review");
+
+// Merge both forks back
+doc.Merge(aliceFork);
+doc.Merge(bobFork);
+
+var finalJson = doc.HydrateJson();
+// Contains: title, status, tags, assignee, reviewer
+```
+
+# Next Steps
+
+- [Fork at Heads](/Six.Automerge/guides/branching/fork-at-heads/) — Fork from a specific historical point
+- [Clone](/Six.Automerge/guides/branching/clone/) — Create exact duplicates for different use cases
+- [Commits and Heads](/Six.Automerge/guides/history/commits-and-heads/) — Understand the commit model

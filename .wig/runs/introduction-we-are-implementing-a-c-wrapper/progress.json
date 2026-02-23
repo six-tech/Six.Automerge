@@ -1,0 +1,732 @@
+{
+  "tasks": [
+    {
+      "id": "sprint-1-task-1",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Verify Rust FFI build pipeline: run \u0060cargo build --release\u0060 in \u0060libs/Six.Automerge.FFI/native/\u0060 and confirm it produces the native library successfully",
+      "description": "Verify Rust FFI build pipeline: run \u0060cargo build --release\u0060 in \u0060libs/Six.Automerge.FFI/native/\u0060 and confirm it produces the native library successfully",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-2",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Verify Interoptopus codegen: run the codegen tool in \u0060libs/Six.Automerge.FFI/codegen/\u0060 and confirm \u0060generated/Interop.g.cs\u0060 is regenerated correctly (compare before/after)",
+      "description": "Verify Interoptopus codegen: run the codegen tool in \u0060libs/Six.Automerge.FFI/codegen/\u0060 and confirm \u0060generated/Interop.g.cs\u0060 is regenerated correctly (compare before/after)",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-3",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Verify full \u0060dotnet build\u0060 from repo root succeeds and all existing 448 tests pass (\u0060dotnet test tests/Six.Automerge.FFI.Tests.Unit\u0060 and \u0060dotnet test tests/Six.Automerge.Repo.Tests.Unit\u0060)",
+      "description": "Verify full \u0060dotnet build\u0060 from repo root succeeds and all existing 448 tests pass (\u0060dotnet test tests/Six.Automerge.FFI.Tests.Unit\u0060 and \u0060dotnet test tests/Six.Automerge.Repo.Tests.Unit\u0060)",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-4",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Review \u0060FileSystemStorageAdapter\u0060 against TypeScript \u0060NodeFSStorageAdapter\u0060 (\u0060.references/automerge-repo-2.5.3/packages/automerge-repo-storage-nodefs/src/index.ts\u0060): verify sharding logic, cache semantics, LoadRange deduplication, and RemoveRange behavior",
+      "description": "Review \u0060FileSystemStorageAdapter\u0060 against TypeScript \u0060NodeFSStorageAdapter\u0060 (\u0060.references/automerge-repo-2.5.3/packages/automerge-repo-storage-nodefs/src/index.ts\u0060): verify sharding logic, cache semantics, LoadRange deduplication, and RemoveRange behavior",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-5",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Run FileSystem storage tests (\u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060 and \u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Integration\u0060) and document any issues",
+      "description": "Run FileSystem storage tests (\u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060 and \u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Integration\u0060) and document any issues",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-2-task-1",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060libs/Six.Automerge.FFI/native/src/doc.rs\u0060: \u0060increment_map(obj, key, value)\u0060 and \u0060increment_list(obj, index, value)\u0060 calling \u0060self.inner.increment()\u0060 from the \u0060Transactable\u0060 trait",
+      "description": "Add Rust FFI functions in \u0060libs/Six.Automerge.FFI/native/src/doc.rs\u0060: \u0060increment_map(obj, key, value)\u0060 and \u0060increment_list(obj, index, value)\u0060 calling \u0060self.inner.increment()\u0060 from the \u0060Transactable\u0060 trait",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-2",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060text(obj)\u0060 and \u0060text_at(obj, heads)\u0060 calling \u0060self.inner.text()\u0060 / \u0060self.inner.text_at()\u0060 from \u0060ReadDoc\u0060 trait",
+      "description": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060text(obj)\u0060 and \u0060text_at(obj, heads)\u0060 calling \u0060self.inner.text()\u0060 / \u0060self.inner.text_at()\u0060 from \u0060ReadDoc\u0060 trait",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-3",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060fork(doc)\u0060 calling \u0060doc.inner.fork()\u0060 \u2014 returns a new \u0060AutomergeDoc\u0060",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060fork(doc)\u0060 calling \u0060doc.inner.fork()\u0060 \u2014 returns a new \u0060AutomergeDoc\u0060",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-4",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060empty_change()\u0060 calling \u0060self.inner.empty_change()\u0060 \u2014 returns the change hash; and \u0060base_heads()\u0060 calling \u0060self.inner.base_heads()\u0060 \u2014 returns Vec of change hashes",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060empty_change()\u0060 calling \u0060self.inner.empty_change()\u0060 \u2014 returns the change hash; and \u0060base_heads()\u0060 calling \u0060self.inner.base_heads()\u0060 \u2014 returns Vec of change hashes",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-5",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Regenerate \u0060Interop.g.cs\u0060 via the codegen pipeline and verify it compiles",
+      "description": "Regenerate \u0060Interop.g.cs\u0060 via the codegen pipeline and verify it compiles",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-6",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add C# wrappers in \u0060libs/Six.Automerge/src/AutomergeDocument.cs\u0060: \u0060Increment(obj, key, delta)\u0060, \u0060Increment(obj, index, delta)\u0060, \u0060GetText(obj)\u0060, \u0060GetTextAtHeads(obj, heads)\u0060, \u0060Fork()\u0060, \u0060EmptyChange()\u0060, \u0060BaseHeads()\u0060",
+      "description": "Add C# wrappers in \u0060libs/Six.Automerge/src/AutomergeDocument.cs\u0060: \u0060Increment(obj, key, delta)\u0060, \u0060Increment(obj, index, delta)\u0060, \u0060GetText(obj)\u0060, \u0060GetTextAtHeads(obj, heads)\u0060, \u0060Fork()\u0060, \u0060EmptyChange()\u0060, \u0060BaseHeads()\u0060",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-7",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add unit tests in \u0060tests/Six.Automerge.FFI.Tests.Unit/src/\u0060: counter increment (map \u002B list, positive \u002B negative), text read (empty, non-empty, after splice), text_at historical read, fork at current heads, empty_change, base_heads",
+      "description": "Add unit tests in \u0060tests/Six.Automerge.FFI.Tests.Unit/src/\u0060: counter increment (map \u002B list, positive \u002B negative), text read (empty, non-empty, after splice), text_at historical read, fork at current heads, empty_change, base_heads",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-3-task-1",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060list_get(obj, idx)\u0060 \u2192 \u0060Option\u003CAutomergeScalarValue\u003E\u0060 and \u0060list_get_object(obj, idx)\u0060 \u2192 \u0060Option\u003CAutomergeObjId\u003E\u0060 \u2014 call \u0060self.inner.get(obj_id, idx)\u0060 and pattern-match on \u0060Value::Scalar\u0060 vs \u0060Value::Object\u0060",
+      "description": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060list_get(obj, idx)\u0060 \u2192 \u0060Option\u003CAutomergeScalarValue\u003E\u0060 and \u0060list_get_object(obj, idx)\u0060 \u2192 \u0060Option\u003CAutomergeObjId\u003E\u0060 \u2014 call \u0060self.inner.get(obj_id, idx)\u0060 and pattern-match on \u0060Value::Scalar\u0060 vs \u0060Value::Object\u0060",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-2",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060map_get_object(obj, key)\u0060 \u2192 \u0060Option\u003CAutomergeObjId\u003E\u0060 \u2014 same pattern as \u0060map_get\u0060 but returns ObjId for object values instead of None",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060map_get_object(obj, key)\u0060 \u2192 \u0060Option\u003CAutomergeObjId\u003E\u0060 \u2014 same pattern as \u0060map_get\u0060 but returns ObjId for object values instead of None",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-3",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060map_get_at(obj, key, heads)\u0060 and \u0060list_get_at(obj, idx, heads)\u0060 \u2014 call \u0060self.inner.get_at(obj_id, prop, \u0026heads)\u0060",
+      "description": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060map_get_at(obj, key, heads)\u0060 and \u0060list_get_at(obj, idx, heads)\u0060 \u2014 call \u0060self.inner.get_at(obj_id, prop, \u0026heads)\u0060",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-4",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add \u0060AutomergeConflictValue\u0060 and \u0060AutomergeValue\u0060 types to \u0060types.rs\u0060 (see design.md); add Rust FFI functions: \u0060map_get_all(obj, key)\u0060, \u0060list_get_all(obj, idx)\u0060, \u0060map_get_all_at(obj, key, heads)\u0060, \u0060list_get_all_at(obj, idx, heads)\u0060 \u2014 call \u0060self.inner.get_all()\u0060 / \u0060self.inner.get_all_at()\u0060",
+      "description": "Add \u0060AutomergeConflictValue\u0060 and \u0060AutomergeValue\u0060 types to \u0060types.rs\u0060 (see design.md); add Rust FFI functions: \u0060map_get_all(obj, key)\u0060, \u0060list_get_all(obj, idx)\u0060, \u0060map_get_all_at(obj, key, heads)\u0060, \u0060list_get_all_at(obj, idx, heads)\u0060 \u2014 call \u0060self.inner.get_all()\u0060 / \u0060self.inner.get_all_at()\u0060",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-5",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "description": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-6",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add C# wrappers in \u0060AutomergeDocument.cs\u0060: \u0060ListGetString()\u0060, \u0060ListGetInt64()\u0060, \u0060ListGetBoolean()\u0060, \u0060ListGetDouble()\u0060, \u0060ListGetUInt64()\u0060, \u0060ListGetBytes()\u0060, \u0060ListGetObject()\u0060, \u0060GetObject(obj, key)\u0060, \u0060GetStringAtHeads()\u0060, \u0060ListGetStringAtHeads()\u0060, \u0060GetAll(obj, key)\u0060, \u0060GetAll(obj, index)\u0060, \u0060GetAllAtHeads()\u0060 \u2014 plus new C# types \u0060AutomergeValue\u0060, \u0060AutomergeConflictValue\u0060 in separate files",
+      "description": "Add C# wrappers in \u0060AutomergeDocument.cs\u0060: \u0060ListGetString()\u0060, \u0060ListGetInt64()\u0060, \u0060ListGetBoolean()\u0060, \u0060ListGetDouble()\u0060, \u0060ListGetUInt64()\u0060, \u0060ListGetBytes()\u0060, \u0060ListGetObject()\u0060, \u0060GetObject(obj, key)\u0060, \u0060GetStringAtHeads()\u0060, \u0060ListGetStringAtHeads()\u0060, \u0060GetAll(obj, key)\u0060, \u0060GetAll(obj, index)\u0060, \u0060GetAllAtHeads()\u0060 \u2014 plus new C# types \u0060AutomergeValue\u0060, \u0060AutomergeConflictValue\u0060 in separate files",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-7",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add unit tests: list_get for all types, list_get_object for nested containers, map_get_object, get_at historical reads for maps and lists, get_all conflict detection with 2\u002B concurrent writers",
+      "description": "Add unit tests: list_get for all types, list_get_object for nested containers, map_get_object, get_at historical reads for maps and lists, get_all conflict detection with 2\u002B concurrent writers",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-4-task-1",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add \u0060AutomergeExpandMark\u0060 enum to \u0060libs/Six.Automerge.FFI/native/src/types.rs\u0060 with variants: \u0060Before\u0060, \u0060After\u0060, \u0060Both\u0060, \u0060None\u0060 \u2014 implement \u0060From\u003CAutomergeExpandMark\u003E for automerge::marks::ExpandMark\u0060 conversion",
+      "description": "Add \u0060AutomergeExpandMark\u0060 enum to \u0060libs/Six.Automerge.FFI/native/src/types.rs\u0060 with variants: \u0060Before\u0060, \u0060After\u0060, \u0060Both\u0060, \u0060None\u0060 \u2014 implement \u0060From\u003CAutomergeExpandMark\u003E for automerge::marks::ExpandMark\u0060 conversion",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-2",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060mark(obj, start, end, name, value, expand)\u0060 \u2014 construct \u0060automerge::marks::Mark { start, end, name, value }\u0060 and call \u0060self.inner.mark(obj_id, mark, expand_mode)\u0060",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060mark(obj, start, end, name, value, expand)\u0060 \u2014 construct \u0060automerge::marks::Mark { start, end, name, value }\u0060 and call \u0060self.inner.mark(obj_id, mark, expand_mode)\u0060",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-3",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060unmark(obj, name, start, end, expand)\u0060 \u2014 call \u0060self.inner.unmark(obj_id, name, start, end, expand_mode)\u0060",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060unmark(obj, name, start, end, expand)\u0060 \u2014 call \u0060self.inner.unmark(obj_id, name, start, end, expand_mode)\u0060",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-4",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "description": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-5",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add C# types: \u0060ExpandMode\u0060 enum in \u0060libs/Six.Automerge/src/ExpandMode.cs\u0060; Add C# wrappers in \u0060AutomergeDocument.cs\u0060: \u0060Mark(obj, start, end, name, value, expand)\u0060 and \u0060Unmark(obj, name, start, end, expand)\u0060",
+      "description": "Add C# types: \u0060ExpandMode\u0060 enum in \u0060libs/Six.Automerge/src/ExpandMode.cs\u0060; Add C# wrappers in \u0060AutomergeDocument.cs\u0060: \u0060Mark(obj, start, end, name, value, expand)\u0060 and \u0060Unmark(obj, name, start, end, expand)\u0060",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-6",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add unit tests: mark bold on text range, unmark bold, mark with each expand mode, mark with different value types (string, bool, int), overlapping marks, mark on empty text (error), mark with invalid range (error)",
+      "description": "Add unit tests: mark bold on text range, unmark bold, mark with each expand mode, mark with different value types (string, bool, int), overlapping marks, mark on empty text (error), mark with invalid range (error)",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-5-task-1",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060marks(obj)\u0060 \u2192 \u0060Vec\u003CAutomergeMarkSpan\u003E\u0060 and \u0060marks_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CAutomergeMarkSpan\u003E\u0060 \u2014 call \u0060self.inner.marks(obj_id)\u0060 / \u0060self.inner.marks_at(obj_id, \u0026heads)\u0060 and convert each \u0060Mark\u0060 to existing \u0060AutomergeMarkSpan\u0060 type",
+      "description": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060marks(obj)\u0060 \u2192 \u0060Vec\u003CAutomergeMarkSpan\u003E\u0060 and \u0060marks_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CAutomergeMarkSpan\u003E\u0060 \u2014 call \u0060self.inner.marks(obj_id)\u0060 / \u0060self.inner.marks_at(obj_id, \u0026heads)\u0060 and convert each \u0060Mark\u0060 to existing \u0060AutomergeMarkSpan\u0060 type",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-2",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add \u0060AutomergeSpanKind\u0060 enum and \u0060AutomergeSpan\u0060 struct to \u0060types.rs\u0060 (see design.md) \u2014 the flat discriminated union with text\u002Bmarks fields and block\u002Btype\u002Bparents fields",
+      "description": "Add \u0060AutomergeSpanKind\u0060 enum and \u0060AutomergeSpan\u0060 struct to \u0060types.rs\u0060 (see design.md) \u2014 the flat discriminated union with text\u002Bmarks fields and block\u002Btype\u002Bparents fields",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-3",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060spans(obj)\u0060 \u2192 \u0060Vec\u003CAutomergeSpan\u003E\u0060 \u2014 call \u0060self.inner.spans(obj_id)\u0060 and convert each \u0060Span::Text(s, marks)\u0060 / \u0060Span::Block(obj_id)\u0060 to \u0060AutomergeSpan\u0060",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060spans(obj)\u0060 \u2192 \u0060Vec\u003CAutomergeSpan\u003E\u0060 \u2014 call \u0060self.inner.spans(obj_id)\u0060 and convert each \u0060Span::Text(s, marks)\u0060 / \u0060Span::Block(obj_id)\u0060 to \u0060AutomergeSpan\u0060",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-4",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060spans_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CAutomergeSpan\u003E\u0060 \u2014 same as above but with heads",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060spans_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CAutomergeSpan\u003E\u0060 \u2014 same as above but with heads",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-5",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "description": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-6",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add C# types in \u0060libs/Six.Automerge/src/\u0060: \u0060AutomergeSpan\u0060 (abstract record), \u0060AutomergeTextSpan\u0060, \u0060AutomergeBlockSpan\u0060, \u0060AutomergeMarkInfo\u0060; Add C# wrappers: \u0060GetMarks(obj)\u0060, \u0060GetMarksAtHeads(obj, heads)\u0060, \u0060GetSpans(obj)\u0060, \u0060GetSpansAtHeads(obj, heads)\u0060 \u2014 convert FFI \u0060AutomergeSpan\u0060 to C# discriminated union",
+      "description": "Add C# types in \u0060libs/Six.Automerge/src/\u0060: \u0060AutomergeSpan\u0060 (abstract record), \u0060AutomergeTextSpan\u0060, \u0060AutomergeBlockSpan\u0060, \u0060AutomergeMarkInfo\u0060; Add C# wrappers: \u0060GetMarks(obj)\u0060, \u0060GetMarksAtHeads(obj, heads)\u0060, \u0060GetSpans(obj)\u0060, \u0060GetSpansAtHeads(obj, heads)\u0060 \u2014 convert FFI \u0060AutomergeSpan\u0060 to C# discriminated union",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-7",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add unit tests: marks on text with single/multiple marks, marks_at historical, spans with text-only, spans with blocks\u002Btext, spans with marks on text sections, spans_at historical, verify mark values survive sync between two documents",
+      "description": "Add unit tests: marks on text with single/multiple marks, marks_at historical, spans with text-only, spans with blocks\u002Btext, spans with marks on text sections, spans_at historical, verify mark values survive sync between two documents",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-6-task-1",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060split_block(obj, index)\u0060 \u2192 \u0060AutomergeObjId\u0060 \u2014 call \u0060self.inner.split_block(obj_id, index)\u0060 returning the new block map\u0027s ObjId (properties set via existing \u0060map_put_*\u0060)",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060split_block(obj, index)\u0060 \u2192 \u0060AutomergeObjId\u0060 \u2014 call \u0060self.inner.split_block(obj_id, index)\u0060 returning the new block map\u0027s ObjId (properties set via existing \u0060map_put_*\u0060)",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-2",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060update_spans(obj, spans)\u0060 \u2014 convert \u0060ffi::Slice\u003CAutomergeSpan\u003E\u0060 to \u0060Vec\u003Cautomerge::Span\u003E\u0060 and call \u0060self.inner.update_spans(obj_id, span_vec)\u0060. For text spans: reconstruct text content and mark set. For block spans: reconstruct block marker from type/parents/attrs",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060update_spans(obj, spans)\u0060 \u2014 convert \u0060ffi::Slice\u003CAutomergeSpan\u003E\u0060 to \u0060Vec\u003Cautomerge::Span\u003E\u0060 and call \u0060self.inner.update_spans(obj_id, span_vec)\u0060. For text spans: reconstruct text content and mark set. For block spans: reconstruct block marker from type/parents/attrs",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-3",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "description": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-4",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add C# wrappers in \u0060AutomergeDocument.cs\u0060: \u0060SplitBlock(obj, index)\u0060 returns \u0060AutomergeObjectId\u0060, \u0060JoinBlock(obj, index)\u0060 implemented as \u0060ListRemove(obj, index)\u0060 at block position, \u0060UpdateSpans(obj, spans)\u0060 accepting \u0060IReadOnlyList\u003CAutomergeSpan\u003E\u0060",
+      "description": "Add C# wrappers in \u0060AutomergeDocument.cs\u0060: \u0060SplitBlock(obj, index)\u0060 returns \u0060AutomergeObjectId\u0060, \u0060JoinBlock(obj, index)\u0060 implemented as \u0060ListRemove(obj, index)\u0060 at block position, \u0060UpdateSpans(obj, spans)\u0060 accepting \u0060IReadOnlyList\u003CAutomergeSpan\u003E\u0060",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-5",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add unit tests: split_block creates block marker, set block properties via PutString on returned ObjId, join_block removes block, update_spans minimal diff, update_spans with block insertion, update_spans with text changes, spans round-trip (read \u2192 modify \u2192 update \u2192 read)",
+      "description": "Add unit tests: split_block creates block marker, set block properties via PutString on returned ObjId, join_block removes block, update_spans minimal diff, update_spans with block insertion, update_spans with text changes, spans round-trip (read \u2192 modify \u2192 update \u2192 read)",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-6",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add integration test: full rich text workflow \u2014 create text, add block markers, apply marks, sync between two documents, verify spans are identical after sync",
+      "description": "Add integration test: full rich text workflow \u2014 create text, add block markers, apply marks, sync between two documents, verify spans are identical after sync",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-7-task-1",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060list_splice(obj, idx, delete, values)\u0060 accepting \u0060ffi::Slice\u003CAutomergeScalarValue\u003E\u0060 \u2014 call \u0060self.inner.splice(obj_id, idx, delete, values_iter)\u0060 converting each \u0060AutomergeScalarValue\u0060 to \u0060ScalarValue\u0060",
+      "description": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060list_splice(obj, idx, delete, values)\u0060 accepting \u0060ffi::Slice\u003CAutomergeScalarValue\u003E\u0060 \u2014 call \u0060self.inner.splice(obj_id, idx, delete, values_iter)\u0060 converting each \u0060AutomergeScalarValue\u0060 to \u0060ScalarValue\u0060",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-2",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060list_put_string\u0060, \u0060list_put_bool\u0060, \u0060list_put_int\u0060, \u0060list_put_uint\u0060, \u0060list_put_f64\u0060, \u0060list_put_bytes\u0060, \u0060list_put_null\u0060, \u0060list_put_object\u0060 \u2014 call \u0060self.inner.put(obj_id, index, value)\u0060 for each type",
+      "description": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060list_put_string\u0060, \u0060list_put_bool\u0060, \u0060list_put_int\u0060, \u0060list_put_uint\u0060, \u0060list_put_f64\u0060, \u0060list_put_bytes\u0060, \u0060list_put_null\u0060, \u0060list_put_object\u0060 \u2014 call \u0060self.inner.put(obj_id, index, value)\u0060 for each type",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-3",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add \u0060AutomergeCursor\u0060 type to \u0060types.rs\u0060 (opaque \u0060ByteArray\u0060); Add Rust FFI functions in \u0060doc.rs\u0060: \u0060get_cursor(obj, idx)\u0060 and \u0060get_cursor_position(obj, cursor)\u0060 \u2014 call \u0060self.inner.get_cursor()\u0060 / \u0060self.inner.get_cursor_position()\u0060",
+      "description": "Add \u0060AutomergeCursor\u0060 type to \u0060types.rs\u0060 (opaque \u0060ByteArray\u0060); Add Rust FFI functions in \u0060doc.rs\u0060: \u0060get_cursor(obj, idx)\u0060 and \u0060get_cursor_position(obj, cursor)\u0060 \u2014 call \u0060self.inner.get_cursor()\u0060 / \u0060self.inner.get_cursor_position()\u0060",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-4",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "description": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-5",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add C# types: \u0060AutomergeCursor\u0060 class in \u0060libs/Six.Automerge/src/AutomergeCursor.cs\u0060; Add C# wrappers: \u0060ListSplice()\u0060, \u0060ListPutString()\u0060, \u0060ListPutInt64()\u0060, etc., \u0060GetCursor()\u0060, \u0060GetCursorPosition()\u0060",
+      "description": "Add C# types: \u0060AutomergeCursor\u0060 class in \u0060libs/Six.Automerge/src/AutomergeCursor.cs\u0060; Add C# wrappers: \u0060ListSplice()\u0060, \u0060ListPutString()\u0060, \u0060ListPutInt64()\u0060, etc., \u0060GetCursor()\u0060, \u0060GetCursorPosition()\u0060",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-6",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add unit tests: list_splice insert multiple, list_splice delete\u002Binsert, list_put replace element, cursor create and resolve, cursor survives concurrent insert before position, cursor survives concurrent insert after position, cursor persistence (encode/decode bytes)",
+      "description": "Add unit tests: list_splice insert multiple, list_splice delete\u002Binsert, list_put replace element, cursor create and resolve, cursor survives concurrent insert before position, cursor survives concurrent insert after position, cursor persistence (encode/decode bytes)",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-8-task-1",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060keys_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CString\u003E\u0060 and \u0060length_at(obj, heads)\u0060 \u2192 \u0060u64\u0060 \u2014 call \u0060self.inner.keys_at()\u0060 / \u0060self.inner.length_at()\u0060 from \u0060ReadDoc\u0060",
+      "description": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060keys_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CString\u003E\u0060 and \u0060length_at(obj, heads)\u0060 \u2192 \u0060u64\u0060 \u2014 call \u0060self.inner.keys_at()\u0060 / \u0060self.inner.length_at()\u0060 from \u0060ReadDoc\u0060",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-2",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add \u0060AutomergePathElement\u0060 type to \u0060types.rs\u0060; Add Rust FFI functions in \u0060doc.rs\u0060: \u0060values(obj)\u0060 and \u0060values_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CAutomergeValue\u003E\u0060 \u2014 iterate \u0060self.inner.values()\u0060 converting each \u0060(Value, ExId)\u0060 pair",
+      "description": "Add \u0060AutomergePathElement\u0060 type to \u0060types.rs\u0060; Add Rust FFI functions in \u0060doc.rs\u0060: \u0060values(obj)\u0060 and \u0060values_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CAutomergeValue\u003E\u0060 \u2014 iterate \u0060self.inner.values()\u0060 converting each \u0060(Value, ExId)\u0060 pair",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-3",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060map_range(obj, start_key, end_key)\u0060 and \u0060list_range(obj, start_idx, end_idx)\u0060 \u2192 \u0060Vec\u003CAutomergeValue\u003E\u0060 \u2014 call \u0060self.inner.map_range()\u0060 / \u0060self.inner.list_range()\u0060",
+      "description": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060map_range(obj, start_key, end_key)\u0060 and \u0060list_range(obj, start_idx, end_idx)\u0060 \u2192 \u0060Vec\u003CAutomergeValue\u003E\u0060 \u2014 call \u0060self.inner.map_range()\u0060 / \u0060self.inner.list_range()\u0060",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-4",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060parents(obj)\u0060 and \u0060path_to_object(obj)\u0060 \u2192 \u0060Vec\u003CAutomergePathElement\u003E\u0060 \u2014 call \u0060self.inner.parents()\u0060 and collect path elements",
+      "description": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060parents(obj)\u0060 and \u0060path_to_object(obj)\u0060 \u2192 \u0060Vec\u003CAutomergePathElement\u003E\u0060 \u2014 call \u0060self.inner.parents()\u0060 and collect path elements",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-5",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "description": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-6",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add C# types: \u0060AutomergePathElement\u0060, \u0060AutomergeMapPathElement\u0060, \u0060AutomergeListPathElement\u0060 in \u0060libs/Six.Automerge/src/\u0060; Add C# wrappers: \u0060GetKeysAtHeads()\u0060, \u0060LengthAtHeads()\u0060, \u0060Values()\u0060, \u0060ValuesAtHeads()\u0060, \u0060MapRange()\u0060, \u0060ListRange()\u0060, \u0060Parents()\u0060, \u0060PathToObject()\u0060",
+      "description": "Add C# types: \u0060AutomergePathElement\u0060, \u0060AutomergeMapPathElement\u0060, \u0060AutomergeListPathElement\u0060 in \u0060libs/Six.Automerge/src/\u0060; Add C# wrappers: \u0060GetKeysAtHeads()\u0060, \u0060LengthAtHeads()\u0060, \u0060Values()\u0060, \u0060ValuesAtHeads()\u0060, \u0060MapRange()\u0060, \u0060ListRange()\u0060, \u0060Parents()\u0060, \u0060PathToObject()\u0060",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-7",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add unit tests: keys_at at different historical points, length_at for maps and lists, values iteration for maps/lists, map_range subset query, list_range subset query, parents for deeply nested object, path_to_object round-trip",
+      "description": "Add unit tests: keys_at at different historical points, length_at for maps and lists, values iteration for maps/lists, map_range subset query, list_range subset query, parents for deeply nested object, path_to_object round-trip",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-9-task-1",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add \u0060AutomergeSaveOptions\u0060 type to \u0060types.rs\u0060; Add Rust FFI functions in \u0060doc.rs\u0060: \u0060save_nocompress()\u0060 \u2192 \u0060ByteArray\u0060, \u0060save_with_options(opts)\u0060 \u2192 \u0060ByteArray\u0060 \u2014 call \u0060self.inner.save_nocompress()\u0060 / \u0060self.inner.save_with_options()\u0060",
+      "description": "Add \u0060AutomergeSaveOptions\u0060 type to \u0060types.rs\u0060; Add Rust FFI functions in \u0060doc.rs\u0060: \u0060save_nocompress()\u0060 \u2192 \u0060ByteArray\u0060, \u0060save_with_options(opts)\u0060 \u2192 \u0060ByteArray\u0060 \u2014 call \u0060self.inner.save_nocompress()\u0060 / \u0060self.inner.save_with_options()\u0060",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-2",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060load_with_options(bytes, opts)\u0060 \u2192 \u0060Result\u003CSelf\u003E\u0060 \u2014 call \u0060automerge::AutoCommit::load_with_options()\u0060 with verification mode config",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060load_with_options(bytes, opts)\u0060 \u2192 \u0060Result\u003CSelf\u003E\u0060 \u2014 call \u0060automerge::AutoCommit::load_with_options()\u0060 with verification mode config",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-3",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060get_changes_added(other)\u0060 \u2192 \u0060Vec\u003CChangeBytes\u003E\u0060 \u2014 call \u0060self.inner.get_changes_added(\u0026other.inner)\u0060; \u0060bundle(hashes)\u0060 \u2192 \u0060ByteArray\u0060 \u2014 call \u0060self.inner.bundle(hashes_iter)\u0060",
+      "description": "Add Rust FFI functions in \u0060doc.rs\u0060: \u0060get_changes_added(other)\u0060 \u2192 \u0060Vec\u003CChangeBytes\u003E\u0060 \u2014 call \u0060self.inner.get_changes_added(\u0026other.inner)\u0060; \u0060bundle(hashes)\u0060 \u2192 \u0060ByteArray\u0060 \u2014 call \u0060self.inner.bundle(hashes_iter)\u0060",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-4",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060diff_incremental()\u0060 \u2014 maintain \u0060last_diff_heads: Option\u003CVec\u003CChangeHash\u003E\u003E\u0060 field on \u0060AutomergeDoc\u0060 struct, call \u0060self.inner.diff(\u0026last_heads, \u0026current_heads)\u0060, update stored heads",
+      "description": "Add Rust FFI function in \u0060doc.rs\u0060: \u0060diff_incremental()\u0060 \u2014 maintain \u0060last_diff_heads: Option\u003CVec\u003CChangeHash\u003E\u003E\u0060 field on \u0060AutomergeDoc\u0060 struct, call \u0060self.inner.diff(\u0026last_heads, \u0026current_heads)\u0060, update stored heads",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-5",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add Rust FFI functions: \u0060get_missing_deps(heads)\u0060 in \u0060doc.rs\u0060 calling \u0060self.inner.get_missing_deps(\u0026heads)\u0060; \u0060has_our_changes(state)\u0060 in \u0060doc.rs\u0060 calling \u0060self.inner.has_our_changes(\u0026state.inner)\u0060 \u2014 these are on the \u0060ReadDoc\u0060 trait",
+      "description": "Add Rust FFI functions: \u0060get_missing_deps(heads)\u0060 in \u0060doc.rs\u0060 calling \u0060self.inner.get_missing_deps(\u0026heads)\u0060; \u0060has_our_changes(state)\u0060 in \u0060doc.rs\u0060 calling \u0060self.inner.has_our_changes(\u0026state.inner)\u0060 \u2014 these are on the \u0060ReadDoc\u0060 trait",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-6",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "description": "Regenerate \u0060Interop.g.cs\u0060 and verify it compiles",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-7",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add C# wrappers: \u0060SaveNoCompress()\u0060, \u0060SaveWithOptions(options)\u0060, \u0060LoadWithOptions(bytes, options)\u0060, \u0060GetChangesAdded(other)\u0060, \u0060Bundle(heads)\u0060, \u0060DiffIncremental()\u0060, \u0060GetMissingDeps(heads)\u0060, \u0060HasOurChanges(syncState)\u0060 \u2014 plus \u0060SaveOptions\u0060 C# type",
+      "description": "Add C# wrappers: \u0060SaveNoCompress()\u0060, \u0060SaveWithOptions(options)\u0060, \u0060LoadWithOptions(bytes, options)\u0060, \u0060GetChangesAdded(other)\u0060, \u0060Bundle(heads)\u0060, \u0060DiffIncremental()\u0060, \u0060GetMissingDeps(heads)\u0060, \u0060HasOurChanges(syncState)\u0060 \u2014 plus \u0060SaveOptions\u0060 C# type",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-8",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Add unit tests: save_nocompress produces valid document (load it back), save_with_options with/without compression, load_with_options, get_changes_added between diverged docs, bundle creates valid binary, diff_incremental tracks state across multiple commits, get_missing_deps for partially synced docs, has_our_changes before/after sync",
+      "description": "Add unit tests: save_nocompress produces valid document (load it back), save_with_options with/without compression, load_with_options, get_changes_added between diverged docs, bundle creates valid binary, diff_incremental tracks state across multiple commits, get_missing_deps for partially synced docs, has_our_changes before/after sync",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-10-task-1",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Rich text end-to-end integration test: create doc \u2192 insert text \u2192 add block markers \u2192 apply marks (bold, italic, links) \u2192 splice text within marked regions \u2192 sync to second doc \u2192 verify spans match exactly",
+      "description": "Rich text end-to-end integration test: create doc \u2192 insert text \u2192 add block markers \u2192 apply marks (bold, italic, links) \u2192 splice text within marked regions \u2192 sync to second doc \u2192 verify spans match exactly",
+      "status": "done",
+      "completedAtIteration": 10,
+      "sprintId": "sprint-10"
+    },
+    {
+      "id": "sprint-10-task-2",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Cross-document merge with rich text: two docs mark overlapping regions with different marks \u2192 merge \u2192 verify both marks are preserved without conflict",
+      "description": "Cross-document merge with rich text: two docs mark overlapping regions with different marks \u2192 merge \u2192 verify both marks are preserved without conflict",
+      "status": "done",
+      "completedAtIteration": 10,
+      "sprintId": "sprint-10"
+    },
+    {
+      "id": "sprint-10-task-3",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Cursor persistence test: create cursor \u2192 save document \u2192 load document \u2192 resolve cursor \u2192 verify position is correct after concurrent edits by third party",
+      "description": "Cursor persistence test: create cursor \u2192 save document \u2192 load document \u2192 resolve cursor \u2192 verify position is correct after concurrent edits by third party",
+      "status": "done",
+      "completedAtIteration": 10,
+      "sprintId": "sprint-10"
+    },
+    {
+      "id": "sprint-10-task-4",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Full API surface verification: write a test that exercises every single new API method added across all sprints, ensuring no method throws \u0060NotImplementedException\u0060 or unexpected errors",
+      "description": "Full API surface verification: write a test that exercises every single new API method added across all sprints, ensuring no method throws \u0060NotImplementedException\u0060 or unexpected errors",
+      "status": "done",
+      "completedAtIteration": 10,
+      "sprintId": "sprint-10"
+    },
+    {
+      "id": "sprint-10-task-5",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Update \u0060API_SURFACE_COVERAGE.md\u0060: change all \u0060\u274C\u0060 to \u0060\u2705\u0060 for newly wrapped APIs, update statistics to show 100% coverage, add test counts for new test files",
+      "description": "Update \u0060API_SURFACE_COVERAGE.md\u0060: change all \u0060\u274C\u0060 to \u0060\u2705\u0060 for newly wrapped APIs, update statistics to show 100% coverage, add test counts for new test files",
+      "status": "done",
+      "completedAtIteration": 10,
+      "sprintId": "sprint-10"
+    },
+    {
+      "id": "sprint-10-task-6",
+      "specFile": ".wig/specs/introduction-we-are-implementing-a-c-wrapper/implementation-plan.md",
+      "title": "Run complete test suite (\u0060dotnet test\u0060 from repo root for all test projects), verify zero regressions in existing 448 tests, document final total test count",
+      "description": "Run complete test suite (\u0060dotnet test\u0060 from repo root for all test projects), verify zero regressions in existing 448 tests, document final total test count",
+      "status": "done",
+      "completedAtIteration": 10,
+      "sprintId": "sprint-10"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "sprint-1",
+      "title": "Build Pipeline Verification \u0026 FileSystem Review",
+      "description": "- [ ] Verify Rust FFI build pipeline: run \u0060cargo build --release\u0060 in \u0060libs/Six.Automerge.FFI/native/\u0060 and confirm it produces the native library successfully\r\n- [ ] Verify Interoptopus codegen: run the codegen tool in \u0060libs/Six.Automerge.FFI/codegen/\u0060 and confirm \u0060generated/Interop.g.cs\u0060 is regenerated correctly (compare before/after)\r\n- [ ] Verify full \u0060dotnet build\u0060 from repo root succeeds and all existing 448 tests pass (\u0060dotnet test tests/Six.Automerge.FFI.Tests.Unit\u0060 and \u0060dotnet test tests/Six.Automerge.Repo.Tests.Unit\u0060)\r\n- [ ] Review \u0060FileSystemStorageAdapter\u0060 against TypeScript \u0060NodeFSStorageAdapter\u0060 (\u0060.references/automerge-repo-2.5.3/packages/automerge-repo-storage-nodefs/src/index.ts\u0060): verify sharding logic, cache semantics, LoadRange deduplication, and RemoveRange behavior\r\n- [ ] Run FileSystem storage tests (\u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060 and \u0060dotnet test tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Integration\u0060) and document any issues",
+      "taskIds": [
+        "sprint-1-task-1",
+        "sprint-1-task-2",
+        "sprint-1-task-3",
+        "sprint-1-task-4",
+        "sprint-1-task-5"
+      ]
+    },
+    {
+      "id": "sprint-2",
+      "title": "P0 \u2014 Counter Increment, Text Read, Fork",
+      "description": "- [ ] Add Rust FFI functions in \u0060libs/Six.Automerge.FFI/native/src/doc.rs\u0060: \u0060increment_map(obj, key, value)\u0060 and \u0060increment_list(obj, index, value)\u0060 calling \u0060self.inner.increment()\u0060 from the \u0060Transactable\u0060 trait\r\n- [ ] Add Rust FFI functions in \u0060doc.rs\u0060: \u0060text(obj)\u0060 and \u0060text_at(obj, heads)\u0060 calling \u0060self.inner.text()\u0060 / \u0060self.inner.text_at()\u0060 from \u0060ReadDoc\u0060 trait\r\n- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060fork(doc)\u0060 calling \u0060doc.inner.fork()\u0060 \u2014 returns a new \u0060AutomergeDoc\u0060\r\n- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060empty_change()\u0060 calling \u0060self.inner.empty_change()\u0060 \u2014 returns the change hash; and \u0060base_heads()\u0060 calling \u0060self.inner.base_heads()\u0060 \u2014 returns Vec of change hashes\r\n- [ ] Regenerate \u0060Interop.g.cs\u0060 via the codegen pipeline and verify it compiles\r\n- [ ] Add C# wrappers in \u0060libs/Six.Automerge/src/AutomergeDocument.cs\u0060: \u0060Increment(obj, key, delta)\u0060, \u0060Increment(obj, index, delta)\u0060, \u0060GetText(obj)\u0060, \u0060GetTextAtHeads(obj, heads)\u0060, \u0060Fork()\u0060, \u0060EmptyChange()\u0060, \u0060BaseHeads()\u0060\r\n- [ ] Add unit tests in \u0060tests/Six.Automerge.FFI.Tests.Unit/src/\u0060: counter increment (map \u002B list, positive \u002B negative), text read (empty, non-empty, after splice), text_at historical read, fork at current heads, empty_change, base_heads",
+      "taskIds": [
+        "sprint-2-task-1",
+        "sprint-2-task-2",
+        "sprint-2-task-3",
+        "sprint-2-task-4",
+        "sprint-2-task-5",
+        "sprint-2-task-6",
+        "sprint-2-task-7"
+      ]
+    },
+    {
+      "id": "sprint-3",
+      "title": "P0 \u2014 List/Map Get, Object Access, Historical \u0026 Conflict Reads",
+      "description": "- [ ] Add Rust FFI functions in \u0060doc.rs\u0060: \u0060list_get(obj, idx)\u0060 \u2192 \u0060Option\u003CAutomergeScalarValue\u003E\u0060 and \u0060list_get_object(obj, idx)\u0060 \u2192 \u0060Option\u003CAutomergeObjId\u003E\u0060 \u2014 call \u0060self.inner.get(obj_id, idx)\u0060 and pattern-match on \u0060Value::Scalar\u0060 vs \u0060Value::Object\u0060\r\n- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060map_get_object(obj, key)\u0060 \u2192 \u0060Option\u003CAutomergeObjId\u003E\u0060 \u2014 same pattern as \u0060map_get\u0060 but returns ObjId for object values instead of None\r\n- [ ] Add Rust FFI functions in \u0060doc.rs\u0060: \u0060map_get_at(obj, key, heads)\u0060 and \u0060list_get_at(obj, idx, heads)\u0060 \u2014 call \u0060self.inner.get_at(obj_id, prop, \u0026heads)\u0060\r\n- [ ] Add \u0060AutomergeConflictValue\u0060 and \u0060AutomergeValue\u0060 types to \u0060types.rs\u0060 (see design.md); add Rust FFI functions: \u0060map_get_all(obj, key)\u0060, \u0060list_get_all(obj, idx)\u0060, \u0060map_get_all_at(obj, key, heads)\u0060, \u0060list_get_all_at(obj, idx, heads)\u0060 \u2014 call \u0060self.inner.get_all()\u0060 / \u0060self.inner.get_all_at()\u0060\r\n- [ ] Regenerate \u0060Interop.g.cs\u0060 and verify it compiles\r\n- [ ] Add C# wrappers in \u0060AutomergeDocument.cs\u0060: \u0060ListGetString()\u0060, \u0060ListGetInt64()\u0060, \u0060ListGetBoolean()\u0060, \u0060ListGetDouble()\u0060, \u0060ListGetUInt64()\u0060, \u0060ListGetBytes()\u0060, \u0060ListGetObject()\u0060, \u0060GetObject(obj, key)\u0060, \u0060GetStringAtHeads()\u0060, \u0060ListGetStringAtHeads()\u0060, \u0060GetAll(obj, key)\u0060, \u0060GetAll(obj, index)\u0060, \u0060GetAllAtHeads()\u0060 \u2014 plus new C# types \u0060AutomergeValue\u0060, \u0060AutomergeConflictValue\u0060 in separate files\r\n- [ ] Add unit tests: list_get for all types, list_get_object for nested containers, map_get_object, get_at historical reads for maps and lists, get_all conflict detection with 2\u002B concurrent writers",
+      "taskIds": [
+        "sprint-3-task-1",
+        "sprint-3-task-2",
+        "sprint-3-task-3",
+        "sprint-3-task-4",
+        "sprint-3-task-5",
+        "sprint-3-task-6",
+        "sprint-3-task-7"
+      ]
+    },
+    {
+      "id": "sprint-4",
+      "title": "Rich Text \u2014 Marks Write API",
+      "description": "- [ ] Add \u0060AutomergeExpandMark\u0060 enum to \u0060libs/Six.Automerge.FFI/native/src/types.rs\u0060 with variants: \u0060Before\u0060, \u0060After\u0060, \u0060Both\u0060, \u0060None\u0060 \u2014 implement \u0060From\u003CAutomergeExpandMark\u003E for automerge::marks::ExpandMark\u0060 conversion\r\n- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060mark(obj, start, end, name, value, expand)\u0060 \u2014 construct \u0060automerge::marks::Mark { start, end, name, value }\u0060 and call \u0060self.inner.mark(obj_id, mark, expand_mode)\u0060\r\n- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060unmark(obj, name, start, end, expand)\u0060 \u2014 call \u0060self.inner.unmark(obj_id, name, start, end, expand_mode)\u0060\r\n- [ ] Regenerate \u0060Interop.g.cs\u0060 and verify it compiles\r\n- [ ] Add C# types: \u0060ExpandMode\u0060 enum in \u0060libs/Six.Automerge/src/ExpandMode.cs\u0060; Add C# wrappers in \u0060AutomergeDocument.cs\u0060: \u0060Mark(obj, start, end, name, value, expand)\u0060 and \u0060Unmark(obj, name, start, end, expand)\u0060\r\n- [ ] Add unit tests: mark bold on text range, unmark bold, mark with each expand mode, mark with different value types (string, bool, int), overlapping marks, mark on empty text (error), mark with invalid range (error)",
+      "taskIds": [
+        "sprint-4-task-1",
+        "sprint-4-task-2",
+        "sprint-4-task-3",
+        "sprint-4-task-4",
+        "sprint-4-task-5",
+        "sprint-4-task-6"
+      ]
+    },
+    {
+      "id": "sprint-5",
+      "title": "Rich Text \u2014 Marks \u0026 Spans Read API",
+      "description": "- [ ] Add Rust FFI functions in \u0060doc.rs\u0060: \u0060marks(obj)\u0060 \u2192 \u0060Vec\u003CAutomergeMarkSpan\u003E\u0060 and \u0060marks_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CAutomergeMarkSpan\u003E\u0060 \u2014 call \u0060self.inner.marks(obj_id)\u0060 / \u0060self.inner.marks_at(obj_id, \u0026heads)\u0060 and convert each \u0060Mark\u0060 to existing \u0060AutomergeMarkSpan\u0060 type\r\n- [ ] Add \u0060AutomergeSpanKind\u0060 enum and \u0060AutomergeSpan\u0060 struct to \u0060types.rs\u0060 (see design.md) \u2014 the flat discriminated union with text\u002Bmarks fields and block\u002Btype\u002Bparents fields\r\n- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060spans(obj)\u0060 \u2192 \u0060Vec\u003CAutomergeSpan\u003E\u0060 \u2014 call \u0060self.inner.spans(obj_id)\u0060 and convert each \u0060Span::Text(s, marks)\u0060 / \u0060Span::Block(obj_id)\u0060 to \u0060AutomergeSpan\u0060\r\n- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060spans_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CAutomergeSpan\u003E\u0060 \u2014 same as above but with heads\r\n- [ ] Regenerate \u0060Interop.g.cs\u0060 and verify it compiles\r\n- [ ] Add C# types in \u0060libs/Six.Automerge/src/\u0060: \u0060AutomergeSpan\u0060 (abstract record), \u0060AutomergeTextSpan\u0060, \u0060AutomergeBlockSpan\u0060, \u0060AutomergeMarkInfo\u0060; Add C# wrappers: \u0060GetMarks(obj)\u0060, \u0060GetMarksAtHeads(obj, heads)\u0060, \u0060GetSpans(obj)\u0060, \u0060GetSpansAtHeads(obj, heads)\u0060 \u2014 convert FFI \u0060AutomergeSpan\u0060 to C# discriminated union\r\n- [ ] Add unit tests: marks on text with single/multiple marks, marks_at historical, spans with text-only, spans with blocks\u002Btext, spans with marks on text sections, spans_at historical, verify mark values survive sync between two documents",
+      "taskIds": [
+        "sprint-5-task-1",
+        "sprint-5-task-2",
+        "sprint-5-task-3",
+        "sprint-5-task-4",
+        "sprint-5-task-5",
+        "sprint-5-task-6",
+        "sprint-5-task-7"
+      ]
+    },
+    {
+      "id": "sprint-6",
+      "title": "Rich Text \u2014 Block Markers \u0026 UpdateSpans",
+      "description": "- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060split_block(obj, index)\u0060 \u2192 \u0060AutomergeObjId\u0060 \u2014 call \u0060self.inner.split_block(obj_id, index)\u0060 returning the new block map\u0027s ObjId (properties set via existing \u0060map_put_*\u0060)\r\n- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060update_spans(obj, spans)\u0060 \u2014 convert \u0060ffi::Slice\u003CAutomergeSpan\u003E\u0060 to \u0060Vec\u003Cautomerge::Span\u003E\u0060 and call \u0060self.inner.update_spans(obj_id, span_vec)\u0060. For text spans: reconstruct text content and mark set. For block spans: reconstruct block marker from type/parents/attrs\r\n- [ ] Regenerate \u0060Interop.g.cs\u0060 and verify it compiles\r\n- [ ] Add C# wrappers in \u0060AutomergeDocument.cs\u0060: \u0060SplitBlock(obj, index)\u0060 returns \u0060AutomergeObjectId\u0060, \u0060JoinBlock(obj, index)\u0060 implemented as \u0060ListRemove(obj, index)\u0060 at block position, \u0060UpdateSpans(obj, spans)\u0060 accepting \u0060IReadOnlyList\u003CAutomergeSpan\u003E\u0060\r\n- [ ] Add unit tests: split_block creates block marker, set block properties via PutString on returned ObjId, join_block removes block, update_spans minimal diff, update_spans with block insertion, update_spans with text changes, spans round-trip (read \u2192 modify \u2192 update \u2192 read)\r\n- [ ] Add integration test: full rich text workflow \u2014 create text, add block markers, apply marks, sync between two documents, verify spans are identical after sync",
+      "taskIds": [
+        "sprint-6-task-1",
+        "sprint-6-task-2",
+        "sprint-6-task-3",
+        "sprint-6-task-4",
+        "sprint-6-task-5",
+        "sprint-6-task-6"
+      ]
+    },
+    {
+      "id": "sprint-7",
+      "title": "P1 \u2014 List Mutation \u0026 Cursor APIs",
+      "description": "- [ ] Add Rust FFI functions in \u0060doc.rs\u0060: \u0060list_splice(obj, idx, delete, values)\u0060 accepting \u0060ffi::Slice\u003CAutomergeScalarValue\u003E\u0060 \u2014 call \u0060self.inner.splice(obj_id, idx, delete, values_iter)\u0060 converting each \u0060AutomergeScalarValue\u0060 to \u0060ScalarValue\u0060\r\n- [ ] Add Rust FFI functions in \u0060doc.rs\u0060: \u0060list_put_string\u0060, \u0060list_put_bool\u0060, \u0060list_put_int\u0060, \u0060list_put_uint\u0060, \u0060list_put_f64\u0060, \u0060list_put_bytes\u0060, \u0060list_put_null\u0060, \u0060list_put_object\u0060 \u2014 call \u0060self.inner.put(obj_id, index, value)\u0060 for each type\r\n- [ ] Add \u0060AutomergeCursor\u0060 type to \u0060types.rs\u0060 (opaque \u0060ByteArray\u0060); Add Rust FFI functions in \u0060doc.rs\u0060: \u0060get_cursor(obj, idx)\u0060 and \u0060get_cursor_position(obj, cursor)\u0060 \u2014 call \u0060self.inner.get_cursor()\u0060 / \u0060self.inner.get_cursor_position()\u0060\r\n- [ ] Regenerate \u0060Interop.g.cs\u0060 and verify it compiles\r\n- [ ] Add C# types: \u0060AutomergeCursor\u0060 class in \u0060libs/Six.Automerge/src/AutomergeCursor.cs\u0060; Add C# wrappers: \u0060ListSplice()\u0060, \u0060ListPutString()\u0060, \u0060ListPutInt64()\u0060, etc., \u0060GetCursor()\u0060, \u0060GetCursorPosition()\u0060\r\n- [ ] Add unit tests: list_splice insert multiple, list_splice delete\u002Binsert, list_put replace element, cursor create and resolve, cursor survives concurrent insert before position, cursor survives concurrent insert after position, cursor persistence (encode/decode bytes)",
+      "taskIds": [
+        "sprint-7-task-1",
+        "sprint-7-task-2",
+        "sprint-7-task-3",
+        "sprint-7-task-4",
+        "sprint-7-task-5",
+        "sprint-7-task-6"
+      ]
+    },
+    {
+      "id": "sprint-8",
+      "title": "P1 \u2014 Historical Queries, Iteration \u0026 Object Graph",
+      "description": "- [ ] Add Rust FFI functions in \u0060doc.rs\u0060: \u0060keys_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CString\u003E\u0060 and \u0060length_at(obj, heads)\u0060 \u2192 \u0060u64\u0060 \u2014 call \u0060self.inner.keys_at()\u0060 / \u0060self.inner.length_at()\u0060 from \u0060ReadDoc\u0060\r\n- [ ] Add \u0060AutomergePathElement\u0060 type to \u0060types.rs\u0060; Add Rust FFI functions in \u0060doc.rs\u0060: \u0060values(obj)\u0060 and \u0060values_at(obj, heads)\u0060 \u2192 \u0060Vec\u003CAutomergeValue\u003E\u0060 \u2014 iterate \u0060self.inner.values()\u0060 converting each \u0060(Value, ExId)\u0060 pair\r\n- [ ] Add Rust FFI functions in \u0060doc.rs\u0060: \u0060map_range(obj, start_key, end_key)\u0060 and \u0060list_range(obj, start_idx, end_idx)\u0060 \u2192 \u0060Vec\u003CAutomergeValue\u003E\u0060 \u2014 call \u0060self.inner.map_range()\u0060 / \u0060self.inner.list_range()\u0060\r\n- [ ] Add Rust FFI functions in \u0060doc.rs\u0060: \u0060parents(obj)\u0060 and \u0060path_to_object(obj)\u0060 \u2192 \u0060Vec\u003CAutomergePathElement\u003E\u0060 \u2014 call \u0060self.inner.parents()\u0060 and collect path elements\r\n- [ ] Regenerate \u0060Interop.g.cs\u0060 and verify it compiles\r\n- [ ] Add C# types: \u0060AutomergePathElement\u0060, \u0060AutomergeMapPathElement\u0060, \u0060AutomergeListPathElement\u0060 in \u0060libs/Six.Automerge/src/\u0060; Add C# wrappers: \u0060GetKeysAtHeads()\u0060, \u0060LengthAtHeads()\u0060, \u0060Values()\u0060, \u0060ValuesAtHeads()\u0060, \u0060MapRange()\u0060, \u0060ListRange()\u0060, \u0060Parents()\u0060, \u0060PathToObject()\u0060\r\n- [ ] Add unit tests: keys_at at different historical points, length_at for maps and lists, values iteration for maps/lists, map_range subset query, list_range subset query, parents for deeply nested object, path_to_object round-trip",
+      "taskIds": [
+        "sprint-8-task-1",
+        "sprint-8-task-2",
+        "sprint-8-task-3",
+        "sprint-8-task-4",
+        "sprint-8-task-5",
+        "sprint-8-task-6",
+        "sprint-8-task-7"
+      ]
+    },
+    {
+      "id": "sprint-9",
+      "title": "P1 \u2014 Save/Load Variants, Sync Extensions \u0026 Change Management",
+      "description": "- [ ] Add \u0060AutomergeSaveOptions\u0060 type to \u0060types.rs\u0060; Add Rust FFI functions in \u0060doc.rs\u0060: \u0060save_nocompress()\u0060 \u2192 \u0060ByteArray\u0060, \u0060save_with_options(opts)\u0060 \u2192 \u0060ByteArray\u0060 \u2014 call \u0060self.inner.save_nocompress()\u0060 / \u0060self.inner.save_with_options()\u0060\r\n- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060load_with_options(bytes, opts)\u0060 \u2192 \u0060Result\u003CSelf\u003E\u0060 \u2014 call \u0060automerge::AutoCommit::load_with_options()\u0060 with verification mode config\r\n- [ ] Add Rust FFI functions in \u0060doc.rs\u0060: \u0060get_changes_added(other)\u0060 \u2192 \u0060Vec\u003CChangeBytes\u003E\u0060 \u2014 call \u0060self.inner.get_changes_added(\u0026other.inner)\u0060; \u0060bundle(hashes)\u0060 \u2192 \u0060ByteArray\u0060 \u2014 call \u0060self.inner.bundle(hashes_iter)\u0060\r\n- [ ] Add Rust FFI function in \u0060doc.rs\u0060: \u0060diff_incremental()\u0060 \u2014 maintain \u0060last_diff_heads: Option\u003CVec\u003CChangeHash\u003E\u003E\u0060 field on \u0060AutomergeDoc\u0060 struct, call \u0060self.inner.diff(\u0026last_heads, \u0026current_heads)\u0060, update stored heads\r\n- [ ] Add Rust FFI functions: \u0060get_missing_deps(heads)\u0060 in \u0060doc.rs\u0060 calling \u0060self.inner.get_missing_deps(\u0026heads)\u0060; \u0060has_our_changes(state)\u0060 in \u0060doc.rs\u0060 calling \u0060self.inner.has_our_changes(\u0026state.inner)\u0060 \u2014 these are on the \u0060ReadDoc\u0060 trait\r\n- [ ] Regenerate \u0060Interop.g.cs\u0060 and verify it compiles\r\n- [ ] Add C# wrappers: \u0060SaveNoCompress()\u0060, \u0060SaveWithOptions(options)\u0060, \u0060LoadWithOptions(bytes, options)\u0060, \u0060GetChangesAdded(other)\u0060, \u0060Bundle(heads)\u0060, \u0060DiffIncremental()\u0060, \u0060GetMissingDeps(heads)\u0060, \u0060HasOurChanges(syncState)\u0060 \u2014 plus \u0060SaveOptions\u0060 C# type\r\n- [ ] Add unit tests: save_nocompress produces valid document (load it back), save_with_options with/without compression, load_with_options, get_changes_added between diverged docs, bundle creates valid binary, diff_incremental tracks state across multiple commits, get_missing_deps for partially synced docs, has_our_changes before/after sync",
+      "taskIds": [
+        "sprint-9-task-1",
+        "sprint-9-task-2",
+        "sprint-9-task-3",
+        "sprint-9-task-4",
+        "sprint-9-task-5",
+        "sprint-9-task-6",
+        "sprint-9-task-7",
+        "sprint-9-task-8"
+      ]
+    },
+    {
+      "id": "sprint-10",
+      "title": "Integration Testing \u0026 Final Verification",
+      "description": "- [ ] Rich text end-to-end integration test: create doc \u2192 insert text \u2192 add block markers \u2192 apply marks (bold, italic, links) \u2192 splice text within marked regions \u2192 sync to second doc \u2192 verify spans match exactly\r\n- [ ] Cross-document merge with rich text: two docs mark overlapping regions with different marks \u2192 merge \u2192 verify both marks are preserved without conflict\r\n- [ ] Cursor persistence test: create cursor \u2192 save document \u2192 load document \u2192 resolve cursor \u2192 verify position is correct after concurrent edits by third party\r\n- [ ] Full API surface verification: write a test that exercises every single new API method added across all sprints, ensuring no method throws \u0060NotImplementedException\u0060 or unexpected errors\r\n- [ ] Update \u0060API_SURFACE_COVERAGE.md\u0060: change all \u0060\u274C\u0060 to \u0060\u2705\u0060 for newly wrapped APIs, update statistics to show 100% coverage, add test counts for new test files\r\n- [ ] Run complete test suite (\u0060dotnet test\u0060 from repo root for all test projects), verify zero regressions in existing 448 tests, document final total test count",
+      "taskIds": [
+        "sprint-10-task-1",
+        "sprint-10-task-2",
+        "sprint-10-task-3",
+        "sprint-10-task-4",
+        "sprint-10-task-5",
+        "sprint-10-task-6"
+      ]
+    }
+  ],
+  "currentSprintIndex": 10,
+  "currentTaskId": "sprint-10-task-6",
+  "completedCount": 65,
+  "totalCount": 65,
+  "completionPercent": 100,
+  "hasSprints": true
+}

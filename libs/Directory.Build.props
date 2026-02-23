@@ -1,0 +1,102 @@
+<!-- Directory.Build.props for libraries -->
+<Project>
+    <!-- Import parent Directory.Build.props -->
+    <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props"
+            Condition="Exists('$(MSBuildThisFileDirectory)../Directory.Build.props')"/>
+
+    <PropertyGroup>        
+
+        <!-- Version -->
+        <Version>1.0.0-alpha.1</Version>
+
+        <!-- Packaging -->
+        <IsPackable>true</IsPackable>
+        <SignAssembly>true</SignAssembly>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+
+        <!-- Company/Organization/Legal Information -->
+        <Authors>Six Technology</Authors>
+        <Company>Six Technology</Company>
+        <Description>Automerge CRDT Bindings</Description>
+        <Copyright>© $([System.DateTime]::Now.Year) Six Technology, Inc. All rights reserved..</Copyright>
+
+        <!-- Package Information -->
+        <PackageTags>dotnet;csharp</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageProjectUrl>https://github.com/six-tech/Six.SolutionTemplate</PackageProjectUrl>        
+
+        <!-- Repository Information -->
+        <RepositoryUrl>https://github.com/six-tech/Six.SolutionTemplate</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+
+        <!-- Embedded Assets -->
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>project_icon.png</PackageIcon>
+
+        <!-- 
+            XML Documentation
+            Also turn off warnings for missing documentation 
+        -->
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    </PropertyGroup>
+
+
+    <!-- 
+        SOURCE DEBUGGING 
+    -->
+    <PropertyGroup>
+
+        <!-- Enable Source Link -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <!-- Recommended for deterministic builds in CI -->
+        <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+        <!-- Debug Symbols         
+        It’s important to include debug information in your package for better maintainability and support. 
+        This typically involves setting the correct debug type in your project files.
+        
+        If you wany to embed the PDBs in the package, you can set the DebugType property to 'embedded'.
+        See more: https://github.com/dotnet/sourcelink 
+        -->
+        <DebugType>portable</DebugType>
+
+    </PropertyGroup>
+    <ItemGroup>
+        <!--
+        Source links on GitHub
+        See: https://github.com/dotnet/sourcelink 
+         
+        There'a a new version (8.0.0) but is seems it have problems with source generators 
+        -->
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+    </ItemGroup>
+
+
+    <!-- 
+        Package Validation
+        See: https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/overview
+    -->
+    <PropertyGroup>
+        <!--            
+            <EnablePackageValidation>true</EnablePackageValidation>
+        
+            Uncomment to validate against some previous package (API changes) 
+            https://docs.microsoft.com/en-us/nuget/reference/msbuild-targets#packagevalidationbaselineversion
+            <PackageValidationBaselineVersion>1.0.0</PackageValidationBaselineVersion>
+        -->
+    </PropertyGroup>
+
+    <!--
+        To include the README.md file in the packages
+    -->
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.shproj'">
+        <None Include="README.md" Pack="true" PackagePath="\"/>
+        <None Include="project_icon.png" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+</Project>

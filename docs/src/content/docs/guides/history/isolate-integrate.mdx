@@ -1,0 +1,162 @@
+---
+title: "Isolate and Integrate"
+description: Switch a document's active view to a specific point in history and restore the full view
+---
+
+# Overview
+
+While [time travel queries](/Six.Automerge/guides/history/time-travel/) let you read historical state without modifying the document, sometimes you need to temporarily switch the document's entire view to a historical point. **Isolate** restricts the document's view to specific heads. **Integrate** restores the full view.
+
+# Isolate
+
+`Isolate` restricts the document to show only the state at the specified heads. Subsequent reads (like `HydrateJson`) will reflect the isolated view:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "value", "initial");
+doc.Commit("initial");
+var baselineHeads = doc.GetHeads();
+
+doc.PutString(root, "value", "updated");
+doc.Commit("update");
+
+// Before isolate: shows latest state
+var currentJson = doc.HydrateJson();
+// Contains "updated"
+
+// Isolate to baseline
+doc.Isolate(baselineHeads);
+
+// After isolate: reads at the isolated heads
+var isolatedJson = doc.HydrateJsonAtHeads(baselineHeads);
+// Contains "initial", not "updated"
+```
+
+# Integrate
+
+`Integrate` restores the document to its full, up-to-date view:
+
+```csharp
+// Continuing from above...
+doc.Integrate();
+
+var integratedJson = doc.HydrateJson();
+// Contains "updated" again
+```
+
+After integration, the document behaves normally — all heads are visible and new changes can be made.
+
+# Isolate and Integrate Cycle
+
+The typical pattern is: isolate to inspect, then integrate to resume:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "value", "initial");
+doc.Commit("initial");
+var baselineHeads = doc.GetHeads();
+
+doc.PutString(root, "value", "updated");
+doc.Commit("update");
+var currentHeads = doc.GetHeads();
+
+// 1. Verify we see latest state
+var json = doc.HydrateJson();
+// Contains "updated"
+
+// 2. Isolate to baseline
+doc.Isolate(baselineHeads);
+var isolatedJson = doc.HydrateJsonAtHeads(baselineHeads);
+// Contains "initial"
+
+// 3. Integrate back
+doc.Integrate();
+var integratedJson = doc.HydrateJson();
+// Contains "updated"
+
+// 4. Diffing still works across the full history
+var patches = doc.Diff(baselineHeads, currentHeads);
+// 1 patch showing the value change
+```
+
+# ViewAtHeads Convenience Method
+
+`ViewAtHeads` creates a new document clone that is isolated at the specified heads. This is useful when you want a read-only snapshot without modifying the original:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "title", "Latest Version");
+doc.Commit("v3");
+
+// Get heads from an earlier point
+doc.PutString(root, "title", "Even Newer");
+doc.Commit("v4");
+
+// Create a view at earlier heads
+var earlierHeads = doc.GetHeads(); // For demonstration
+using var view = doc.ViewAtHeads(earlierHeads);
+
+// The view is an independent clone, isolated at those heads
+// The original document is unaffected
+```
+
+The key difference between approaches:
+
+| Approach | Modifies Original? | Creates New Object? | Use Case |
+|----------|-------------------|--------------------|-----------|
+| `HydrateJsonAtHeads` | No | No (returns string) | Quick read of historical JSON |
+| `Isolate` / `Integrate` | Yes (temporarily) | No | Temporarily switch view |
+| `ViewAtHeads` | No | Yes (new document) | Independent historical snapshot |
+
+# Complete Example
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Build a multi-commit history
+doc.PutString(root, "status", "draft");
+doc.PutString(root, "author", "Alice");
+doc.Commit("Create");
+var draftHeads = doc.GetHeads();
+
+doc.PutString(root, "status", "review");
+doc.PutString(root, "reviewer", "Bob");
+doc.Commit("Submit for review");
+var reviewHeads = doc.GetHeads();
+
+doc.PutString(root, "status", "published");
+doc.Delete(root, "reviewer");
+doc.Commit("Publish");
+
+// Option 1: Quick historical read
+var draftJson = doc.HydrateJsonAtHeads(draftHeads);
+// {"status":"draft","author":"Alice"}
+
+// Option 2: Isolate for detailed inspection
+doc.Isolate(reviewHeads);
+var reviewJson = doc.HydrateJsonAtHeads(reviewHeads);
+// {"status":"review","author":"Alice","reviewer":"Bob"}
+doc.Integrate(); // Don't forget to integrate back
+
+// Option 3: Create an independent snapshot
+using var snapshot = doc.ViewAtHeads(draftHeads);
+// snapshot is isolated at draftHeads
+// doc is unaffected
+
+// Current state still shows published
+var currentJson = doc.HydrateJson();
+// {"status":"published","author":"Alice"}
+```
+
+# Next Steps
+
+- [Time Travel](/Six.Automerge/guides/history/time-travel/) — Read historical values without modifying the document
+- [Fork at Heads](/Six.Automerge/guides/branching/fork-at-heads/) — Create independent branches from historical points
+- [Diffing](/Six.Automerge/guides/history/diffing/) — Compare document states between commits

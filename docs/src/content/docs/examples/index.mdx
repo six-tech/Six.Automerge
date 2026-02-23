@@ -1,0 +1,80 @@
+---
+title: Example Applications
+description: Complete Avalonia desktop applications demonstrating Six.Automerge in practice
+---
+
+import {Card, CardGrid} from '@astrojs/starlight/components'
+
+# Example Applications
+
+These walkthroughs build complete Avalonia desktop applications from scratch, each showcasing different Automerge capabilities. They progress from simple text editing to full collaborative canvas editing.
+
+<CardGrid>
+    <Card title="Collaborative Text Editor" icon="pencil">
+        **Beginner** — Text CRDTs, sync protocol, split-pane UI.
+
+        Create a split-pane editor where two documents sync in real time. Covers `PutObject` with Text containers, `SpliceText`, `GenerateSyncMessage` / `ReceiveSyncMessage`, and timer-based sync.
+
+        [View walkthrough](/Six.Automerge/examples/collaborative-text-editor/)
+    </Card>
+
+    <Card title="Task Board" icon="list-format">
+        **Intermediate** — Maps, lists, counters, structured data.
+
+        Build a Kanban board with columns and tasks stored as nested maps and lists. Demonstrates `PutObject` with Map and List containers, `ListInsertObject`, `PutCounter`, `IncrementCounter`, `ListSplice` for moves, and `Delete` for removal.
+
+        [View walkthrough](/Six.Automerge/examples/collaborative-task-board/)
+    </Card>
+
+    <Card title="Collaborative Rich Text Editor" icon="document">
+        **Advanced** — Marks, expand modes, blocks, rich text sync.
+
+        Extend the text editor with bold, italic, underline, and link formatting using Automerge marks. Covers `Mark`, `Unmark`, `GetMarks`, `GetSpans`, block structure, `ExpandMode` options, and concurrent formatting merge behavior.
+
+        [View walkthrough](/Six.Automerge/examples/collaborative-editor/)
+    </Card>
+
+    <Card title="Figma Clone" icon="star">
+        **Advanced** — Canvas shapes, doubles, fork/undo, multi-peer sync.
+
+        Build a collaborative drawing canvas with rectangles and ellipses. Demonstrates `PutDouble` for coordinates, nested maps for shape properties, `Fork` for undo snapshots, `Merge` for redo, layer management with lists, and bidirectional sync between peers.
+
+        [View walkthrough](/Six.Automerge/examples/collaborative-drawing/)
+    </Card>
+</CardGrid>
+
+## APIs Demonstrated
+
+Each example builds on the APIs from previous examples. Here is a summary of the key APIs each example uses:
+
+| API | Text Editor | Task Board | Rich Text Editor | Figma Clone |
+|-----|:-----------:|:----------:|:----------------:|:-----------:|
+| `AutomergeDocument.Create` | Yes | Yes | Yes | Yes |
+| `PutString` / `PutBoolean` | Yes | Yes | Yes | Yes |
+| `PutObject` (Text) | Yes | — | Yes | — |
+| `SpliceText` | Yes | — | Yes | — |
+| `PutObject` (Map, List) | — | Yes | — | Yes |
+| `ListInsertObject` | — | Yes | — | Yes |
+| `PutCounter` / `IncrementCounter` | — | Yes | — | — |
+| `PutDouble` | — | — | — | Yes |
+| `Mark` / `Unmark` | — | — | Yes | — |
+| `GetMarks` / `GetSpans` | — | — | Yes | — |
+| `Fork` / `Merge` | — | — | — | Yes |
+| `CreateSyncState` | Yes | — | Yes | Yes |
+| `GenerateSyncMessage` | Yes | — | Yes | Yes |
+| `ReceiveSyncMessage` | Yes | — | Yes | Yes |
+| `Commit` | Yes | Yes | Yes | Yes |
+| `Save` / `Load` | — | — | — | — |
+
+## Running the Examples
+
+Each example app lives in the `apps/` directory. Build and run any example with:
+
+```bash
+dotnet run --project apps/DemoApp.CollaborativeTextEditor
+dotnet run --project apps/DemoApp.TaskBoard
+dotnet run --project apps/DemoApp.CollaborativeEditor
+dotnet run --project apps/DemoApp.FigmaClone
+```
+
+All examples require .NET 10 SDK and the Rust toolchain (for the native FFI compilation that happens automatically on first build).

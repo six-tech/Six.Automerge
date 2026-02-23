@@ -1,0 +1,258 @@
+---
+title: "Lists: Splice Operations"
+description: Learn how to use ListSplice for batch insert, delete, and replace operations on Automerge lists
+---
+
+# Overview
+
+`ListSplice` performs batch operations on lists — insert multiple values, delete a range of elements, or replace elements in a single call.
+
+This is more efficient than individual insert/remove calls when you need to modify several elements at once.
+
+# How ListSplice Works
+
+`ListSplice` takes four parameters:
+
+```csharp
+doc.ListSplice(listId, startIndex, deleteCount, values);
+```
+
+- **listId** — the list to modify
+- **startIndex** — where to start the operation
+- **deleteCount** — how many existing elements to remove (0 to skip deletion)
+- **values** — an array of `AutomergeScalarValue` to insert at `startIndex`
+
+# Inserting Multiple Values
+
+Insert several elements at once by setting `deleteCount` to 0:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+
+var values = new[]
+{
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "alpha"),
+    new AutomergeScalarValue(AutomergeScalarValueKind.Int, intValue: 42),
+    new AutomergeScalarValue(AutomergeScalarValueKind.Boolean, boolValue: true)
+};
+
+doc.ListSplice(list, 0, 0, values);
+doc.Commit("batch insert");
+
+Console.WriteLine($"Length: {doc.ListLength(list)}"); // 3
+Console.WriteLine(doc.ListGetString(list, 0));        // "alpha"
+Console.WriteLine(doc.ListGetInt64(list, 1));          // 42
+Console.WriteLine(doc.ListGetBoolean(list, 2));        // True
+```
+
+Each `AutomergeScalarValue` specifies both the type and the value. You can mix types in a single splice.
+
+# Inserting in the Middle
+
+Insert between existing elements by choosing a `startIndex` within the list:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "first");
+doc.ListInsertString(list, 1, "last");
+doc.Commit("init");
+
+var values = new[]
+{
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "middle1"),
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "middle2")
+};
+
+doc.ListSplice(list, 1, 0, values);
+doc.Commit("insert in middle");
+
+// Result: ["first", "middle1", "middle2", "last"]
+Console.WriteLine($"Length: {doc.ListLength(list)}"); // 4
+Console.WriteLine(doc.ListGetString(list, 0));        // "first"
+Console.WriteLine(doc.ListGetString(list, 1));        // "middle1"
+Console.WriteLine(doc.ListGetString(list, 2));        // "middle2"
+Console.WriteLine(doc.ListGetString(list, 3));        // "last"
+```
+
+Existing elements at and after `startIndex` shift to make room for the new values.
+
+# Deleting Elements
+
+Remove elements by setting `deleteCount` > 0 and passing an empty values array:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "keep");
+doc.ListInsertString(list, 1, "remove1");
+doc.ListInsertString(list, 2, "remove2");
+doc.ListInsertString(list, 3, "keep2");
+doc.Commit("init");
+
+doc.ListSplice(list, 1, 2, Array.Empty<AutomergeScalarValue>());
+doc.Commit("delete two elements");
+
+// Result: ["keep", "keep2"]
+Console.WriteLine($"Length: {doc.ListLength(list)}"); // 2
+Console.WriteLine(doc.ListGetString(list, 0));        // "keep"
+Console.WriteLine(doc.ListGetString(list, 1));        // "keep2"
+```
+
+This removes 2 elements starting at index 1. Elements after the deleted range shift down.
+
+# Replacing Elements
+
+Combine deletion and insertion to replace elements in one operation:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "a");
+doc.ListInsertString(list, 1, "b");
+doc.ListInsertString(list, 2, "c");
+doc.ListInsertString(list, 3, "d");
+doc.Commit("init");
+
+var values = new[]
+{
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "X"),
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "Y")
+};
+
+doc.ListSplice(list, 1, 2, values);
+doc.Commit("replace b,c with X,Y");
+
+// Result: ["a", "X", "Y", "d"]
+Console.WriteLine($"Length: {doc.ListLength(list)}"); // 4
+Console.WriteLine(doc.ListGetString(list, 0));        // "a"
+Console.WriteLine(doc.ListGetString(list, 1));        // "X"
+Console.WriteLine(doc.ListGetString(list, 2));        // "Y"
+Console.WriteLine(doc.ListGetString(list, 3));        // "d"
+```
+
+Here, 2 elements at index 1 are deleted and 2 new elements are inserted at the same position. The replacement count doesn't need to match the delete count.
+
+# AutomergeScalarValue Types
+
+The `AutomergeScalarValue` constructor takes a kind and the corresponding value parameter:
+
+```csharp
+// String
+new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "hello")
+
+// Int64
+new AutomergeScalarValue(AutomergeScalarValueKind.Int, intValue: 42)
+
+// UInt64
+new AutomergeScalarValue(AutomergeScalarValueKind.Uint, uintValue: 100)
+
+// Double
+new AutomergeScalarValue(AutomergeScalarValueKind.F64, doubleValue: 3.14)
+
+// Boolean
+new AutomergeScalarValue(AutomergeScalarValueKind.Boolean, boolValue: true)
+
+// Null
+new AutomergeScalarValue(AutomergeScalarValueKind.Null)
+```
+
+# Complete Example
+
+Here's a playlist manager using splice operations:
+
+```csharp
+using System;
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var playlist = doc.PutObject(root, "songs", AutomergeContainerType.List);
+
+// Add initial songs
+var initialSongs = new[]
+{
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "Song A"),
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "Song B"),
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "Song C"),
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "Song D"),
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "Song E")
+};
+
+doc.ListSplice(playlist, 0, 0, initialSongs);
+doc.Commit("Create playlist");
+
+Console.WriteLine($"Playlist length: {doc.ListLength(playlist)}"); // 5
+
+// Insert two songs in the middle (after Song B)
+var newSongs = new[]
+{
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "New Hit 1"),
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "New Hit 2")
+};
+
+doc.ListSplice(playlist, 2, 0, newSongs);
+doc.Commit("Add new hits");
+
+// Remove Song D and Song E (now at indices 4 and 5)
+doc.ListSplice(playlist, 4, 2, Array.Empty<AutomergeScalarValue>());
+doc.Commit("Remove old songs");
+
+// Replace Song A with an updated version
+var replacement = new[]
+{
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "Song A (Remastered)")
+};
+
+doc.ListSplice(playlist, 0, 1, replacement);
+doc.Commit("Update Song A");
+
+// Final playlist: ["Song A (Remastered)", "Song B", "New Hit 1", "New Hit 2", "Song C"]
+Console.WriteLine($"Final length: {doc.ListLength(playlist)}"); // 5
+```
+
+# Best Practices
+
+## Prefer Splice for Batch Operations
+
+When inserting or removing multiple elements, splice is more efficient than individual calls:
+
+```csharp
+// Good: Single splice for multiple inserts
+var values = new[]
+{
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "a"),
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "b"),
+    new AutomergeScalarValue(AutomergeScalarValueKind.String, stringValue: "c")
+};
+doc.ListSplice(list, 0, 0, values);
+
+// Less efficient: Three separate inserts
+doc.ListInsertString(list, 0, "a");
+doc.ListInsertString(list, 1, "b");
+doc.ListInsertString(list, 2, "c");
+```
+
+## Use Empty Array for Delete-Only
+
+Pass `Array.Empty<AutomergeScalarValue>()` when you only want to delete:
+
+```csharp
+doc.ListSplice(list, startIndex, deleteCount, Array.Empty<AutomergeScalarValue>());
+```
+
+# Next Steps
+
+- [Lists — ListPut Operations](/Six.Automerge/guides/lists/list-put/) — Learn about index-based value replacement.
+- [Lists — Advanced Queries](/Six.Automerge/guides/lists/advanced-queries/) — Learn about ListRange and LengthAtHeads.
+- [Lists — Basic Operations](/Six.Automerge/guides/lists/basic-operations/) — Review core list operations.

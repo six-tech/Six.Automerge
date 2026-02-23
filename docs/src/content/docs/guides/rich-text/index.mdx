@@ -1,0 +1,123 @@
+---
+title: "Rich Text"
+description: Overview of Automerge's rich text capabilities — marks, spans, blocks, and the Peritext model
+---
+
+# Overview
+
+Automerge's text containers support more than plain text. Through **marks**, you can attach formatting annotations (bold, italic, links, font size) to ranges of text — and these annotations merge correctly across concurrent edits from multiple peers.
+
+This rich text model is based on [Peritext](https://www.inkandswitch.com/peritext/), a CRDT algorithm designed specifically for collaborative rich text editing. Peritext defines how formatting operations compose, overlap, and resolve conflicts in a multi-user environment.
+
+# Core Concepts
+
+## Marks
+
+A **mark** is a named annotation applied to a range of characters in a text container. Marks have:
+
+- **Name** — A string identifier (e.g., `"bold"`, `"italic"`, `"link"`, `"fontSize"`)
+- **Value** — A boolean, string, or integer value
+- **Range** — A start and end index within the text
+
+```csharp
+// Mark characters 0–5 as bold
+doc.Mark(textId, 0, 5, "bold", true);
+
+// Mark characters 6–11 as a link
+doc.Mark(textId, 6, 11, "link", "https://example.com");
+
+// Mark characters 0–10 with a font size
+doc.Mark(textId, 0, 10, "fontSize", 24L);
+```
+
+Marks are stored as CRDT operations. They merge correctly when concurrent edits arrive from other peers.
+
+## Spans
+
+A **span** is a segment of text with its associated marks. When you read rich text, you get a list of spans — each span contains the text content and the marks that apply to it.
+
+```
+Text:   "Hello World"
+Marks:  bold on [0..5]
+
+Spans:  [AutomergeTextSpan("Hello", marks: [bold=true]),
+         AutomergeTextSpan(" World", marks: [])]
+```
+
+The `GetSpans` method splits text at mark boundaries, giving you the data needed to render formatted text.
+
+## Blocks
+
+A **block** is a structural marker that separates paragraphs, headings, or other block-level elements. Blocks are represented as `AutomergeBlockSpan` objects in the span list.
+
+Blocks are an advanced feature for structured document editing. Most rich text use cases only need marks and spans.
+
+# When to Use Rich Text
+
+## Use Rich Text When:
+
+**You need formatted collaborative text** — Multiple users editing a document with bold, italic, links, headings, or other formatting.
+
+**Format and content change independently** — One user adds text while another formats a different section. Marks and text operations compose naturally.
+
+**You want semantic annotations** — Attach metadata to text ranges (comments, highlights, review status) that survive concurrent edits.
+
+## Use Plain Text When:
+
+**No formatting needed** — Simple text fields like chat messages, notes, or code don't need marks.
+
+**Performance matters** — Plain text operations (`SpliceText`) are lighter than maintaining marks. For high-throughput scenarios, keep things simple.
+
+**Content is short and atomic** — Single-line fields (names, titles) rarely need rich text.
+
+# Rich Text Architecture
+
+```
+┌──────────────────────────────────────────┐
+│  Mark / Unmark                           │  Write operations
+│  doc.Mark(textId, start, end, name, val) │
+│  doc.Unmark(textId, name, start, end)    │
+├──────────────────────────────────────────┤
+│  GetMarks / GetSpans                     │  Read operations
+│  doc.GetMarks(textId)                    │
+│  doc.GetSpans(textId)                    │
+├──────────────────────────────────────────┤
+│  ExpandMode                              │  Boundary behavior
+│  Before, After, Both, None               │
+└──────────────────────────────────────────┘
+```
+
+- **Mark / Unmark** — Apply or remove formatting annotations on text ranges.
+- **GetMarks** — Read all marks as a flat list with name, value, start, and end.
+- **GetSpans** — Read text split at mark boundaries, each span carrying its marks.
+- **ExpandMode** — Controls whether marks grow when text is inserted at their edges.
+
+# Peritext Model
+
+The [Peritext paper](https://www.inkandswitch.com/peritext/) defines how rich text formatting works in CRDTs. Key principles:
+
+1. **Marks are independent operations** — Adding bold to "Hello" and italic to "World" are separate operations that compose without conflict.
+
+2. **Same-name marks overwrite** — If two users mark the same range with different `"color"` values, the last-writer-wins per character.
+
+3. **Different-name marks coexist** — A character can be both bold and italic simultaneously.
+
+4. **Expand modes control boundary behavior** — When you insert a character at the edge of a bold range, should the new character be bold? `ExpandMode` answers this.
+
+# Guides
+
+| Guide | Description |
+|-------|-------------|
+| [Marks](/Six.Automerge/guides/rich-text/marks/) | Apply and remove formatting with `Mark` and `Unmark` |
+| [Expand Modes](/Six.Automerge/guides/rich-text/expand-modes/) | Control how marks behave at boundaries |
+| [Reading Marks](/Six.Automerge/guides/rich-text/reading-marks/) | Query marks and spans with `GetMarks` and `GetSpans` |
+| [Spans](/Six.Automerge/guides/rich-text/spans/) | Understand the `AutomergeTextSpan` and `AutomergeBlockSpan` model |
+| [Blocks](/Six.Automerge/guides/rich-text/blocks/) | Create block-level structure with `SplitBlock` and `JoinBlock` |
+| [Update Spans](/Six.Automerge/guides/rich-text/update-spans/) | Modify content through the read-modify-write span pattern |
+| [Concurrent Editing](/Six.Automerge/guides/rich-text/concurrent-rich-text/) | How marks merge across multiple peers |
+
+# Next Steps
+
+- [Marks](/Six.Automerge/guides/rich-text/marks/) — Start by learning how to apply and remove formatting.
+- [Text — Basic Operations](/Six.Automerge/guides/text/basic-operations/) — Review text container fundamentals before adding marks.
+- [Text — Cursors](/Six.Automerge/guides/text/cursors/) — Stable position references that complement rich text editing.

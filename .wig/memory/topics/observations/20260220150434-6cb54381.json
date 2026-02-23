@@ -1,0 +1,14 @@
+{
+  "id": "20260220150434-6cb54381",
+  "created": "2026-02-20T15:04:34.0928104Z",
+  "runSlug": "introduction-you-have-written-example-applicati",
+  "contentHash": "4085B9EC7AB18DFA",
+  "type": "observation",
+  "tags": [
+    "test-counts",
+    "final-state",
+    "docker-constraint",
+    "storage-location",
+    "project-cleanup"
+  ]
+}

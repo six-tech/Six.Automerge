@@ -1,0 +1,177 @@
+---
+title: "Commits and Heads"
+description: Learn how to commit changes, track document heads, and manage pending operations in Automerge
+---
+
+# Overview
+
+Every Automerge document maintains a commit history. Each commit creates an immutable snapshot identified by a unique hash. **Heads** are the latest commits — the tips of the document's history graph.
+
+Understanding commits and heads is fundamental for time travel, diffing, branching, and synchronization.
+
+# Committing Changes
+
+Use `Commit` to save pending changes as a new commit. You can optionally provide a message and timestamp:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "data", "test");
+
+var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+var hash = doc.Commit("Custom message", timestamp);
+
+// hash is a hex string uniquely identifying this commit
+```
+
+`Commit` returns the hash of the new commit, or `null` if there were no pending changes.
+
+## Commit Without Parameters
+
+Both message and timestamp are optional:
+
+```csharp
+doc.PutString(root, "key", "value");
+var hash = doc.Commit(); // No message, no explicit timestamp
+```
+
+# Getting Heads
+
+`GetHeads` returns the current head hashes — the latest commits in the document:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "v1", "data");
+doc.Commit("commit 1");
+var heads1 = doc.GetHeads();
+
+doc.PutString(root, "v2", "more");
+doc.Commit("commit 2");
+var heads2 = doc.GetHeads();
+
+// heads1 != heads2 — each commit produces new heads
+```
+
+A linear document has one head. After merging concurrent changes, a document can temporarily have multiple heads until the next commit.
+
+# Base Heads
+
+`BaseHeads` returns the heads the document had when it was created or loaded. This is useful for understanding the starting point of a session:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var baseHeads = doc.BaseHeads();
+// For a new document, base heads reflect the initial state
+
+doc.PutString(root, "key", "value");
+doc.Commit("change");
+
+var currentHeads = doc.GetHeads();
+// baseHeads != currentHeads after making changes
+```
+
+# Empty Change
+
+`EmptyChange` creates a commit with no data changes. This is useful for creating a checkpoint or establishing a timestamp in the history:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+
+var hash = doc.EmptyChange("empty");
+var heads = doc.GetHeads();
+
+// The document now has a commit point even though no data changed
+```
+
+Empty changes participate in the history graph just like regular commits. They can serve as sync points or markers.
+
+# Pending Operations
+
+`PendingOperations` tells you how many uncommitted operations exist:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "key", "value");
+// PendingOperations > 0
+
+doc.Commit("save");
+// PendingOperations == 0
+```
+
+This is useful for checking whether there are unsaved changes before performing operations that require a clean state.
+
+# Rollback
+
+`Rollback` discards all uncommitted changes, restoring the document to the state of the last commit:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "committed", "yes");
+doc.Commit("save this");
+
+var headsAfterCommit = doc.GetHeads();
+
+doc.PutString(root, "pending", "no");
+// PendingOperations > 0
+
+var rolledBack = doc.Rollback();
+// rolledBack > 0 (number of operations rolled back)
+// PendingOperations == 0
+
+var json = doc.HydrateJson();
+// "committed" is present, "pending" is not
+
+var headsAfterRollback = doc.GetHeads();
+// Heads are the same as before the rolled-back changes
+```
+
+`Rollback` returns the number of operations that were discarded. The document heads revert to exactly where they were before the uncommitted changes.
+
+# Complete Example
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Make initial changes and commit
+doc.PutString(root, "title", "My Document");
+doc.PutInt64(root, "version", 1);
+var hash1 = doc.Commit("Initial version");
+var heads1 = doc.GetHeads();
+
+// Make more changes
+doc.PutString(root, "title", "My Updated Document");
+doc.PutInt64(root, "version", 2);
+var hash2 = doc.Commit("Update title");
+var heads2 = doc.GetHeads();
+
+// Heads changed with each commit
+// heads1 != heads2
+
+// Check pending state
+doc.PutString(root, "draft", "maybe");
+// PendingOperations > 0
+
+// Decide to discard
+doc.Rollback();
+// PendingOperations == 0
+// "draft" key no longer exists
+
+// Create an empty checkpoint
+doc.EmptyChange("Checkpoint after review");
+```
+
+# Next Steps
+
+- [Time Travel](/Six.Automerge/guides/history/time-travel/) — Read document state at any point in history
+- [Diffing](/Six.Automerge/guides/history/diffing/) — Compare document states between commits
+- [Change Metadata](/Six.Automerge/guides/history/change-metadata/) — Inspect commit details like actor, sequence, and message

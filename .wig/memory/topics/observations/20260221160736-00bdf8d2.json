@@ -1,0 +1,14 @@
+{
+  "id": "20260221160736-00bdf8d2",
+  "created": "2026-02-21T16:07:36.8575139Z",
+  "runSlug": "rust-compilation-and-artefacts-currently-we-a",
+  "contentHash": "38561D898A1DE530",
+  "type": "observation",
+  "tags": [
+    "ci-cd",
+    "workflows",
+    "cross-compilation",
+    "artifact-handling",
+    "arm64"
+  ]
+}

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <RootNamespace>Six.Automerge.Repo.Storage.FileSystem.Tests.Unit</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Storage.FileSystem\Six.Automerge.Repo.Storage.FileSystem.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Abstractions\Six.Automerge.Repo.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

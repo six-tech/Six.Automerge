@@ -1,0 +1,246 @@
+---
+title: Storage Adapters
+description: Persist Automerge documents with pluggable storage backends through the IStorageAdapter interface
+---
+
+# Overview
+
+Storage adapters give the Repo a way to persist documents to durable storage. Without a storage adapter,
+documents exist only in memory and are lost when the application exits.
+
+The library ships with two built-in implementations:
+
+- [**InMemoryStorageAdapter**](/Six.Automerge/repo/storage/in-memory/) — for testing and ephemeral sessions
+- [**FileSystemStorageAdapter**](/Six.Automerge/repo/storage/file-system/) — for local disk persistence with caching
+
+You can implement `IStorageAdapter` for any backend: databases, cloud storage, browser IndexedDB, etc.
+
+# The IStorageAdapter Interface
+
+```csharp
+public interface IStorageAdapter
+{
+  Task<byte[]?> Load(StorageKey key);
+  Task Save(StorageKey key, byte[] data);
+  Task Remove(StorageKey key);
+  Task<IReadOnlyList<Chunk>> LoadRange(StorageKey keyPrefix);
+  Task RemoveRange(StorageKey keyPrefix);
+  Task<IReadOnlyList<ChunkInfo>> GetChunkInfo(StorageKey keyPrefix);
+}
+```
+
+All methods are asynchronous and must be thread-safe. The Repo may call multiple methods concurrently
+from different threads.
+
+## Load
+
+Retrieves data for a single key. Returns `null` if the key does not exist — it should not throw
+an exception for missing keys.
+
+```csharp
+var data = await adapter.Load(StorageKey.DocumentSnapshot("doc-123", "abc"));
+if(data is null)
+{
+  Console.WriteLine("Key not found");
+}
+```
+
+## Save
+
+Stores data for a single key. If the key already exists, its data is replaced. Implementations should
+copy the data array if they need to retain it beyond the async operation.
+
+```csharp
+await adapter.Save(
+  StorageKey.DocumentSnapshot("doc-123", "abc"),
+  documentBytes);
+```
+
+## Remove
+
+Deletes data for a single key. Succeeds silently if the key does not exist.
+
+```csharp
+await adapter.Remove(StorageKey.DocumentSnapshot("doc-123", "abc"));
+```
+
+## LoadRange
+
+Loads all chunks whose keys start with the given prefix. This is how the Repo loads all data for a
+single document (snapshot + incremental changes):
+
+```csharp
+var prefix = new StorageKey(["doc-123"]);
+var chunks = await adapter.LoadRange(prefix);
+
+foreach(var chunk in chunks)
+{
+  Console.WriteLine($"Key: {chunk.Key}, Type: {chunk.Type}, Size: {chunk.Data.Length}");
+}
+```
+
+Returns an empty list if no matching keys exist.
+
+## RemoveRange
+
+Removes all keys matching a prefix. Succeeds silently if no matching keys exist.
+
+```csharp
+var prefix = new StorageKey(["doc-123"]);
+await adapter.RemoveRange(prefix);
+```
+
+## GetChunkInfo
+
+Returns metadata (key and size) for all chunks matching a prefix without loading the actual data.
+The StorageSubsystem uses this to decide when compaction is needed.
+
+```csharp
+var prefix = new StorageKey(["doc-123"]);
+var info = await adapter.GetChunkInfo(prefix);
+
+foreach(var chunk in info)
+{
+  Console.WriteLine($"Key: {chunk.Key}, Type: {chunk.Type}, Size: {chunk.Size} bytes");
+}
+```
+
+# StorageKey
+
+Storage keys use a hierarchical component structure. Components are joined with `/` for display
+but stored as an ordered list of strings.
+
+## Factory Methods
+
+| Method | Format | Example |
+|--------|--------|---------|
+| `DocumentSnapshot(docId, hash)` | `[docId, "snapshot", hash]` | `doc-123/snapshot/abc` |
+| `DocumentIncremental(docId, hash)` | `[docId, "incremental", hash]` | `doc-123/incremental/def` |
+| `DocumentSyncState(docId, storageId)` | `[docId, "sync-state", storageId]` | `doc-123/sync-state/peer-1` |
+| `Generic(namespace, key)` | `[namespace, key]` | `metadata/version` |
+
+## Prefix Matching
+
+Use `StartsWith` to check if a key matches a prefix:
+
+```csharp
+var prefix = new StorageKey(["doc-123"]);
+var snapshotKey = StorageKey.DocumentSnapshot("doc-123", "abc");
+var otherKey = StorageKey.DocumentSnapshot("doc-456", "xyz");
+
+snapshotKey.StartsWith(prefix); // true
+otherKey.StartsWith(prefix);    // false
+```
+
+This is what `LoadRange` and `RemoveRange` use internally.
+
+# Chunk and ChunkInfo
+
+## Chunk
+
+A `Chunk` is a piece of data retrieved from storage, consisting of a `StorageKey` and a `byte[]`:
+
+```csharp
+public sealed record Chunk(StorageKey Key, byte[] Data)
+{
+  public ChunkType Type => ChunkTypeFromKey(Key);
+}
+```
+
+The `Type` property is derived from the key's second component:
+
+| Key component | ChunkType |
+|---------------|-----------|
+| `"snapshot"` | `Snapshot` |
+| `"incremental"` | `Incremental` |
+| `"sync-state"` | `SyncState` |
+
+## ChunkInfo
+
+`ChunkInfo` provides the same metadata as `Chunk` but without the data payload. Use this when you
+only need to know what exists without loading content:
+
+```csharp
+public sealed record ChunkInfo(StorageKey Key, int Size)
+{
+  public ChunkType Type => Chunk.ChunkTypeFromKey(Key);
+}
+```
+
+# How the StorageSubsystem Uses Storage
+
+The Repo's internal `StorageSubsystem` manages the storage strategy:
+
+1. **First save** — stores a full document snapshot
+2. **Subsequent saves** — stores incremental changes only
+3. **Compaction** — when the number of incremental chunks reaches the size of the snapshot, compacts everything into a new snapshot and removes old chunks
+
+This strategy minimizes disk I/O while keeping storage size bounded.
+
+The subsystem also handles:
+
+- **Sync state persistence** — stores per-peer sync state so reconnecting peers can resume where they left off
+- **Document loading** — reassembles documents from snapshot + incremental chunks
+- **Document deletion** — removes all chunks for a document
+
+# Implementing a Custom Adapter
+
+To create a custom storage adapter, implement `IStorageAdapter`:
+
+```csharp
+public class SqliteStorageAdapter : IStorageAdapter
+{
+  public async Task<byte[]?> Load(StorageKey key)
+  {
+    var keyString = key.ToDebugString();
+    // SELECT data FROM chunks WHERE key = @keyString
+    return /* result or null */;
+  }
+
+  public async Task Save(StorageKey key, byte[] data)
+  {
+    var keyString = key.ToDebugString();
+    // INSERT OR REPLACE INTO chunks (key, data) VALUES (@keyString, @data)
+  }
+
+  public async Task Remove(StorageKey key)
+  {
+    var keyString = key.ToDebugString();
+    // DELETE FROM chunks WHERE key = @keyString
+  }
+
+  public async Task<IReadOnlyList<Chunk>> LoadRange(StorageKey keyPrefix)
+  {
+    var prefix = keyPrefix.ToDebugString();
+    // SELECT key, data FROM chunks WHERE key LIKE @prefix + '%'
+    // Parse keys back to StorageKey and return as Chunk list
+    return /* results */;
+  }
+
+  public async Task RemoveRange(StorageKey keyPrefix)
+  {
+    var prefix = keyPrefix.ToDebugString();
+    // DELETE FROM chunks WHERE key LIKE @prefix + '%'
+  }
+
+  public async Task<IReadOnlyList<ChunkInfo>> GetChunkInfo(StorageKey keyPrefix)
+  {
+    var prefix = keyPrefix.ToDebugString();
+    // SELECT key, LENGTH(data) FROM chunks WHERE key LIKE @prefix + '%'
+    return /* results */;
+  }
+}
+```
+
+Key implementation requirements:
+
+- Return `null` from `Load` for missing keys (do not throw)
+- `Remove` and `RemoveRange` should succeed silently for non-existent keys
+- All methods must be thread-safe
+- Copy data arrays if you need to retain them beyond the method call
+
+# Next Steps
+
+- [InMemoryStorageAdapter](/Six.Automerge/repo/storage/in-memory/) — testing and ephemeral usage
+- [FileSystemStorageAdapter](/Six.Automerge/repo/storage/file-system/) — local disk persistence
+- [Network Adapters](/Six.Automerge/repo/network/) — peer-to-peer communication

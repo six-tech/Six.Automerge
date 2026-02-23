@@ -1,0 +1,291 @@
+---
+title: "Incremental Saves"
+description: Use SaveIncremental, LoadIncremental, and SaveAfter to persist only the changes since a known state
+---
+
+# Overview
+
+A full `Save` serializes the entire document with all history. For large documents or frequent saves, this is wasteful. Incremental saves capture only the changes since a known point, dramatically reducing the amount of data written to disk or sent over the network.
+
+Automerge provides two incremental save mechanisms:
+
+- **`SaveIncremental`** — saves changes since the last save or load (cursor-based)
+- **`SaveAfter`** — saves changes after specific heads (explicit control)
+
+# SaveIncremental
+
+`SaveIncremental` returns only the changes that have been made since the document was created, loaded, or last saved incrementally. It maintains an internal cursor that advances each time you call it:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Initial state
+doc.PutString(root, "title", "Document");
+doc.Commit("Initial");
+
+// Full save establishes a baseline
+var fullSave = doc.Save();
+Console.WriteLine($"Full save: {fullSave.Length} bytes");
+
+// Make changes
+doc.PutString(root, "author", "Alice");
+doc.PutInt64(root, "version", 2);
+doc.Commit("Update metadata");
+
+// Save only the new changes
+var incremental = doc.SaveIncremental();
+Console.WriteLine($"Incremental save: {incremental.Length} bytes");
+// Much smaller than a full save
+```
+
+Each call to `SaveIncremental` advances the cursor. Calling it twice in a row without making changes returns an empty (or minimal) byte array:
+
+```csharp
+doc.PutString(root, "a", "first change");
+doc.Commit("change 1");
+var inc1 = doc.SaveIncremental();  // Contains change 1
+
+doc.PutString(root, "b", "second change");
+doc.Commit("change 2");
+var inc2 = doc.SaveIncremental();  // Contains only change 2
+
+doc.PutString(root, "c", "third change");
+doc.Commit("change 3");
+var inc3 = doc.SaveIncremental();  // Contains only change 3
+
+// Each incremental save captures only its own changes
+```
+
+# LoadIncremental
+
+`LoadIncremental` applies incremental data to an existing document. It returns the number of changes applied:
+
+```csharp
+// Peer A saves incrementally
+var incremental = docA.SaveIncremental();
+
+// Peer B applies the incremental data
+var changeCount = docB.LoadIncremental(incremental);
+Console.WriteLine($"Applied {changeCount} change(s)");
+```
+
+You can also use `ReadOnlySpan<byte>` to avoid copying:
+
+```csharp
+ReadOnlySpan<byte> data = GetDataFromNetwork();
+var count = doc.LoadIncremental(data);
+```
+
+## Applying Multiple Increments
+
+Incremental saves can be applied in sequence to reconstruct the full document:
+
+```csharp
+// Base document
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "title", "Base");
+doc.Commit("base");
+var baseSave = doc.Save();
+
+// Incremental updates over time
+doc.PutString(doc.RootId, "author", "Alice");
+doc.Commit("update 1");
+var inc1 = doc.SaveIncremental();
+
+doc.PutString(doc.RootId, "status", "draft");
+doc.Commit("update 2");
+var inc2 = doc.SaveIncremental();
+
+// Reconstruct from base + increments
+using var restored = AutomergeDocument.Load(baseSave);
+restored.LoadIncremental(inc1);
+restored.LoadIncremental(inc2);
+
+// restored now matches the original document
+```
+
+# SaveAfter
+
+`SaveAfter` gives you explicit control over what's included by specifying a set of heads. It saves all changes made after those heads:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "title", "My Doc");
+doc.Commit("initial");
+
+// Capture the current heads as a checkpoint
+var checkpoint = doc.GetHeads();
+
+// Make more changes
+doc.PutString(root, "author", "Alice");
+doc.PutInt64(root, "version", 2);
+doc.Commit("add metadata");
+
+doc.PutString(root, "status", "published");
+doc.Commit("publish");
+
+// Save only changes after the checkpoint
+var incremental = doc.SaveAfter(checkpoint);
+```
+
+## SaveAfter vs SaveIncremental
+
+| Feature | `SaveIncremental` | `SaveAfter` |
+|---------|-------------------|-------------|
+| Reference point | Internal cursor (auto-advancing) | Explicit heads you provide |
+| State tracking | Automatic | Manual (you store the heads) |
+| Repeatability | Calling twice gives different results | Calling twice with same heads gives same result |
+| Use case | Simple sequential persistence | Custom sync protocols, selective exports |
+
+Both produce data that can be loaded with `LoadIncremental`.
+
+```csharp
+// These are equivalent after the same changes
+var _ = doc.SaveIncremental(); // Advance cursor to current point
+var heads = doc.GetHeads();
+
+doc.PutString(root, "key", "value");
+doc.Commit("change");
+
+var fromCursor = doc.SaveIncremental();   // Changes since cursor
+var fromHeads = doc.SaveAfter(heads);     // Changes since explicit heads
+
+// fromCursor and fromHeads contain the same changes
+```
+
+## Chaining SaveAfter Calls
+
+Use `SaveAfter` to create a chain of incremental snapshots:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "v", "1");
+doc.Commit("v1");
+var heads1 = doc.GetHeads();
+
+doc.PutString(root, "v", "2");
+doc.Commit("v2");
+var heads2 = doc.GetHeads();
+
+doc.PutString(root, "v", "3");
+doc.Commit("v3");
+
+var increment1 = doc.SaveAfter(heads1);  // Changes v1 → v2, v3
+var increment2 = doc.SaveAfter(heads2);  // Changes v2 → v3
+
+// Reconstruct from base + increments
+var baseSave = doc.Save();
+using var base1 = AutomergeDocument.Load(baseSave);
+
+// Or reconstruct from base state + chained increments
+using var restored = AutomergeDocument.Create();
+restored.PutString(root, "v", "1");
+restored.Commit("v1");
+
+restored.LoadIncremental(increment1);
+// restored now has v1, v2, v3 changes
+```
+
+## SaveAfter with Empty Heads
+
+Passing an empty array saves all changes from the beginning — equivalent to saving the full history as an incremental payload:
+
+```csharp
+var allChanges = doc.SaveAfter(Array.Empty<string>());
+
+// Apply to a brand new document
+using var newDoc = AutomergeDocument.Create();
+newDoc.LoadIncremental(allChanges);
+// newDoc has the complete state
+```
+
+## SaveAfter with Current Heads
+
+Passing the current heads returns an empty (or minimal) result since there are no changes after the latest point:
+
+```csharp
+var currentHeads = doc.GetHeads();
+var result = doc.SaveAfter(currentHeads);
+// result is empty or minimal — nothing to save
+```
+
+# Bundle
+
+`Bundle` creates a binary package of changes from specific heads. Unlike `SaveAfter`, the output format is optimized for transmission and can be loaded as incremental data:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "key", "value");
+doc.Commit("init");
+
+var heads = doc.GetHeads();
+var bundled = doc.Bundle(heads);
+
+// Apply bundle to another document
+using var doc2 = AutomergeDocument.Create();
+var loaded = doc2.LoadIncremental(bundled);
+```
+
+# Incremental Persistence Pattern
+
+A practical pattern for applications with frequent saves:
+
+```csharp
+class IncrementalDocumentStore
+{
+    readonly string _basePath;
+
+    public IncrementalDocumentStore(string basePath)
+    {
+        _basePath = basePath;
+        Directory.CreateDirectory(basePath);
+    }
+
+    public void SaveIncremental(string id, AutomergeDocument doc)
+    {
+        var incrementalPath = GetIncrementalPath(id);
+        var bytes = doc.SaveIncremental();
+
+        if(bytes.Length > 0)
+        {
+            File.AppendAllBytes(incrementalPath, bytes);
+        }
+    }
+
+    public void ApplyIncrementalUpdates(string id, AutomergeDocument doc)
+    {
+        var incrementalPath = GetIncrementalPath(id);
+
+        if(!File.Exists(incrementalPath))
+        {
+            return;
+        }
+
+        var bytes = File.ReadAllBytes(incrementalPath);
+        var count = doc.LoadIncremental(bytes);
+
+        Console.WriteLine($"Applied {count} incremental change(s)");
+
+        // Compact: save full document, clear incremental file
+        var fullSave = doc.Save();
+        File.WriteAllBytes(GetDocumentPath(id), fullSave);
+        File.Delete(incrementalPath);
+    }
+
+    string GetDocumentPath(string id) => Path.Combine(_basePath, $"{id}.automerge");
+    string GetIncrementalPath(string id) => Path.Combine(_basePath, $"{id}.incremental");
+}
+```
+
+# Next Steps
+
+- [Save Options](/Six.Automerge/guides/persistence/save-options/) — Control compression and verification settings
+- [Storage Strategies](/Six.Automerge/guides/persistence/storage-strategies/) — Choose between full, incremental, and hybrid patterns
+- [Save and Load](/Six.Automerge/guides/persistence/save-and-load/) — Basic persistence with `Save` and `Load`

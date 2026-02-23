@@ -1,0 +1,13 @@
+<!-- Enable reproducible builds -->
+<!-- https://github.com/dotnet/reproducible-builds  -->
+<!-- https://devblogs.microsoft.com/dotnet/producing-packages-with-source-link/ -->
+<!-- IMPORTANT: We placed DotNet.ReproducibleBuilds in Directory.Build.targets since it fails to load if in .props -->
+<!-- IMPORTANT: Exclude .shproj or .shproj will fail to load into the solution -->
+<Project>
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.shproj'">
+        <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+</Project>

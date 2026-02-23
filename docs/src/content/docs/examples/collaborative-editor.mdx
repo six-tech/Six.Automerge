@@ -1,0 +1,339 @@
+---
+title: "Collaborative Rich Text Editor"
+description: Build a real-time collaborative rich text editor with Avalonia, Automerge marks, and block structure
+---
+
+# Overview
+
+This walkthrough builds a desktop application where two Automerge documents sync rich text in real time, demonstrating formatting marks (bold, italic, underline, link), block structure (paragraphs), and the sync protocol.
+
+The finished app has a split-pane UI: an editable local document on the left with a formatting toolbar, and a read-only peer view on the right. Edits and formatting propagate automatically via the Automerge sync protocol on a 500ms timer.
+
+This builds on the [Collaborative Text Editor](/Six.Automerge/examples/collaborative-text-editor/) by adding rich text capabilities.
+
+# Architecture
+
+```
+EditorViewModel
+  |
+  +-- AutomergeService (local)   -- wraps AutomergeDocument with rich text ops
+  |     |
+  +-- AutomergeService (peer)    -- forked from local for shared text object
+  |     |
+  +-- SyncService                -- bidirectional sync on 500ms timer
+  |     |
+  |     +-- AutomergeSyncState (local to peer)
+  |     +-- AutomergeSyncState (peer to local)
+  |
+  +-- FormattingState            -- tracks active marks at cursor
+```
+
+**AutomergeService** wraps an `AutomergeDocument` and exposes rich text operations: text splicing, mark/unmark for bold/italic/underline/link, block splitting/joining, and span queries.
+
+**SyncService** runs the Automerge sync protocol between two `AutomergeService` instances on a timer.
+
+**FormattingState** reads marks at the cursor position and reports which formatting is active, driving the toolbar toggle buttons.
+
+**EditorViewModel** bridges the CRDT layer to Avalonia UI with reactive bindings and formatting commands.
+
+# Step 1: Project Setup
+
+Create an Avalonia Desktop project that references the Automerge libraries:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\Six.Automerge\Six.Automerge.csproj"/>
+    <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj"/>
+  </ItemGroup>
+</Project>
+```
+
+# Step 2: AutomergeService with Rich Text
+
+The service wraps `AutomergeDocument` and exposes mark operations alongside text editing:
+
+```csharp
+sealed class AutomergeService : IDisposable
+{
+  readonly AutomergeDocument _document;
+  readonly AutomergeObjectId _textId;
+
+  public AutomergeService()
+  {
+    _document = AutomergeDocument.Create();
+    _textId = _document.PutObject(
+      _document.RootId, "content", AutomergeContainerType.Text);
+    _document.Commit("Initialize text field");
+  }
+
+  public string GetText() => _document.GetText(_textId);
+
+  public void SpliceText(ulong index, long deleteCount, string insertText)
+  {
+    _document.SpliceText(_textId, index, deleteCount, insertText);
+    _document.Commit($"Edit at {index}");
+  }
+
+  public void MarkBold(ulong start, ulong end, bool value)
+  {
+    _document.Mark(_textId, start, end, "bold", value, ExpandMode.Both);
+    _document.Commit("Mark bold");
+  }
+
+  public void UnmarkBold(ulong start, ulong end)
+  {
+    _document.Unmark(_textId, "bold", start, end, ExpandMode.Both);
+    _document.Commit("Unmark bold");
+  }
+
+  public void MarkItalic(ulong start, ulong end, bool value)
+  {
+    _document.Mark(_textId, start, end, "italic", value, ExpandMode.Both);
+    _document.Commit("Mark italic");
+  }
+
+  public void MarkLink(ulong start, ulong end, string url)
+  {
+    _document.Mark(_textId, start, end, "link", url, ExpandMode.None);
+    _document.Commit("Mark link");
+  }
+
+  public IReadOnlyList<AutomergeMarkInfo> GetMarks()
+    => _document.GetMarks(_textId);
+
+  public IReadOnlyList<AutomergeSpan> GetSpans()
+    => _document.GetSpans(_textId);
+
+  public void SplitBlock(ulong index, string blockType)
+  {
+    var blockId = _document.SplitBlock(_textId, index);
+    _document.PutString(blockId, "type", blockType);
+    _document.Commit($"Split block at {index}");
+  }
+
+  public void JoinBlock(ulong index)
+  {
+    _document.JoinBlock(_textId, index);
+    _document.Commit($"Join block at {index}");
+  }
+
+  public AutomergeService Fork()
+  {
+    var forked = _document.Fork();
+    return new AutomergeService(forked, _textId);
+  }
+  // ... Dispose, Save, Load omitted for brevity
+}
+```
+
+Key differences from the plain text editor:
+
+- **Mark methods** apply formatting annotations to text ranges using the Automerge mark API. `ExpandMode.Both` means typed text at mark boundaries inherits the formatting. `ExpandMode.None` for links prevents link formatting from expanding.
+- **SplitBlock / JoinBlock** create and remove block-level markers (paragraph breaks, headings) in the text sequence.
+- **GetSpans** returns text segmented by marks and blocks — each `AutomergeTextSpan` carries its active marks, and `AutomergeBlockSpan` marks block boundaries.
+- **Fork** creates a peer that shares the same text object ID and history, enabling true collaborative sync.
+
+# Step 3: FormattingState
+
+The `FormattingState` class reads marks at the cursor position to drive toolbar buttons:
+
+```csharp
+sealed class FormattingState
+{
+  public bool IsBold { get; set; }
+  public bool IsItalic { get; set; }
+  public bool IsUnderline { get; set; }
+  public string? LinkUrl { get; set; }
+  public bool HasLink => LinkUrl is not null;
+
+  public static FormattingState FromMarks(
+    IReadOnlyList<AutomergeMarkInfo> marks, ulong cursorPosition)
+  {
+    var state = new FormattingState();
+    foreach(var mark in marks)
+    {
+      if(cursorPosition < mark.Start || cursorPosition >= mark.End)
+        continue;
+
+      switch(mark.Name)
+      {
+        case "bold": state.IsBold = true; break;
+        case "italic": state.IsItalic = true; break;
+        case "underline": state.IsUnderline = true; break;
+        case "link": state.LinkUrl = mark.Value.StringValue; break;
+      }
+    }
+    return state;
+  }
+}
+```
+
+Each mark has a `Start` and `End` (half-open range). A mark is active at the cursor if the position falls within `[Start, End)`.
+
+# Step 4: ViewModel with Formatting Commands
+
+The ViewModel adds formatting toggle commands alongside text editing:
+
+```csharp
+public class EditorViewModel : ViewModelBase, IDisposable
+{
+  readonly AutomergeService _localService;
+  readonly SyncService _syncService;
+
+  public EditorViewModel()
+  {
+    _localService = new AutomergeService();
+    var peerService = _localService.Fork();
+    _syncService = new SyncService(_localService, peerService);
+
+    ToggleBoldCommand = ReactiveCommand.Create(ToggleBold);
+    ToggleItalicCommand = ReactiveCommand.Create(ToggleItalic);
+    ToggleUnderlineCommand = ReactiveCommand.Create(ToggleUnderline);
+
+    _syncService.Start();
+  }
+
+  void ToggleBold()
+  {
+    if(SelectionLength <= 0) return;
+    ulong start = (ulong)CursorPosition;
+    ulong end = (ulong)(CursorPosition + SelectionLength);
+
+    if(IsBold)
+      _localService.UnmarkBold(start, end);
+    else
+      _localService.MarkBold(start, end, true);
+
+    UpdateFormattingState();
+  }
+
+  void UpdateFormattingState()
+  {
+    var marks = _localService.GetMarks();
+    var state = FormattingState.FromMarks(
+      marks, (ulong)CursorPosition);
+    IsBold = state.IsBold;
+    IsItalic = state.IsItalic;
+    IsUnderline = state.IsUnderline;
+  }
+}
+```
+
+Key techniques:
+
+- **Peer forking**: The peer is created via `Fork()` from the local service, sharing the same text object and history. This is critical for marks and text to sync correctly between peers.
+- **Toggle pattern**: Each formatting command checks the current state (via `FormattingState`) and applies or removes the mark accordingly.
+- **Selection-based marks**: Formatting only applies when text is selected (`SelectionLength` greater than 0). The mark range matches the selection.
+
+# Step 5: View with Formatting Toolbar
+
+The XAML adds ToggleButtons for formatting that reflect mark state:
+
+```xml
+<Window x:DataType="vm:EditorViewModel"
+        Title="Collaborative Rich Text Editor">
+  <DockPanel>
+    <!-- Formatting toolbar -->
+    <Border DockPanel.Dock="Top" Padding="8">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <ToggleButton Content="B" FontWeight="Bold"
+                      IsChecked="{Binding IsBold}"
+                      Command="{Binding ToggleBoldCommand}"
+                      ToolTip.Tip="Bold"/>
+        <ToggleButton Content="I" FontStyle="Italic"
+                      IsChecked="{Binding IsItalic}"
+                      Command="{Binding ToggleItalicCommand}"
+                      ToolTip.Tip="Italic"/>
+        <ToggleButton IsChecked="{Binding IsUnderline}"
+                      Command="{Binding ToggleUnderlineCommand}"
+                      ToolTip.Tip="Underline">
+          <TextBlock Text="U" TextDecorations="Underline"/>
+        </ToggleButton>
+
+        <Button Content="Simulate Peer Edit"
+                Command="{Binding SimulatePeerEditCommand}"/>
+        <Button Content="Save"
+                Command="{Binding SaveCommand}"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Status bar -->
+    <Border DockPanel.Dock="Bottom" Background="#F0F0F0">
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <TextBlock Text="{Binding SyncStatus}"/>
+        <TextBlock Text="{Binding CursorPosition,
+                          StringFormat='Cursor: {0}'}"/>
+        <TextBlock Text="{Binding SelectionLength,
+                          StringFormat='Selection: {0}'}"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Two-pane editor -->
+    <Grid ColumnDefinitions="*,8,*">
+      <TextBox Grid.Column="0"
+               Text="{Binding DocumentText, Mode=TwoWay}"
+               CaretIndex="{Binding CursorPosition, Mode=TwoWay}"
+               AcceptsReturn="True" TextWrapping="Wrap"/>
+      <GridSplitter Grid.Column="1"/>
+      <TextBox Grid.Column="2"
+               Text="{Binding PeerText}" IsReadOnly="True"
+               AcceptsReturn="True" TextWrapping="Wrap"/>
+    </Grid>
+  </DockPanel>
+</Window>
+```
+
+The `ToggleButton.IsChecked` property binds to `IsBold`/`IsItalic`/`IsUnderline`, so buttons appear pressed when the cursor is within a formatted range.
+
+# Peer Forking vs Independent Creation
+
+A critical design decision in this demo is how the peer document is created.
+
+**Independent creation** (two `new AutomergeService()` calls) creates separate documents with different text object IDs. After sync, both documents contain both text objects, but each service reads from its own. Marks and text edits on one side do not appear in the other's text object.
+
+**Forking** (`localService.Fork()`) creates a peer from the local's document state. Both share the same text object ID and history. After sync, edits and marks from either side appear in both documents' text objects.
+
+For a collaborative editor where changes must propagate between peers, **forking is required**.
+
+# APIs Demonstrated
+
+| API | Purpose |
+|-----|---------|
+| `AutomergeDocument.Create()` | Create a new CRDT document |
+| `AutomergeDocument.Fork()` | Fork document for peer sync |
+| `PutObject(root, key, Text)` | Create a Text container |
+| `SpliceText(id, index, del, ins)` | Insert and delete text |
+| `Mark(id, start, end, name, val, expand)` | Apply a formatting mark |
+| `Unmark(id, name, start, end, expand)` | Remove a formatting mark |
+| `GetText(id)` | Read current text |
+| `GetMarks(id)` | Read all active marks |
+| `GetSpans(id)` | Read text segmented by marks/blocks |
+| `SplitBlock(id, index)` | Insert a block marker |
+| `JoinBlock(id, index)` | Remove a block marker |
+| `Commit(message)` | Commit pending changes |
+| `Save()` / `Load(bytes)` | Full document persistence |
+| `CreateSyncState()` | Initialize sync protocol |
+| `GenerateSyncMessage(state)` | Produce a sync message |
+| `ReceiveSyncMessage(state, msg)` | Apply a sync message |
+
+# Running the App
+
+```bash
+dotnet run --project apps/DemoApp.CollaborativeEditor
+```
+
+Type in the left pane and watch the peer view update after the next sync round. Select text and click the formatting buttons to apply marks. Click **Simulate Peer Edit** to inject text from the peer, then observe both panes converge.

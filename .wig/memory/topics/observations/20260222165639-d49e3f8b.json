@@ -1,0 +1,15 @@
+{
+  "id": "20260222165639-d49e3f8b",
+  "created": "2026-02-22T16:56:39.1737051Z",
+  "runSlug": "document-sync-issues-now-when-i-run-aspire-ho",
+  "contentHash": "5DF626D3CA3363D7",
+  "type": "observation",
+  "tags": [
+    "signalr",
+    "events",
+    "broadcasting",
+    "document-discovery",
+    "hub-context",
+    "pattern"
+  ]
+}

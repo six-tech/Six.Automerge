@@ -1,0 +1,13 @@
+{
+  "id": "20260220013849-ba3ac885",
+  "created": "2026-02-20T01:38:49.280111Z",
+  "runSlug": "introduction-we-are-implementing-a-c-wrapper",
+  "tags": [
+    "save-load",
+    "sync",
+    "FFI",
+    "builder-pattern",
+    "options",
+    "trait-methods"
+  ]
+}

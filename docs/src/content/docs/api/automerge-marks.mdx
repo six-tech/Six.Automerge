@@ -1,0 +1,244 @@
+---
+title: Marks and Scalar Values
+description: API reference for AutomergeMarkInfo, ExpandMode, and AutomergeScalarValue — rich text marks and value types
+---
+
+# Overview
+
+Marks are formatting annotations applied to ranges of text. Each mark has a name (e.g., `"bold"`, `"link"`), a value, and a start/end range. Marks are returned by `GetMarks` and appear on `AutomergeTextSpan.Marks`.
+
+```csharp
+using Six.Automerge;
+
+doc.Mark(textId, 0, 5, "bold", true);
+var marks = doc.GetMarks(textId);
+foreach(var mark in marks)
+{
+  Console.WriteLine($"{mark.Name}: {mark.Start}-{mark.End} = {mark.Value.Kind}");
+}
+```
+
+# AutomergeMarkInfo
+
+```csharp
+public sealed class AutomergeMarkInfo
+```
+
+Describes a mark applied to a range of text.
+
+**Namespace:** `Six.Automerge`
+
+## Properties
+
+### Name
+
+```csharp
+public string Name { get; }
+```
+
+The mark name (e.g., `"bold"`, `"italic"`, `"link"`, `"fontSize"`).
+
+### Value
+
+```csharp
+public AutomergeScalarValue Value { get; }
+```
+
+The mark value. Can be any scalar type — string, boolean, integer, etc. See `AutomergeScalarValue` below.
+
+### Start
+
+```csharp
+public ulong Start { get; }
+```
+
+The inclusive start index in the text.
+
+### End
+
+```csharp
+public ulong End { get; }
+```
+
+The exclusive end index in the text.
+
+## Example
+
+```csharp
+var marks = doc.GetMarks(textId);
+foreach(var mark in marks)
+{
+  var valueStr = mark.Value.Kind switch
+  {
+    AutomergeScalarValueKind.String => mark.Value.StringValue,
+    AutomergeScalarValueKind.Boolean => mark.Value.BoolValue?.ToString(),
+    AutomergeScalarValueKind.Int => mark.Value.IntValue?.ToString(),
+    _ => mark.Value.Kind.ToString()
+  };
+  Console.WriteLine($"{mark.Name} [{mark.Start}..{mark.End}): {valueStr}");
+}
+```
+
+# ExpandMode
+
+```csharp
+public enum ExpandMode
+```
+
+Controls how a mark expands when text is inserted at its boundaries. Based on the [Peritext](https://www.inkandswitch.com/peritext/) algorithm.
+
+**Namespace:** `Six.Automerge`
+
+| Value | Description |
+|-------|-------------|
+| `Before` | The mark expands when text is inserted before the start of the marked range. |
+| `After` | The mark expands when text is inserted after the end of the marked range. This is the default. |
+| `Both` | The mark expands when text is inserted at either boundary. |
+| `None` | The mark does not expand at either boundary. |
+
+## Choosing an Expand Mode
+
+| Formatting Type | Recommended Mode | Reason |
+|----------------|-----------------|--------|
+| Inline (bold, italic) | `After` (default) | New text typed at the end continues the format |
+| Links | `None` | New text should not automatically become part of the link |
+| Block-level | `Before` | New content at the start inherits the block format |
+| Comments / annotations | `None` | Annotations should not grow |
+
+## Example
+
+```csharp
+// Bold expands after — typing continues bold
+doc.Mark(textId, 0, 5, "bold", true, ExpandMode.After);
+
+// Link does not expand — typing at boundary is not linked
+doc.Mark(textId, 6, 11, "link", "https://example.com", ExpandMode.None);
+```
+
+# AutomergeScalarValue
+
+```csharp
+public sealed class AutomergeScalarValue
+```
+
+Represents a scalar (non-container) value in an Automerge document. Used as the value type in marks, conflict values, and patch actions.
+
+**Namespace:** `Six.Automerge`
+
+## Properties
+
+### Kind
+
+```csharp
+public AutomergeScalarValueKind Kind { get; }
+```
+
+The discriminator indicating which value property is populated.
+
+### StringValue
+
+```csharp
+public string? StringValue { get; }
+```
+
+The string value. Non-null when `Kind` is `String`.
+
+### BoolValue
+
+```csharp
+public bool? BoolValue { get; }
+```
+
+The boolean value. Non-null when `Kind` is `Boolean`.
+
+### IntValue
+
+```csharp
+public long? IntValue { get; }
+```
+
+The signed 64-bit integer value. Non-null when `Kind` is `Int`.
+
+### UIntValue
+
+```csharp
+public ulong? UIntValue { get; }
+```
+
+The unsigned 64-bit integer value. Non-null when `Kind` is `Uint`.
+
+### DoubleValue
+
+```csharp
+public double? DoubleValue { get; }
+```
+
+The double-precision float value. Non-null when `Kind` is `Double`.
+
+### BytesValue
+
+```csharp
+public byte[]? BytesValue { get; }
+```
+
+The byte array value. Non-null when `Kind` is `Bytes`.
+
+### CounterValue
+
+```csharp
+public long? CounterValue { get; }
+```
+
+The current counter value. Non-null when `Kind` is `Counter`.
+
+### TimestampValue
+
+```csharp
+public long? TimestampValue { get; }
+```
+
+The timestamp as Unix milliseconds. Non-null when `Kind` is `Timestamp`.
+
+### UnknownTypeCode
+
+```csharp
+public byte? UnknownTypeCode { get; }
+```
+
+The type code for unrecognized value types. Non-null when `Kind` is `Unknown`.
+
+### UnknownBytes
+
+```csharp
+public byte[]? UnknownBytes { get; }
+```
+
+The raw bytes for unrecognized value types. Non-null when `Kind` is `Unknown`.
+
+# AutomergeScalarValueKind
+
+```csharp
+public enum AutomergeScalarValueKind
+```
+
+Discriminator for `AutomergeScalarValue`.
+
+| Value | Description |
+|-------|-------------|
+| `Bytes` | Raw byte array |
+| `String` | UTF-8 string |
+| `Int` | Signed 64-bit integer |
+| `Uint` | Unsigned 64-bit integer |
+| `Double` | Double-precision float |
+| `Counter` | CRDT counter |
+| `Timestamp` | Unix timestamp in milliseconds |
+| `Boolean` | Boolean true/false |
+| `Null` | Explicit null |
+| `Unknown` | Unrecognized type from a newer Automerge version |
+
+# See Also
+
+- [AutomergeSpan](/Six.Automerge/api/automerge-spans/) — Spans that carry marks
+- [Marks Guide](/Six.Automerge/guides/rich-text/marks/) — Conceptual guide to rich text marks
+- [Expand Modes Guide](/Six.Automerge/guides/rich-text/expand-modes/) — Choosing expand modes
+- [AutomergeDocument — Mark](/Six.Automerge/api/automerge-document/#mark-string-value) — Applying marks

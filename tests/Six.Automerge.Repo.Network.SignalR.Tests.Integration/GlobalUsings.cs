@@ -1,0 +1,15 @@
+global using Xunit;
+global using JetBrains.Annotations;
+global using FluentAssertions;
+global using Microsoft.Extensions.Logging;
+global using Six.Automerge;
+global using Six.Automerge.Repository;
+global using Six.Automerge.Repository.Network;
+global using Six.Automerge.Repository.Storage;
+global using Six.Automerge.Repo.Network.SignalR;
+global using Six.Automerge.Repo.Network.SignalR.Client;
+global using Projects;
+global using Aspire.Hosting;
+global using Aspire.Hosting.ApplicationModel;
+global using Aspire.Hosting.Testing;
+global using Microsoft.Extensions.DependencyInjection;

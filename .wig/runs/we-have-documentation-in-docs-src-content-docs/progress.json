@@ -1,0 +1,1254 @@
+{
+  "tasks": [
+    {
+      "id": "sprint-1-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Create the new directory structure under \u0060docs/src/content/docs/\u0060: \u0060guides/\u0060, \u0060guides/maps/\u0060, \u0060guides/lists/\u0060, \u0060guides/text/\u0060, \u0060guides/rich-text/\u0060, \u0060guides/history/\u0060, \u0060guides/branching/\u0060, \u0060guides/conflicts/\u0060, \u0060guides/persistence/\u0060, \u0060guides/sync/\u0060, \u0060guides/object-graph/\u0060, \u0060repo/\u0060, \u0060repo/storage/\u0060, \u0060repo/network/\u0060, \u0060examples/\u0060, \u0060api/\u0060",
+      "description": "Create the new directory structure under \u0060docs/src/content/docs/\u0060: \u0060guides/\u0060, \u0060guides/maps/\u0060, \u0060guides/lists/\u0060, \u0060guides/text/\u0060, \u0060guides/rich-text/\u0060, \u0060guides/history/\u0060, \u0060guides/branching/\u0060, \u0060guides/conflicts/\u0060, \u0060guides/persistence/\u0060, \u0060guides/sync/\u0060, \u0060guides/object-graph/\u0060, \u0060repo/\u0060, \u0060repo/storage/\u0060, \u0060repo/network/\u0060, \u0060examples/\u0060, \u0060api/\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Create \u0060guides/index.mdx\u0060 as the new guides overview page (brief intro to all guide sections with links)",
+      "description": "Create \u0060guides/index.mdx\u0060 as the new guides overview page (brief intro to all guide sections with links)",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Move and restructure \u0060automerge/getting-started.mdx\u0060 to \u0060guides/getting-started.mdx\u0060 (update internal links, keep content)",
+      "description": "Move and restructure \u0060automerge/getting-started.mdx\u0060 to \u0060guides/getting-started.mdx\u0060 (update internal links, keep content)",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Move and restructure \u0060automerge/core-concepts.mdx\u0060 to \u0060guides/core-concepts.mdx\u0060 (update internal links, keep content)",
+      "description": "Move and restructure \u0060automerge/core-concepts.mdx\u0060 to \u0060guides/core-concepts.mdx\u0060 (update internal links, keep content)",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Split \u0060automerge/working-with-maps.mdx\u0060 (453 lines) into \u0060guides/maps/basic-operations.mdx\u0060 (create/put/get/delete/keys/nested) and \u0060guides/maps/nested-maps.mdx\u0060 (nested containers, object IDs, deep nesting). Source content from existing page \u002B \u0060AutomergeMapOperationsTests.cs\u0060 and \u0060AutomergeNestedObjectsTests.cs\u0060",
+      "description": "Split \u0060automerge/working-with-maps.mdx\u0060 (453 lines) into \u0060guides/maps/basic-operations.mdx\u0060 (create/put/get/delete/keys/nested) and \u0060guides/maps/nested-maps.mdx\u0060 (nested containers, object IDs, deep nesting). Source content from existing page \u002B \u0060AutomergeMapOperationsTests.cs\u0060 and \u0060AutomergeNestedObjectsTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Split \u0060automerge/working-with-lists.mdx\u0060 (512 lines) into \u0060guides/lists/basic-operations.mdx\u0060 (insert/remove/length/nested). Source from existing page \u002B \u0060AutomergeListOperationsTests.cs\u0060",
+      "description": "Split \u0060automerge/working-with-lists.mdx\u0060 (512 lines) into \u0060guides/lists/basic-operations.mdx\u0060 (insert/remove/length/nested). Source from existing page \u002B \u0060AutomergeListOperationsTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Split \u0060automerge/working-with-text.mdx\u0060 (459 lines) into \u0060guides/text/basic-operations.mdx\u0060 (SpliceText, GetText, text vs string) and \u0060guides/text/collaborative-editing.mdx\u0060 (concurrent edits, merge behavior). Source from existing page \u002B \u0060AutomergeTextOperationsTests.cs\u0060",
+      "description": "Split \u0060automerge/working-with-text.mdx\u0060 (459 lines) into \u0060guides/text/basic-operations.mdx\u0060 (SpliceText, GetText, text vs string) and \u0060guides/text/collaborative-editing.mdx\u0060 (concurrent edits, merge behavior). Source from existing page \u002B \u0060AutomergeTextOperationsTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-8",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Update \u0060docs/astro.config.mjs\u0060 sidebar configuration for all Sprint 1 pages (Getting Started, Data Types sections). Delete old \u0060automerge/\u0060 files that have been migrated. Keep \u0060automerge/index.mdx\u0060 as a redirect or remove it.",
+      "description": "Update \u0060docs/astro.config.mjs\u0060 sidebar configuration for all Sprint 1 pages (Getting Started, Data Types sections). Delete old \u0060automerge/\u0060 files that have been migrated. Keep \u0060automerge/index.mdx\u0060 as a redirect or remove it.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-2-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/maps/counters-and-timestamps.mdx\u0060 \u2014 PutCounter, GetCounter, Increment (map overload), PutTimestamp, GetTimestamp. Source examples from \u0060AutomergeMapOperationsTests.cs\u0060 (PutCounter, PutTimestamp) and \u0060AutomergeNewApiTests.cs\u0060 (Increment_MapCounter_*)",
+      "description": "Write \u0060guides/maps/counters-and-timestamps.mdx\u0060 \u2014 PutCounter, GetCounter, Increment (map overload), PutTimestamp, GetTimestamp. Source examples from \u0060AutomergeMapOperationsTests.cs\u0060 (PutCounter, PutTimestamp) and \u0060AutomergeNewApiTests.cs\u0060 (Increment_MapCounter_*)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/maps/advanced-queries.mdx\u0060 \u2014 MapRange, MapRangeFull, Values, ValuesAtHeads, Parents, PathToObject. Source from \u0060AutomergeHistoricalQueryTests.cs\u0060 (MapRange_*, Parents_*, PathToObject_*)",
+      "description": "Write \u0060guides/maps/advanced-queries.mdx\u0060 \u2014 MapRange, MapRangeFull, Values, ValuesAtHeads, Parents, PathToObject. Source from \u0060AutomergeHistoricalQueryTests.cs\u0060 (MapRange_*, Parents_*, PathToObject_*)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/lists/list-splice.mdx\u0060 \u2014 ListSplice batch operations (insert multiple, delete, replace, mixed types). Source from \u0060AutomergeListMutationAndCursorTests.cs\u0060 (ListSplice_*)",
+      "description": "Write \u0060guides/lists/list-splice.mdx\u0060 \u2014 ListSplice batch operations (insert multiple, delete, replace, mixed types). Source from \u0060AutomergeListMutationAndCursorTests.cs\u0060 (ListSplice_*)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/lists/list-put.mdx\u0060 \u2014 ListPut* index-based updates (String, Boolean, Int64, UInt64, Double, Bytes, Null, Object). Source from \u0060AutomergeListMutationAndCursorTests.cs\u0060 (ListPut*_*)",
+      "description": "Write \u0060guides/lists/list-put.mdx\u0060 \u2014 ListPut* index-based updates (String, Boolean, Int64, UInt64, Double, Bytes, Null, Object). Source from \u0060AutomergeListMutationAndCursorTests.cs\u0060 (ListPut*_*)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/lists/advanced-queries.mdx\u0060 \u2014 ListRange, ListRangeFull, Values for lists, LengthAtHeads. Source from \u0060AutomergeHistoricalQueryTests.cs\u0060 (ListRange_*, LengthAtHeads_*)",
+      "description": "Write \u0060guides/lists/advanced-queries.mdx\u0060 \u2014 ListRange, ListRangeFull, Values for lists, LengthAtHeads. Source from \u0060AutomergeHistoricalQueryTests.cs\u0060 (ListRange_*, LengthAtHeads_*)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Update \u0060docs/astro.config.mjs\u0060 sidebar to include all Sprint 2 pages under Data Types \u003E Maps and Data Types \u003E Lists",
+      "description": "Update \u0060docs/astro.config.mjs\u0060 sidebar to include all Sprint 2 pages under Data Types \u003E Maps and Data Types \u003E Lists",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-3-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/text/cursors.mdx\u0060 \u2014 GetCursor, GetCursorPosition, AutomergeCursor.FromBytes/ToBytes, cursor persistence across save/load, cursor behavior with concurrent inserts before/after. Source from \u0060AutomergeListMutationAndCursorTests.cs\u0060 (GetCursor_*, Cursor_*) and \u0060AutomergeCursorPersistenceTests.cs\u0060",
+      "description": "Write \u0060guides/text/cursors.mdx\u0060 \u2014 GetCursor, GetCursorPosition, AutomergeCursor.FromBytes/ToBytes, cursor persistence across save/load, cursor behavior with concurrent inserts before/after. Source from \u0060AutomergeListMutationAndCursorTests.cs\u0060 (GetCursor_*, Cursor_*) and \u0060AutomergeCursorPersistenceTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/rich-text/index.mdx\u0060 \u2014 Rich text overview: what marks, blocks, and spans are, Peritext reference, when to use rich text vs plain text",
+      "description": "Write \u0060guides/rich-text/index.mdx\u0060 \u2014 Rich text overview: what marks, blocks, and spans are, Peritext reference, when to use rich text vs plain text",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/rich-text/marks.mdx\u0060 \u2014 Mark (string/boolean/int overloads), Unmark, mark value types, applying bold/italic/links. Source from \u0060AutomergeMarkTests.cs\u0060",
+      "description": "Write \u0060guides/rich-text/marks.mdx\u0060 \u2014 Mark (string/boolean/int overloads), Unmark, mark value types, applying bold/italic/links. Source from \u0060AutomergeMarkTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/rich-text/expand-modes.mdx\u0060 \u2014 ExpandMode enum (Before, After, Both, None), boundary behavior when text is inserted at mark edges, visual examples. Source from \u0060AutomergeMarkTests.cs\u0060 (Mark_WithEachExpandMode_*)",
+      "description": "Write \u0060guides/rich-text/expand-modes.mdx\u0060 \u2014 ExpandMode enum (Before, After, Both, None), boundary behavior when text is inserted at mark edges, visual examples. Source from \u0060AutomergeMarkTests.cs\u0060 (Mark_WithEachExpandMode_*)",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/rich-text/reading-marks.mdx\u0060 \u2014 GetMarks, GetMarksAtHeads, mark persistence across save/load and sync. Source from \u0060AutomergeMarksReadTests.cs\u0060",
+      "description": "Write \u0060guides/rich-text/reading-marks.mdx\u0060 \u2014 GetMarks, GetMarksAtHeads, mark persistence across save/load and sync. Source from \u0060AutomergeMarksReadTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Update \u0060docs/astro.config.mjs\u0060 sidebar to include Text \u003E Cursors and Rich Text section",
+      "description": "Update \u0060docs/astro.config.mjs\u0060 sidebar to include Text \u003E Cursors and Rich Text section",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-4-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/rich-text/spans.mdx\u0060 \u2014 GetSpans, GetSpansAtHeads, AutomergeTextSpan/AutomergeBlockSpan model, how spans represent rendered text with formatting. Source from \u0060AutomergeMarksReadTests.cs\u0060 (GetSpans_*)",
+      "description": "Write \u0060guides/rich-text/spans.mdx\u0060 \u2014 GetSpans, GetSpansAtHeads, AutomergeTextSpan/AutomergeBlockSpan model, how spans represent rendered text with formatting. Source from \u0060AutomergeMarksReadTests.cs\u0060 (GetSpans_*)",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/rich-text/blocks.mdx\u0060 \u2014 SplitBlock, JoinBlock, block types (paragraph, heading, list-item), block metadata (type, parents, attributes). Source from \u0060AutomergeBlockTests.cs\u0060",
+      "description": "Write \u0060guides/rich-text/blocks.mdx\u0060 \u2014 SplitBlock, JoinBlock, block types (paragraph, heading, list-item), block metadata (type, parents, attributes). Source from \u0060AutomergeBlockTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/rich-text/update-spans.mdx\u0060 \u2014 UpdateSpans read-modify-write pattern, minimal diff computation, inserting/removing blocks programmatically. Source from \u0060AutomergeBlockTests.cs\u0060 (UpdateSpans_*)",
+      "description": "Write \u0060guides/rich-text/update-spans.mdx\u0060 \u2014 UpdateSpans read-modify-write pattern, minimal diff computation, inserting/removing blocks programmatically. Source from \u0060AutomergeBlockTests.cs\u0060 (UpdateSpans_*)",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/rich-text/concurrent-rich-text.mdx\u0060 \u2014 Multi-peer mark editing, overlapping marks from different peers, mark merge semantics (LWW for same name), cross-doc mark sync. Source from \u0060AutomergeCrossDocMergeTests.cs\u0060 and \u0060AutomergeRichTextIntegrationTests.cs\u0060",
+      "description": "Write \u0060guides/rich-text/concurrent-rich-text.mdx\u0060 \u2014 Multi-peer mark editing, overlapping marks from different peers, mark merge semantics (LWW for same name), cross-doc mark sync. Source from \u0060AutomergeCrossDocMergeTests.cs\u0060 and \u0060AutomergeRichTextIntegrationTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Update \u0060docs/astro.config.mjs\u0060 sidebar for remaining Rich Text pages",
+      "description": "Update \u0060docs/astro.config.mjs\u0060 sidebar for remaining Rich Text pages",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-5-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/history/commits-and-heads.mdx\u0060 \u2014 Commit (with message/timestamp), GetHeads, BaseHeads, EmptyChange, PendingOperations, Rollback. Source from \u0060AutomergeHistoryTests.cs\u0060",
+      "description": "Write \u0060guides/history/commits-and-heads.mdx\u0060 \u2014 Commit (with message/timestamp), GetHeads, BaseHeads, EmptyChange, PendingOperations, Rollback. Source from \u0060AutomergeHistoryTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/history/time-travel.mdx\u0060 \u2014 GetStringAtHeads, ListGetStringAtHeads, GetKeysAtHeads, LengthAtHeads, HydrateJsonAtHeads, reading document at any point in history. Source from \u0060AutomergeNewApiTests.cs\u0060 (GetStringAtHeads_*) and \u0060AutomergeHistoricalQueryTests.cs\u0060",
+      "description": "Write \u0060guides/history/time-travel.mdx\u0060 \u2014 GetStringAtHeads, ListGetStringAtHeads, GetKeysAtHeads, LengthAtHeads, HydrateJsonAtHeads, reading document at any point in history. Source from \u0060AutomergeNewApiTests.cs\u0060 (GetStringAtHeads_*) and \u0060AutomergeHistoricalQueryTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/history/diffing.mdx\u0060 \u2014 Diff between heads, DiffIncremental, AutomergePatch model (action kinds: PutMap, PutSeq, Insert, SpliceText, Increment, etc.). Source from \u0060AutomergeHistoryTests.cs\u0060 (Diff_*) and \u0060AutomergeSaveLoadSyncTests.cs\u0060 (DiffIncremental_*)",
+      "description": "Write \u0060guides/history/diffing.mdx\u0060 \u2014 Diff between heads, DiffIncremental, AutomergePatch model (action kinds: PutMap, PutSeq, Insert, SpliceText, Increment, etc.). Source from \u0060AutomergeHistoryTests.cs\u0060 (Diff_*) and \u0060AutomergeSaveLoadSyncTests.cs\u0060 (DiffIncremental_*)",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/history/change-metadata.mdx\u0060 \u2014 GetChangeMetadata (DecodedChange: hash, actor, sequence, timestamp, message, deps), TopoHistoryTraversal. Source from \u0060AutomergeHistoryTests.cs\u0060",
+      "description": "Write \u0060guides/history/change-metadata.mdx\u0060 \u2014 GetChangeMetadata (DecodedChange: hash, actor, sequence, timestamp, message, deps), TopoHistoryTraversal. Source from \u0060AutomergeHistoryTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/history/isolate-integrate.mdx\u0060 \u2014 Isolate (view at specific heads), Integrate (restore full view), ViewAtHeads convenience method. Source from \u0060AutomergeHistoryTests.cs\u0060 (IsolateAndIntegrate_*)",
+      "description": "Write \u0060guides/history/isolate-integrate.mdx\u0060 \u2014 Isolate (view at specific heads), Integrate (restore full view), ViewAtHeads convenience method. Source from \u0060AutomergeHistoryTests.cs\u0060 (IsolateAndIntegrate_*)",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/branching/fork-and-merge.mdx\u0060 \u2014 Fork (create independent copy), Merge (combine changes back), independent branches, isolation verification. Source from \u0060AutomergeNewApiTests.cs\u0060 (Fork_*) and \u0060AutomergeForkTests.cs\u0060",
+      "description": "Write \u0060guides/branching/fork-and-merge.mdx\u0060 \u2014 Fork (create independent copy), Merge (combine changes back), independent branches, isolation verification. Source from \u0060AutomergeNewApiTests.cs\u0060 (Fork_*) and \u0060AutomergeForkTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/branching/fork-at-heads.mdx\u0060 \u2014 ForkAtHeads (fork at historical point), concurrent branches, creating what-if scenarios. Source from \u0060AutomergeForkTests.cs\u0060 (ForkAtHeads_*)",
+      "description": "Write \u0060guides/branching/fork-at-heads.mdx\u0060 \u2014 ForkAtHeads (fork at historical point), concurrent branches, creating what-if scenarios. Source from \u0060AutomergeForkTests.cs\u0060 (ForkAtHeads_*)",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-8",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/branching/clone.mdx\u0060 \u2014 Clone (exact duplicate), use cases for cloning vs forking",
+      "description": "Write \u0060guides/branching/clone.mdx\u0060 \u2014 Clone (exact duplicate), use cases for cloning vs forking",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-9",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Update \u0060docs/astro.config.mjs\u0060 sidebar for Version Control section (History \u002B Branching)",
+      "description": "Update \u0060docs/astro.config.mjs\u0060 sidebar for Version Control section (History \u002B Branching)",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-6-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/conflicts/understanding-conflicts.mdx\u0060 \u2014 When conflicts occur in CRDTs, Automerge\u0027s automatic resolution, LWW semantics, why manual conflict handling is sometimes needed",
+      "description": "Write \u0060guides/conflicts/understanding-conflicts.mdx\u0060 \u2014 When conflicts occur in CRDTs, Automerge\u0027s automatic resolution, LWW semantics, why manual conflict handling is sometimes needed",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/conflicts/detecting-conflicts.mdx\u0060 \u2014 GetAll (map and list overloads), GetAllAtHeads, detecting when multiple peers wrote to same key/index. Source from \u0060AutomergeNewApiTests.cs\u0060 (GetAll_*)",
+      "description": "Write \u0060guides/conflicts/detecting-conflicts.mdx\u0060 \u2014 GetAll (map and list overloads), GetAllAtHeads, detecting when multiple peers wrote to same key/index. Source from \u0060AutomergeNewApiTests.cs\u0060 (GetAll_*)",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/conflicts/conflict-values.mdx\u0060 \u2014 AutomergeConflictValue model, resolution strategies, displaying conflicts to users",
+      "description": "Write \u0060guides/conflicts/conflict-values.mdx\u0060 \u2014 AutomergeConflictValue model, resolution strategies, displaying conflicts to users",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Split \u0060automerge/persistence.mdx\u0060 (619 lines) into \u0060guides/persistence/save-and-load.mdx\u0060 (Save, Load, basic persistence, error handling). Keep relevant content from existing page",
+      "description": "Split \u0060automerge/persistence.mdx\u0060 (619 lines) into \u0060guides/persistence/save-and-load.mdx\u0060 (Save, Load, basic persistence, error handling). Keep relevant content from existing page",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/persistence/incremental-saves.mdx\u0060 \u2014 SaveIncremental, LoadIncremental, SaveAfter (save changes after specific heads), incremental strategies. Source from \u0060AutomergePersistenceTests.cs\u0060 and \u0060AutomergeSaveLoadSyncTests.cs\u0060",
+      "description": "Write \u0060guides/persistence/incremental-saves.mdx\u0060 \u2014 SaveIncremental, LoadIncremental, SaveAfter (save changes after specific heads), incremental strategies. Source from \u0060AutomergePersistenceTests.cs\u0060 and \u0060AutomergeSaveLoadSyncTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/persistence/save-options.mdx\u0060 \u2014 SaveWithOptions (SaveOptions: Deflate, RetainOrphans), LoadWithOptions (LoadOptions), SaveNoCompress, size comparisons. Source from \u0060AutomergeSaveLoadSyncTests.cs\u0060 (SaveWithOptions_*, LoadWithOptions_*)",
+      "description": "Write \u0060guides/persistence/save-options.mdx\u0060 \u2014 SaveWithOptions (SaveOptions: Deflate, RetainOrphans), LoadWithOptions (LoadOptions), SaveNoCompress, size comparisons. Source from \u0060AutomergeSaveLoadSyncTests.cs\u0060 (SaveWithOptions_*, LoadWithOptions_*)",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/persistence/storage-strategies.mdx\u0060 \u2014 Full vs incremental vs hybrid storage patterns, database storage, cloud storage. Restructure from existing persistence page",
+      "description": "Write \u0060guides/persistence/storage-strategies.mdx\u0060 \u2014 Full vs incremental vs hybrid storage patterns, database storage, cloud storage. Restructure from existing persistence page",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-8",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Update \u0060docs/astro.config.mjs\u0060 sidebar for Conflicts and Persistence sections",
+      "description": "Update \u0060docs/astro.config.mjs\u0060 sidebar for Conflicts and Persistence sections",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-7-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Split \u0060automerge/synchronization.mdx\u0060 (602 lines) into \u0060guides/sync/sync-protocol.mdx\u0060 (CreateSyncState, GenerateSyncMessage, ReceiveSyncMessage, basic 2-peer sync). Keep relevant content from existing page",
+      "description": "Split \u0060automerge/synchronization.mdx\u0060 (602 lines) into \u0060guides/sync/sync-protocol.mdx\u0060 (CreateSyncState, GenerateSyncMessage, ReceiveSyncMessage, basic 2-peer sync). Keep relevant content from existing page",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/sync/multi-peer-sync.mdx\u0060 \u2014 N-peer sync patterns, network topologies (star, mesh), sync helper function. Restructure from existing sync page",
+      "description": "Write \u0060guides/sync/multi-peer-sync.mdx\u0060 \u2014 N-peer sync patterns, network topologies (star, mesh), sync helper function. Restructure from existing sync page",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/sync/sync-state-management.mdx\u0060 \u2014 AutomergeSyncState.Encode/Decode, Reset, SharedHeads, persisting sync state across sessions. Source from \u0060AutomergeSyncTests.cs\u0060",
+      "description": "Write \u0060guides/sync/sync-state-management.mdx\u0060 \u2014 AutomergeSyncState.Encode/Decode, Reset, SharedHeads, persisting sync state across sessions. Source from \u0060AutomergeSyncTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/sync/advanced-sync.mdx\u0060 \u2014 Bundle (create sync bundle at specific heads), GetChangesAdded (differential changes), GetMissingDeps (dependency tracking), HasOurChanges (sync completion check). Source from \u0060AutomergeSaveLoadSyncTests.cs\u0060",
+      "description": "Write \u0060guides/sync/advanced-sync.mdx\u0060 \u2014 Bundle (create sync bundle at specific heads), GetChangesAdded (differential changes), GetMissingDeps (dependency tracking), HasOurChanges (sync completion check). Source from \u0060AutomergeSaveLoadSyncTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/object-graph/navigation.mdx\u0060 \u2014 Parents (ancestor chain from object to root), PathToObject (visible path), AutomergePathElement. Source from \u0060AutomergeHistoricalQueryTests.cs\u0060 (Parents_*, PathToObject_*)",
+      "description": "Write \u0060guides/object-graph/navigation.mdx\u0060 \u2014 Parents (ancestor chain from object to root), PathToObject (visible path), AutomergePathElement. Source from \u0060AutomergeHistoricalQueryTests.cs\u0060 (Parents_*, PathToObject_*)",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060guides/object-graph/container-types.mdx\u0060 \u2014 GetObjectType, AutomergeContainerType enum, working with mixed container hierarchies. Source from \u0060AutomergeNestedObjectsTests.cs\u0060",
+      "description": "Write \u0060guides/object-graph/container-types.mdx\u0060 \u2014 GetObjectType, AutomergeContainerType enum, working with mixed container hierarchies. Source from \u0060AutomergeNestedObjectsTests.cs\u0060",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Delete old \u0060automerge/synchronization.mdx\u0060 and \u0060automerge/persistence.mdx\u0060 files after migration. Clean up any remaining old \u0060automerge/\u0060 files",
+      "description": "Delete old \u0060automerge/synchronization.mdx\u0060 and \u0060automerge/persistence.mdx\u0060 files after migration. Clean up any remaining old \u0060automerge/\u0060 files",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-8",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Update \u0060docs/astro.config.mjs\u0060 sidebar for Sync, Object Graph, and complete cleanup of old automerge section",
+      "description": "Update \u0060docs/astro.config.mjs\u0060 sidebar for Sync, Object Graph, and complete cleanup of old automerge section",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-8-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060repo/index.mdx\u0060 \u2014 Repo layer overview: what it provides over raw AutomergeDocument, architecture diagram, when to use Repo vs standalone documents",
+      "description": "Write \u0060repo/index.mdx\u0060 \u2014 Repo layer overview: what it provides over raw AutomergeDocument, architecture diagram, when to use Repo vs standalone documents",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060repo/getting-started.mdx\u0060 \u2014 Setting up a Repo with storage and network adapters, creating/finding documents, basic Repo lifecycle. Source from \u0060DemoApp.Basic/Program.cs\u0060 and Repo.cs",
+      "description": "Write \u0060repo/getting-started.mdx\u0060 \u2014 Setting up a Repo with storage and network adapters, creating/finding documents, basic Repo lifecycle. Source from \u0060DemoApp.Basic/Program.cs\u0060 and Repo.cs",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Move and restructure \u0060automerge/doc-handles.mdx\u0060 to \u0060repo/doc-handles.mdx\u0060 \u2014 IDocHandle state machine, HandleState enum, WhenReadyAsync, GetDocument, events (DocumentLoaded, Changed, HeadsChanged). Expand significantly beyond current 186 lines",
+      "description": "Move and restructure \u0060automerge/doc-handles.mdx\u0060 to \u0060repo/doc-handles.mdx\u0060 \u2014 IDocHandle state machine, HandleState enum, WhenReadyAsync, GetDocument, events (DocumentLoaded, Changed, HeadsChanged). Expand significantly beyond current 186 lines",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060repo/storage/index.mdx\u0060 \u2014 IStorageAdapter interface, Load/Save/Remove/LoadRange/RemoveRange methods, StorageKey, Chunk/ChunkInfo/ChunkType",
+      "description": "Write \u0060repo/storage/index.mdx\u0060 \u2014 IStorageAdapter interface, Load/Save/Remove/LoadRange/RemoveRange methods, StorageKey, Chunk/ChunkInfo/ChunkType",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060repo/storage/in-memory.mdx\u0060 \u2014 InMemoryStorageAdapter usage, when to use (testing, ephemeral sessions). Source from Repo tests",
+      "description": "Write \u0060repo/storage/in-memory.mdx\u0060 \u2014 InMemoryStorageAdapter usage, when to use (testing, ephemeral sessions). Source from Repo tests",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060repo/storage/file-system.mdx\u0060 \u2014 FileSystemStorageAdapter setup, directory structure, caching behavior, known limitations. Source from \u0060FileSystemStorageAdapter.cs\u0060 and storage tests",
+      "description": "Write \u0060repo/storage/file-system.mdx\u0060 \u2014 FileSystemStorageAdapter setup, directory structure, caching behavior, known limitations. Source from \u0060FileSystemStorageAdapter.cs\u0060 and storage tests",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060repo/network/index.mdx\u0060 \u2014 INetworkAdapter interface, events (PeerCandidate, PeerDisconnected, MessageReceived), PeerMetadata",
+      "description": "Write \u0060repo/network/index.mdx\u0060 \u2014 INetworkAdapter interface, events (PeerCandidate, PeerDisconnected, MessageReceived), PeerMetadata",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-8",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060repo/network/in-memory.mdx\u0060 \u2014 InMemoryNetworkAdapter for testing, wiring up multiple repos. Source from Repo tests",
+      "description": "Write \u0060repo/network/in-memory.mdx\u0060 \u2014 InMemoryNetworkAdapter for testing, wiring up multiple repos. Source from Repo tests",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-9-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060repo/network/signalr.mdx\u0060 \u2014 SignalR client (SignalRNetworkAdapter, SignalRConnectionService) and server (DocumentsHub) setup, hub interfaces, ASP.NET Core integration. Source from SignalR libs and test server",
+      "description": "Write \u0060repo/network/signalr.mdx\u0060 \u2014 SignalR client (SignalRNetworkAdapter, SignalRConnectionService) and server (DocumentsHub) setup, hub interfaces, ASP.NET Core integration. Source from SignalR libs and test server",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060repo/synchronizer.mdx\u0060 \u2014 CollectionSynchronizer and DocSynchronizer, how they orchestrate the Automerge sync protocol across peers, throttling, event flow",
+      "description": "Write \u0060repo/synchronizer.mdx\u0060 \u2014 CollectionSynchronizer and DocSynchronizer, how they orchestrate the Automerge sync protocol across peers, throttling, event flow",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060repo/identifiers.mdx\u0060 \u2014 DocumentId (Base58Check encoding), PeerId, StorageKey, AutomergeUrl, SessionId. Source from Abstractions lib",
+      "description": "Write \u0060repo/identifiers.mdx\u0060 \u2014 DocumentId (Base58Check encoding), PeerId, StorageKey, AutomergeUrl, SessionId. Source from Abstractions lib",
+      "status": "done",
+      "completedAtIteration": 9,
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-10-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/index.mdx\u0060 \u2014 API Reference overview page, link to all reference pages, explain how to read the reference",
+      "description": "Write \u0060api/index.mdx\u0060 \u2014 API Reference overview page, link to all reference pages, explain how to read the reference",
+      "status": "done",
+      "completedAtIteration": 10,
+      "sprintId": "sprint-10"
+    },
+    {
+      "id": "sprint-10-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/automerge-document.mdx\u0060 \u2014 Complete method reference for AutomergeDocument (129\u002B methods). Organize by category: Creation/Disposal, Map Operations, List Operations, Text Operations, Rich Text (Marks/Blocks/Spans), History/Heads, Branching, Persistence, Sync, Object Graph. Include signature, parameters, returns, exceptions, and brief example for each method",
+      "description": "Write \u0060api/automerge-document.mdx\u0060 \u2014 Complete method reference for AutomergeDocument (129\u002B methods). Organize by category: Creation/Disposal, Map Operations, List Operations, Text Operations, Rich Text (Marks/Blocks/Spans), History/Heads, Branching, Persistence, Sync, Object Graph. Include signature, parameters, returns, exceptions, and brief example for each method",
+      "status": "done",
+      "completedAtIteration": 10,
+      "sprintId": "sprint-10"
+    },
+    {
+      "id": "sprint-10-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/automerge-sync-state.mdx\u0060 \u2014 AutomergeSyncState: Create, Encode, Decode, Reset, SharedHeads",
+      "description": "Write \u0060api/automerge-sync-state.mdx\u0060 \u2014 AutomergeSyncState: Create, Encode, Decode, Reset, SharedHeads",
+      "status": "done",
+      "completedAtIteration": 10,
+      "sprintId": "sprint-10"
+    },
+    {
+      "id": "sprint-10-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/automerge-cursor.mdx\u0060 \u2014 AutomergeCursor: FromBytes, ToBytes, usage with GetCursor/GetCursorPosition",
+      "description": "Write \u0060api/automerge-cursor.mdx\u0060 \u2014 AutomergeCursor: FromBytes, ToBytes, usage with GetCursor/GetCursorPosition",
+      "status": "done",
+      "completedAtIteration": 10,
+      "sprintId": "sprint-10"
+    },
+    {
+      "id": "sprint-11-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/automerge-spans.mdx\u0060 \u2014 AutomergeSpan (abstract), AutomergeTextSpan (Text, Marks), AutomergeBlockSpan (BlockType, Parents, AttributesJson)",
+      "description": "Write \u0060api/automerge-spans.mdx\u0060 \u2014 AutomergeSpan (abstract), AutomergeTextSpan (Text, Marks), AutomergeBlockSpan (BlockType, Parents, AttributesJson)",
+      "status": "done",
+      "completedAtIteration": 11,
+      "sprintId": "sprint-11"
+    },
+    {
+      "id": "sprint-11-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/automerge-marks.mdx\u0060 \u2014 AutomergeMarkInfo (Name, Value, Start, End), ExpandMode enum, AutomergeScalarValue",
+      "description": "Write \u0060api/automerge-marks.mdx\u0060 \u2014 AutomergeMarkInfo (Name, Value, Start, End), ExpandMode enum, AutomergeScalarValue",
+      "status": "done",
+      "completedAtIteration": 11,
+      "sprintId": "sprint-11"
+    },
+    {
+      "id": "sprint-11-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/automerge-patches.mdx\u0060 \u2014 AutomergePatch (ObjectId, Path, Action), AutomergePatchAction, AutomergePatchActionKind enum, AutomergePatchPathElement, AutomergeInsertEntry",
+      "description": "Write \u0060api/automerge-patches.mdx\u0060 \u2014 AutomergePatch (ObjectId, Path, Action), AutomergePatchAction, AutomergePatchActionKind enum, AutomergePatchPathElement, AutomergeInsertEntry",
+      "status": "done",
+      "completedAtIteration": 11,
+      "sprintId": "sprint-11"
+    },
+    {
+      "id": "sprint-11-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/automerge-conflicts.mdx\u0060 \u2014 AutomergeConflictValue, AutomergeScalarValue, AutomergeScalarValueKind enum",
+      "description": "Write \u0060api/automerge-conflicts.mdx\u0060 \u2014 AutomergeConflictValue, AutomergeScalarValue, AutomergeScalarValueKind enum",
+      "status": "done",
+      "completedAtIteration": 11,
+      "sprintId": "sprint-11"
+    },
+    {
+      "id": "sprint-11-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/automerge-options.mdx\u0060 \u2014 SaveOptions (Deflate, RetainOrphans), LoadOptions, DecodedChange (Hash, Actor, Sequence, Timestamp, Message, Dependencies), ImmutableString, AutomergeContainerType, AutomergePathElement",
+      "description": "Write \u0060api/automerge-options.mdx\u0060 \u2014 SaveOptions (Deflate, RetainOrphans), LoadOptions, DecodedChange (Hash, Actor, Sequence, Timestamp, Message, Dependencies), ImmutableString, AutomergeContainerType, AutomergePathElement",
+      "status": "done",
+      "completedAtIteration": 11,
+      "sprintId": "sprint-11"
+    },
+    {
+      "id": "sprint-11-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/repo.mdx\u0060 \u2014 Repo class: constructor/config, Create/Find/Delete/Clone, events, Peers, Handles, Dispose",
+      "description": "Write \u0060api/repo.mdx\u0060 \u2014 Repo class: constructor/config, Create/Find/Delete/Clone, events, Peers, Handles, Dispose",
+      "status": "done",
+      "completedAtIteration": 11,
+      "sprintId": "sprint-11"
+    },
+    {
+      "id": "sprint-11-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/doc-handle.mdx\u0060 \u2014 IDocHandle interface, HandleState enum, lifecycle methods, sync operations",
+      "description": "Write \u0060api/doc-handle.mdx\u0060 \u2014 IDocHandle interface, HandleState enum, lifecycle methods, sync operations",
+      "status": "done",
+      "completedAtIteration": 11,
+      "sprintId": "sprint-11"
+    },
+    {
+      "id": "sprint-11-task-8",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/storage.mdx\u0060 \u2014 IStorageAdapter, StorageAdapterBase, StorageKey, Chunk, ChunkInfo, ChunkType",
+      "description": "Write \u0060api/storage.mdx\u0060 \u2014 IStorageAdapter, StorageAdapterBase, StorageKey, Chunk, ChunkInfo, ChunkType",
+      "status": "done",
+      "completedAtIteration": 11,
+      "sprintId": "sprint-11"
+    },
+    {
+      "id": "sprint-11-task-9",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/network.mdx\u0060 \u2014 INetworkAdapter, events, PeerMetadata, IRepoMessage and all message types (SyncMessage, RequestMessage, DocumentSnapshotMessage, etc.)",
+      "description": "Write \u0060api/network.mdx\u0060 \u2014 INetworkAdapter, events, PeerMetadata, IRepoMessage and all message types (SyncMessage, RequestMessage, DocumentSnapshotMessage, etc.)",
+      "status": "done",
+      "completedAtIteration": 11,
+      "sprintId": "sprint-11"
+    },
+    {
+      "id": "sprint-11-task-10",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060api/identifiers.mdx\u0060 \u2014 DocumentId, PeerId, StorageKey, StorageId, SessionId, AutomergeUrl",
+      "description": "Write \u0060api/identifiers.mdx\u0060 \u2014 DocumentId, PeerId, StorageKey, StorageId, SessionId, AutomergeUrl",
+      "status": "done",
+      "completedAtIteration": 11,
+      "sprintId": "sprint-11"
+    },
+    {
+      "id": "sprint-12-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Create \u0060apps/DemoApp.CollaborativeTextEditor/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060",
+      "description": "Create \u0060apps/DemoApp.CollaborativeTextEditor/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060",
+      "status": "done",
+      "completedAtIteration": 12,
+      "sprintId": "sprint-12"
+    },
+    {
+      "id": "sprint-12-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument, provides text CRDT operations (SpliceText, GetText), save/load, cursor tracking (GetCursor/GetCursorPosition)",
+      "description": "Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument, provides text CRDT operations (SpliceText, GetText), save/load, cursor tracking (GetCursor/GetCursorPosition)",
+      "status": "done",
+      "completedAtIteration": 12,
+      "sprintId": "sprint-12"
+    },
+    {
+      "id": "sprint-12-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Services/SyncService.cs\u0060 \u2014 manages sync state, generates/receives sync messages via InMemoryNetworkAdapter (or SignalR if Aspire available)",
+      "description": "Implement \u0060Services/SyncService.cs\u0060 \u2014 manages sync state, generates/receives sync messages via InMemoryNetworkAdapter (or SignalR if Aspire available)",
+      "status": "done",
+      "completedAtIteration": 12,
+      "sprintId": "sprint-12"
+    },
+    {
+      "id": "sprint-12-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060ViewModels/TextEditorViewModel.cs\u0060 \u2014 observable text content, cursor position, peer count, commands for text input and sync",
+      "description": "Implement \u0060ViewModels/TextEditorViewModel.cs\u0060 \u2014 observable text content, cursor position, peer count, commands for text input and sync",
+      "status": "done",
+      "completedAtIteration": 12,
+      "sprintId": "sprint-12"
+    },
+    {
+      "id": "sprint-12-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Views/TextEditorView.axaml\u0060 \u2014 TextBox bound to document text, status bar showing peer count and sync status",
+      "description": "Implement \u0060Views/TextEditorView.axaml\u0060 \u2014 TextBox bound to document text, status bar showing peer count and sync status",
+      "status": "done",
+      "completedAtIteration": 12,
+      "sprintId": "sprint-12"
+    },
+    {
+      "id": "sprint-12-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060README.md\u0060 for the project explaining how to run it and what APIs it demonstrates",
+      "description": "Write \u0060README.md\u0060 for the project explaining how to run it and what APIs it demonstrates",
+      "status": "done",
+      "completedAtIteration": 12,
+      "sprintId": "sprint-12"
+    },
+    {
+      "id": "sprint-12-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060examples/collaborative-text-editor.mdx\u0060 documentation page with step-by-step walkthrough of the app code and architecture",
+      "description": "Write \u0060examples/collaborative-text-editor.mdx\u0060 documentation page with step-by-step walkthrough of the app code and architecture",
+      "status": "done",
+      "completedAtIteration": 12,
+      "sprintId": "sprint-12"
+    },
+    {
+      "id": "sprint-12-task-8",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Verify the app builds with \u0060dotnet build apps/DemoApp.CollaborativeTextEditor\u0060",
+      "description": "Verify the app builds with \u0060dotnet build apps/DemoApp.CollaborativeTextEditor\u0060",
+      "status": "done",
+      "completedAtIteration": 12,
+      "sprintId": "sprint-12"
+    },
+    {
+      "id": "sprint-13-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Create \u0060apps/DemoApp.TaskBoard/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060",
+      "description": "Create \u0060apps/DemoApp.TaskBoard/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060",
+      "status": "done",
+      "completedAtIteration": 13,
+      "sprintId": "sprint-13"
+    },
+    {
+      "id": "sprint-13-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Models/\u0060 \u2014 Column (map with name, order), TaskItem (map with title, description, status, vote counter)",
+      "description": "Implement \u0060Models/\u0060 \u2014 Column (map with name, order), TaskItem (map with title, description, status, vote counter)",
+      "status": "done",
+      "completedAtIteration": 13,
+      "sprintId": "sprint-13"
+    },
+    {
+      "id": "sprint-13-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument, CRUD operations for columns (PutObject) and tasks (ListInsertObject, ListRemove, ListSplice), counter increments",
+      "description": "Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument, CRUD operations for columns (PutObject) and tasks (ListInsertObject, ListRemove, ListSplice), counter increments",
+      "status": "done",
+      "completedAtIteration": 13,
+      "sprintId": "sprint-13"
+    },
+    {
+      "id": "sprint-13-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060ViewModels/BoardViewModel.cs\u0060 \u2014 observable columns collection, drag-drop move (ListRemove \u002B ListInsertObject), add/delete columns and tasks",
+      "description": "Implement \u0060ViewModels/BoardViewModel.cs\u0060 \u2014 observable columns collection, drag-drop move (ListRemove \u002B ListInsertObject), add/delete columns and tasks",
+      "status": "done",
+      "completedAtIteration": 13,
+      "sprintId": "sprint-13"
+    },
+    {
+      "id": "sprint-13-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Views/BoardView.axaml\u0060 \u2014 horizontal column layout with vertical task lists, add/remove buttons, vote counter display",
+      "description": "Implement \u0060Views/BoardView.axaml\u0060 \u2014 horizontal column layout with vertical task lists, add/remove buttons, vote counter display",
+      "status": "done",
+      "completedAtIteration": 13,
+      "sprintId": "sprint-13"
+    },
+    {
+      "id": "sprint-13-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060README.md\u0060 and \u0060examples/task-board.mdx\u0060 documentation page",
+      "description": "Write \u0060README.md\u0060 and \u0060examples/task-board.mdx\u0060 documentation page",
+      "status": "done",
+      "completedAtIteration": 13,
+      "sprintId": "sprint-13"
+    },
+    {
+      "id": "sprint-13-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Verify the app builds with \u0060dotnet build apps/DemoApp.TaskBoard\u0060",
+      "description": "Verify the app builds with \u0060dotnet build apps/DemoApp.TaskBoard\u0060",
+      "status": "done",
+      "completedAtIteration": 13,
+      "sprintId": "sprint-13"
+    },
+    {
+      "id": "sprint-14-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Create \u0060apps/DemoApp.CollaborativeEditor/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060",
+      "description": "Create \u0060apps/DemoApp.CollaborativeEditor/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060",
+      "status": "done",
+      "completedAtIteration": 14,
+      "sprintId": "sprint-14"
+    },
+    {
+      "id": "sprint-14-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument with rich text operations: SpliceText, Mark/Unmark (bold, italic, underline, link), SplitBlock/JoinBlock, GetSpans, UpdateSpans",
+      "description": "Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument with rich text operations: SpliceText, Mark/Unmark (bold, italic, underline, link), SplitBlock/JoinBlock, GetSpans, UpdateSpans",
+      "status": "done",
+      "completedAtIteration": 14,
+      "sprintId": "sprint-14"
+    },
+    {
+      "id": "sprint-14-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Services/SyncService.cs\u0060 \u2014 multi-peer sync using SignalR or InMemory adapter",
+      "description": "Implement \u0060Services/SyncService.cs\u0060 \u2014 multi-peer sync using SignalR or InMemory adapter",
+      "status": "done",
+      "completedAtIteration": 14,
+      "sprintId": "sprint-14"
+    },
+    {
+      "id": "sprint-14-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Models/FormattingState.cs\u0060 \u2014 tracks active marks at cursor position for toolbar state",
+      "description": "Implement \u0060Models/FormattingState.cs\u0060 \u2014 tracks active marks at cursor position for toolbar state",
+      "status": "done",
+      "completedAtIteration": 14,
+      "sprintId": "sprint-14"
+    },
+    {
+      "id": "sprint-14-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060ViewModels/EditorViewModel.cs\u0060 \u2014 observable formatted text content, formatting toggle commands (bold, italic, etc.), block type selection, sync status",
+      "description": "Implement \u0060ViewModels/EditorViewModel.cs\u0060 \u2014 observable formatted text content, formatting toggle commands (bold, italic, etc.), block type selection, sync status",
+      "status": "done",
+      "completedAtIteration": 14,
+      "sprintId": "sprint-14"
+    },
+    {
+      "id": "sprint-14-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Views/EditorView.axaml\u0060 \u2014 formatting toolbar (bold/italic/underline/link buttons), text editor area rendering spans with formatting, block type dropdown",
+      "description": "Implement \u0060Views/EditorView.axaml\u0060 \u2014 formatting toolbar (bold/italic/underline/link buttons), text editor area rendering spans with formatting, block type dropdown",
+      "status": "done",
+      "completedAtIteration": 14,
+      "sprintId": "sprint-14"
+    },
+    {
+      "id": "sprint-14-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060README.md\u0060 and \u0060examples/collaborative-editor.mdx\u0060 documentation page with detailed walkthrough",
+      "description": "Write \u0060README.md\u0060 and \u0060examples/collaborative-editor.mdx\u0060 documentation page with detailed walkthrough",
+      "status": "done",
+      "completedAtIteration": 14,
+      "sprintId": "sprint-14"
+    },
+    {
+      "id": "sprint-14-task-8",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Verify the app builds with \u0060dotnet build apps/DemoApp.CollaborativeEditor\u0060",
+      "description": "Verify the app builds with \u0060dotnet build apps/DemoApp.CollaborativeEditor\u0060",
+      "status": "done",
+      "completedAtIteration": 14,
+      "sprintId": "sprint-14"
+    },
+    {
+      "id": "sprint-15-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Create \u0060apps/DemoApp.FigmaClone/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060",
+      "description": "Create \u0060apps/DemoApp.FigmaClone/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060",
+      "status": "done",
+      "completedAtIteration": 15,
+      "sprintId": "sprint-15"
+    },
+    {
+      "id": "sprint-15-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Models/\u0060 \u2014 CanvasObject (map with type, x, y, width, height, color, zOrder), Layer (list of object references)",
+      "description": "Implement \u0060Models/\u0060 \u2014 CanvasObject (map with type, x, y, width, height, color, zOrder), Layer (list of object references)",
+      "status": "done",
+      "completedAtIteration": 15,
+      "sprintId": "sprint-15"
+    },
+    {
+      "id": "sprint-15-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument for canvas operations: add/move/resize/recolor objects (PutObject, PutDouble, PutString), manage layers (ListInsertObject, ListRemove)",
+      "description": "Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument for canvas operations: add/move/resize/recolor objects (PutObject, PutDouble, PutString), manage layers (ListInsertObject, ListRemove)",
+      "status": "done",
+      "completedAtIteration": 15,
+      "sprintId": "sprint-15"
+    },
+    {
+      "id": "sprint-15-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060ViewModels/CanvasViewModel.cs\u0060 \u2014 observable canvas objects, selection state, drag-to-move/resize, Fork for undo (Fork \u002B Merge pattern)",
+      "description": "Implement \u0060ViewModels/CanvasViewModel.cs\u0060 \u2014 observable canvas objects, selection state, drag-to-move/resize, Fork for undo (Fork \u002B Merge pattern)",
+      "status": "done",
+      "completedAtIteration": 15,
+      "sprintId": "sprint-15"
+    },
+    {
+      "id": "sprint-15-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Views/CanvasView.axaml\u0060 \u2014 drawing surface rendering shapes, selection handles, toolbar for shape types, layer panel",
+      "description": "Implement \u0060Views/CanvasView.axaml\u0060 \u2014 drawing surface rendering shapes, selection handles, toolbar for shape types, layer panel",
+      "status": "done",
+      "completedAtIteration": 15,
+      "sprintId": "sprint-15"
+    },
+    {
+      "id": "sprint-15-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Implement \u0060Services/SyncService.cs\u0060 \u2014 multi-peer sync so multiple users see real-time shape changes",
+      "description": "Implement \u0060Services/SyncService.cs\u0060 \u2014 multi-peer sync so multiple users see real-time shape changes",
+      "status": "done",
+      "completedAtIteration": 15,
+      "sprintId": "sprint-15"
+    },
+    {
+      "id": "sprint-15-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060README.md\u0060 and \u0060examples/figma-clone.mdx\u0060 documentation page",
+      "description": "Write \u0060README.md\u0060 and \u0060examples/figma-clone.mdx\u0060 documentation page",
+      "status": "done",
+      "completedAtIteration": 15,
+      "sprintId": "sprint-15"
+    },
+    {
+      "id": "sprint-15-task-8",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Verify the app builds with \u0060dotnet build apps/DemoApp.FigmaClone\u0060",
+      "description": "Verify the app builds with \u0060dotnet build apps/DemoApp.FigmaClone\u0060",
+      "status": "done",
+      "completedAtIteration": 15,
+      "sprintId": "sprint-15"
+    },
+    {
+      "id": "sprint-16-task-1",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Write \u0060examples/index.mdx\u0060 \u2014 examples overview page with cards linking to each example app, describing complexity level and APIs demonstrated",
+      "description": "Write \u0060examples/index.mdx\u0060 \u2014 examples overview page with cards linking to each example app, describing complexity level and APIs demonstrated",
+      "status": "done",
+      "completedAtIteration": 16,
+      "sprintId": "sprint-16"
+    },
+    {
+      "id": "sprint-16-task-2",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Final update of \u0060docs/astro.config.mjs\u0060 \u2014 complete sidebar configuration covering all ~67 pages, verify all slugs match file paths",
+      "description": "Final update of \u0060docs/astro.config.mjs\u0060 \u2014 complete sidebar configuration covering all ~67 pages, verify all slugs match file paths",
+      "status": "done",
+      "completedAtIteration": 16,
+      "sprintId": "sprint-16"
+    },
+    {
+      "id": "sprint-16-task-3",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Verify all old \u0060automerge/\u0060 pages have been properly migrated or deleted (no dead links)",
+      "description": "Verify all old \u0060automerge/\u0060 pages have been properly migrated or deleted (no dead links)",
+      "status": "done",
+      "completedAtIteration": 16,
+      "sprintId": "sprint-16"
+    },
+    {
+      "id": "sprint-16-task-4",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Review and update \u0060docs/src/content/docs/index.mdx\u0060 landing page \u2014 update feature cards, update \u0022Get Started\u0022 link to new guides path",
+      "description": "Review and update \u0060docs/src/content/docs/index.mdx\u0060 landing page \u2014 update feature cards, update \u0022Get Started\u0022 link to new guides path",
+      "status": "done",
+      "completedAtIteration": 16,
+      "sprintId": "sprint-16"
+    },
+    {
+      "id": "sprint-16-task-5",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Update \u0060introduction/index.mdx\u0060 with links to new documentation structure",
+      "description": "Update \u0060introduction/index.mdx\u0060 with links to new documentation structure",
+      "status": "done",
+      "completedAtIteration": 16,
+      "sprintId": "sprint-16"
+    },
+    {
+      "id": "sprint-16-task-6",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Spot-check that all code examples use correct API names (Six.Automerge namespace), correct method signatures, and compile-ready patterns",
+      "description": "Spot-check that all code examples use correct API names (Six.Automerge namespace), correct method signatures, and compile-ready patterns",
+      "status": "done",
+      "completedAtIteration": 16,
+      "sprintId": "sprint-16"
+    },
+    {
+      "id": "sprint-16-task-7",
+      "specFile": ".wig/specs/we-have-documentation-in-docs-src-content-docs/implementation-plan.md",
+      "title": "Verify the documentation site builds: run \u0060npm run build\u0060 or \u0060pnpm build\u0060 in \u0060docs/\u0060 directory",
+      "description": "Verify the documentation site builds: run \u0060npm run build\u0060 or \u0060pnpm build\u0060 in \u0060docs/\u0060 directory",
+      "status": "done",
+      "completedAtIteration": 16,
+      "sprintId": "sprint-16"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "sprint-1",
+      "title": "Scaffold New Directory Structure and Migrate Existing Pages",
+      "description": "- [ ] Create the new directory structure under \u0060docs/src/content/docs/\u0060: \u0060guides/\u0060, \u0060guides/maps/\u0060, \u0060guides/lists/\u0060, \u0060guides/text/\u0060, \u0060guides/rich-text/\u0060, \u0060guides/history/\u0060, \u0060guides/branching/\u0060, \u0060guides/conflicts/\u0060, \u0060guides/persistence/\u0060, \u0060guides/sync/\u0060, \u0060guides/object-graph/\u0060, \u0060repo/\u0060, \u0060repo/storage/\u0060, \u0060repo/network/\u0060, \u0060examples/\u0060, \u0060api/\u0060\r\n- [ ] Create \u0060guides/index.mdx\u0060 as the new guides overview page (brief intro to all guide sections with links)\r\n- [ ] Move and restructure \u0060automerge/getting-started.mdx\u0060 to \u0060guides/getting-started.mdx\u0060 (update internal links, keep content)\r\n- [ ] Move and restructure \u0060automerge/core-concepts.mdx\u0060 to \u0060guides/core-concepts.mdx\u0060 (update internal links, keep content)\r\n- [ ] Split \u0060automerge/working-with-maps.mdx\u0060 (453 lines) into \u0060guides/maps/basic-operations.mdx\u0060 (create/put/get/delete/keys/nested) and \u0060guides/maps/nested-maps.mdx\u0060 (nested containers, object IDs, deep nesting). Source content from existing page \u002B \u0060AutomergeMapOperationsTests.cs\u0060 and \u0060AutomergeNestedObjectsTests.cs\u0060\r\n- [ ] Split \u0060automerge/working-with-lists.mdx\u0060 (512 lines) into \u0060guides/lists/basic-operations.mdx\u0060 (insert/remove/length/nested). Source from existing page \u002B \u0060AutomergeListOperationsTests.cs\u0060\r\n- [ ] Split \u0060automerge/working-with-text.mdx\u0060 (459 lines) into \u0060guides/text/basic-operations.mdx\u0060 (SpliceText, GetText, text vs string) and \u0060guides/text/collaborative-editing.mdx\u0060 (concurrent edits, merge behavior). Source from existing page \u002B \u0060AutomergeTextOperationsTests.cs\u0060\r\n- [ ] Update \u0060docs/astro.config.mjs\u0060 sidebar configuration for all Sprint 1 pages (Getting Started, Data Types sections). Delete old \u0060automerge/\u0060 files that have been migrated. Keep \u0060automerge/index.mdx\u0060 as a redirect or remove it.",
+      "taskIds": [
+        "sprint-1-task-1",
+        "sprint-1-task-2",
+        "sprint-1-task-3",
+        "sprint-1-task-4",
+        "sprint-1-task-5",
+        "sprint-1-task-6",
+        "sprint-1-task-7",
+        "sprint-1-task-8"
+      ]
+    },
+    {
+      "id": "sprint-2",
+      "title": "Map and List Advanced Pages",
+      "description": "- [ ] Write \u0060guides/maps/counters-and-timestamps.mdx\u0060 \u2014 PutCounter, GetCounter, Increment (map overload), PutTimestamp, GetTimestamp. Source examples from \u0060AutomergeMapOperationsTests.cs\u0060 (PutCounter, PutTimestamp) and \u0060AutomergeNewApiTests.cs\u0060 (Increment_MapCounter_*)\r\n- [ ] Write \u0060guides/maps/advanced-queries.mdx\u0060 \u2014 MapRange, MapRangeFull, Values, ValuesAtHeads, Parents, PathToObject. Source from \u0060AutomergeHistoricalQueryTests.cs\u0060 (MapRange_*, Parents_*, PathToObject_*)\r\n- [ ] Write \u0060guides/lists/list-splice.mdx\u0060 \u2014 ListSplice batch operations (insert multiple, delete, replace, mixed types). Source from \u0060AutomergeListMutationAndCursorTests.cs\u0060 (ListSplice_*)\r\n- [ ] Write \u0060guides/lists/list-put.mdx\u0060 \u2014 ListPut* index-based updates (String, Boolean, Int64, UInt64, Double, Bytes, Null, Object). Source from \u0060AutomergeListMutationAndCursorTests.cs\u0060 (ListPut*_*)\r\n- [ ] Write \u0060guides/lists/advanced-queries.mdx\u0060 \u2014 ListRange, ListRangeFull, Values for lists, LengthAtHeads. Source from \u0060AutomergeHistoricalQueryTests.cs\u0060 (ListRange_*, LengthAtHeads_*)\r\n- [ ] Update \u0060docs/astro.config.mjs\u0060 sidebar to include all Sprint 2 pages under Data Types \u003E Maps and Data Types \u003E Lists",
+      "taskIds": [
+        "sprint-2-task-1",
+        "sprint-2-task-2",
+        "sprint-2-task-3",
+        "sprint-2-task-4",
+        "sprint-2-task-5",
+        "sprint-2-task-6"
+      ]
+    },
+    {
+      "id": "sprint-3",
+      "title": "Text Cursors and Rich Text Introduction",
+      "description": "- [ ] Write \u0060guides/text/cursors.mdx\u0060 \u2014 GetCursor, GetCursorPosition, AutomergeCursor.FromBytes/ToBytes, cursor persistence across save/load, cursor behavior with concurrent inserts before/after. Source from \u0060AutomergeListMutationAndCursorTests.cs\u0060 (GetCursor_*, Cursor_*) and \u0060AutomergeCursorPersistenceTests.cs\u0060\r\n- [ ] Write \u0060guides/rich-text/index.mdx\u0060 \u2014 Rich text overview: what marks, blocks, and spans are, Peritext reference, when to use rich text vs plain text\r\n- [ ] Write \u0060guides/rich-text/marks.mdx\u0060 \u2014 Mark (string/boolean/int overloads), Unmark, mark value types, applying bold/italic/links. Source from \u0060AutomergeMarkTests.cs\u0060\r\n- [ ] Write \u0060guides/rich-text/expand-modes.mdx\u0060 \u2014 ExpandMode enum (Before, After, Both, None), boundary behavior when text is inserted at mark edges, visual examples. Source from \u0060AutomergeMarkTests.cs\u0060 (Mark_WithEachExpandMode_*)\r\n- [ ] Write \u0060guides/rich-text/reading-marks.mdx\u0060 \u2014 GetMarks, GetMarksAtHeads, mark persistence across save/load and sync. Source from \u0060AutomergeMarksReadTests.cs\u0060\r\n- [ ] Update \u0060docs/astro.config.mjs\u0060 sidebar to include Text \u003E Cursors and Rich Text section",
+      "taskIds": [
+        "sprint-3-task-1",
+        "sprint-3-task-2",
+        "sprint-3-task-3",
+        "sprint-3-task-4",
+        "sprint-3-task-5",
+        "sprint-3-task-6"
+      ]
+    },
+    {
+      "id": "sprint-4",
+      "title": "Rich Text Advanced Pages",
+      "description": "- [ ] Write \u0060guides/rich-text/spans.mdx\u0060 \u2014 GetSpans, GetSpansAtHeads, AutomergeTextSpan/AutomergeBlockSpan model, how spans represent rendered text with formatting. Source from \u0060AutomergeMarksReadTests.cs\u0060 (GetSpans_*)\r\n- [ ] Write \u0060guides/rich-text/blocks.mdx\u0060 \u2014 SplitBlock, JoinBlock, block types (paragraph, heading, list-item), block metadata (type, parents, attributes). Source from \u0060AutomergeBlockTests.cs\u0060\r\n- [ ] Write \u0060guides/rich-text/update-spans.mdx\u0060 \u2014 UpdateSpans read-modify-write pattern, minimal diff computation, inserting/removing blocks programmatically. Source from \u0060AutomergeBlockTests.cs\u0060 (UpdateSpans_*)\r\n- [ ] Write \u0060guides/rich-text/concurrent-rich-text.mdx\u0060 \u2014 Multi-peer mark editing, overlapping marks from different peers, mark merge semantics (LWW for same name), cross-doc mark sync. Source from \u0060AutomergeCrossDocMergeTests.cs\u0060 and \u0060AutomergeRichTextIntegrationTests.cs\u0060\r\n- [ ] Update \u0060docs/astro.config.mjs\u0060 sidebar for remaining Rich Text pages",
+      "taskIds": [
+        "sprint-4-task-1",
+        "sprint-4-task-2",
+        "sprint-4-task-3",
+        "sprint-4-task-4",
+        "sprint-4-task-5"
+      ]
+    },
+    {
+      "id": "sprint-5",
+      "title": "History and Branching Documentation",
+      "description": "- [ ] Write \u0060guides/history/commits-and-heads.mdx\u0060 \u2014 Commit (with message/timestamp), GetHeads, BaseHeads, EmptyChange, PendingOperations, Rollback. Source from \u0060AutomergeHistoryTests.cs\u0060\r\n- [ ] Write \u0060guides/history/time-travel.mdx\u0060 \u2014 GetStringAtHeads, ListGetStringAtHeads, GetKeysAtHeads, LengthAtHeads, HydrateJsonAtHeads, reading document at any point in history. Source from \u0060AutomergeNewApiTests.cs\u0060 (GetStringAtHeads_*) and \u0060AutomergeHistoricalQueryTests.cs\u0060\r\n- [ ] Write \u0060guides/history/diffing.mdx\u0060 \u2014 Diff between heads, DiffIncremental, AutomergePatch model (action kinds: PutMap, PutSeq, Insert, SpliceText, Increment, etc.). Source from \u0060AutomergeHistoryTests.cs\u0060 (Diff_*) and \u0060AutomergeSaveLoadSyncTests.cs\u0060 (DiffIncremental_*)\r\n- [ ] Write \u0060guides/history/change-metadata.mdx\u0060 \u2014 GetChangeMetadata (DecodedChange: hash, actor, sequence, timestamp, message, deps), TopoHistoryTraversal. Source from \u0060AutomergeHistoryTests.cs\u0060\r\n- [ ] Write \u0060guides/history/isolate-integrate.mdx\u0060 \u2014 Isolate (view at specific heads), Integrate (restore full view), ViewAtHeads convenience method. Source from \u0060AutomergeHistoryTests.cs\u0060 (IsolateAndIntegrate_*)\r\n- [ ] Write \u0060guides/branching/fork-and-merge.mdx\u0060 \u2014 Fork (create independent copy), Merge (combine changes back), independent branches, isolation verification. Source from \u0060AutomergeNewApiTests.cs\u0060 (Fork_*) and \u0060AutomergeForkTests.cs\u0060\r\n- [ ] Write \u0060guides/branching/fork-at-heads.mdx\u0060 \u2014 ForkAtHeads (fork at historical point), concurrent branches, creating what-if scenarios. Source from \u0060AutomergeForkTests.cs\u0060 (ForkAtHeads_*)\r\n- [ ] Write \u0060guides/branching/clone.mdx\u0060 \u2014 Clone (exact duplicate), use cases for cloning vs forking\r\n- [ ] Update \u0060docs/astro.config.mjs\u0060 sidebar for Version Control section (History \u002B Branching)",
+      "taskIds": [
+        "sprint-5-task-1",
+        "sprint-5-task-2",
+        "sprint-5-task-3",
+        "sprint-5-task-4",
+        "sprint-5-task-5",
+        "sprint-5-task-6",
+        "sprint-5-task-7",
+        "sprint-5-task-8",
+        "sprint-5-task-9"
+      ]
+    },
+    {
+      "id": "sprint-6",
+      "title": "Conflicts, Persistence, and Sync Documentation",
+      "description": "- [ ] Write \u0060guides/conflicts/understanding-conflicts.mdx\u0060 \u2014 When conflicts occur in CRDTs, Automerge\u0027s automatic resolution, LWW semantics, why manual conflict handling is sometimes needed\r\n- [ ] Write \u0060guides/conflicts/detecting-conflicts.mdx\u0060 \u2014 GetAll (map and list overloads), GetAllAtHeads, detecting when multiple peers wrote to same key/index. Source from \u0060AutomergeNewApiTests.cs\u0060 (GetAll_*)\r\n- [ ] Write \u0060guides/conflicts/conflict-values.mdx\u0060 \u2014 AutomergeConflictValue model, resolution strategies, displaying conflicts to users\r\n- [ ] Split \u0060automerge/persistence.mdx\u0060 (619 lines) into \u0060guides/persistence/save-and-load.mdx\u0060 (Save, Load, basic persistence, error handling). Keep relevant content from existing page\r\n- [ ] Write \u0060guides/persistence/incremental-saves.mdx\u0060 \u2014 SaveIncremental, LoadIncremental, SaveAfter (save changes after specific heads), incremental strategies. Source from \u0060AutomergePersistenceTests.cs\u0060 and \u0060AutomergeSaveLoadSyncTests.cs\u0060\r\n- [ ] Write \u0060guides/persistence/save-options.mdx\u0060 \u2014 SaveWithOptions (SaveOptions: Deflate, RetainOrphans), LoadWithOptions (LoadOptions), SaveNoCompress, size comparisons. Source from \u0060AutomergeSaveLoadSyncTests.cs\u0060 (SaveWithOptions_*, LoadWithOptions_*)\r\n- [ ] Write \u0060guides/persistence/storage-strategies.mdx\u0060 \u2014 Full vs incremental vs hybrid storage patterns, database storage, cloud storage. Restructure from existing persistence page\r\n- [ ] Update \u0060docs/astro.config.mjs\u0060 sidebar for Conflicts and Persistence sections",
+      "taskIds": [
+        "sprint-6-task-1",
+        "sprint-6-task-2",
+        "sprint-6-task-3",
+        "sprint-6-task-4",
+        "sprint-6-task-5",
+        "sprint-6-task-6",
+        "sprint-6-task-7",
+        "sprint-6-task-8"
+      ]
+    },
+    {
+      "id": "sprint-7",
+      "title": "Sync and Object Graph Documentation",
+      "description": "- [ ] Split \u0060automerge/synchronization.mdx\u0060 (602 lines) into \u0060guides/sync/sync-protocol.mdx\u0060 (CreateSyncState, GenerateSyncMessage, ReceiveSyncMessage, basic 2-peer sync). Keep relevant content from existing page\r\n- [ ] Write \u0060guides/sync/multi-peer-sync.mdx\u0060 \u2014 N-peer sync patterns, network topologies (star, mesh), sync helper function. Restructure from existing sync page\r\n- [ ] Write \u0060guides/sync/sync-state-management.mdx\u0060 \u2014 AutomergeSyncState.Encode/Decode, Reset, SharedHeads, persisting sync state across sessions. Source from \u0060AutomergeSyncTests.cs\u0060\r\n- [ ] Write \u0060guides/sync/advanced-sync.mdx\u0060 \u2014 Bundle (create sync bundle at specific heads), GetChangesAdded (differential changes), GetMissingDeps (dependency tracking), HasOurChanges (sync completion check). Source from \u0060AutomergeSaveLoadSyncTests.cs\u0060\r\n- [ ] Write \u0060guides/object-graph/navigation.mdx\u0060 \u2014 Parents (ancestor chain from object to root), PathToObject (visible path), AutomergePathElement. Source from \u0060AutomergeHistoricalQueryTests.cs\u0060 (Parents_*, PathToObject_*)\r\n- [ ] Write \u0060guides/object-graph/container-types.mdx\u0060 \u2014 GetObjectType, AutomergeContainerType enum, working with mixed container hierarchies. Source from \u0060AutomergeNestedObjectsTests.cs\u0060\r\n- [ ] Delete old \u0060automerge/synchronization.mdx\u0060 and \u0060automerge/persistence.mdx\u0060 files after migration. Clean up any remaining old \u0060automerge/\u0060 files\r\n- [ ] Update \u0060docs/astro.config.mjs\u0060 sidebar for Sync, Object Graph, and complete cleanup of old automerge section",
+      "taskIds": [
+        "sprint-7-task-1",
+        "sprint-7-task-2",
+        "sprint-7-task-3",
+        "sprint-7-task-4",
+        "sprint-7-task-5",
+        "sprint-7-task-6",
+        "sprint-7-task-7",
+        "sprint-7-task-8"
+      ]
+    },
+    {
+      "id": "sprint-8",
+      "title": "Repo Layer Documentation",
+      "description": "- [ ] Write \u0060repo/index.mdx\u0060 \u2014 Repo layer overview: what it provides over raw AutomergeDocument, architecture diagram, when to use Repo vs standalone documents\r\n- [ ] Write \u0060repo/getting-started.mdx\u0060 \u2014 Setting up a Repo with storage and network adapters, creating/finding documents, basic Repo lifecycle. Source from \u0060DemoApp.Basic/Program.cs\u0060 and Repo.cs\r\n- [ ] Move and restructure \u0060automerge/doc-handles.mdx\u0060 to \u0060repo/doc-handles.mdx\u0060 \u2014 IDocHandle state machine, HandleState enum, WhenReadyAsync, GetDocument, events (DocumentLoaded, Changed, HeadsChanged). Expand significantly beyond current 186 lines\r\n- [ ] Write \u0060repo/storage/index.mdx\u0060 \u2014 IStorageAdapter interface, Load/Save/Remove/LoadRange/RemoveRange methods, StorageKey, Chunk/ChunkInfo/ChunkType\r\n- [ ] Write \u0060repo/storage/in-memory.mdx\u0060 \u2014 InMemoryStorageAdapter usage, when to use (testing, ephemeral sessions). Source from Repo tests\r\n- [ ] Write \u0060repo/storage/file-system.mdx\u0060 \u2014 FileSystemStorageAdapter setup, directory structure, caching behavior, known limitations. Source from \u0060FileSystemStorageAdapter.cs\u0060 and storage tests\r\n- [ ] Write \u0060repo/network/index.mdx\u0060 \u2014 INetworkAdapter interface, events (PeerCandidate, PeerDisconnected, MessageReceived), PeerMetadata\r\n- [ ] Write \u0060repo/network/in-memory.mdx\u0060 \u2014 InMemoryNetworkAdapter for testing, wiring up multiple repos. Source from Repo tests",
+      "taskIds": [
+        "sprint-8-task-1",
+        "sprint-8-task-2",
+        "sprint-8-task-3",
+        "sprint-8-task-4",
+        "sprint-8-task-5",
+        "sprint-8-task-6",
+        "sprint-8-task-7",
+        "sprint-8-task-8"
+      ]
+    },
+    {
+      "id": "sprint-9",
+      "title": "Repo Network and Synchronizer Documentation",
+      "description": "- [ ] Write \u0060repo/network/signalr.mdx\u0060 \u2014 SignalR client (SignalRNetworkAdapter, SignalRConnectionService) and server (DocumentsHub) setup, hub interfaces, ASP.NET Core integration. Source from SignalR libs and test server\r\n- [ ] Write \u0060repo/synchronizer.mdx\u0060 \u2014 CollectionSynchronizer and DocSynchronizer, how they orchestrate the Automerge sync protocol across peers, throttling, event flow\r\n- [ ] Write \u0060repo/identifiers.mdx\u0060 \u2014 DocumentId (Base58Check encoding), PeerId, StorageKey, AutomergeUrl, SessionId. Source from Abstractions lib",
+      "taskIds": [
+        "sprint-9-task-1",
+        "sprint-9-task-2",
+        "sprint-9-task-3"
+      ]
+    },
+    {
+      "id": "sprint-10",
+      "title": "API Reference \u2014 Core Document",
+      "description": "- [ ] Write \u0060api/index.mdx\u0060 \u2014 API Reference overview page, link to all reference pages, explain how to read the reference\r\n- [ ] Write \u0060api/automerge-document.mdx\u0060 \u2014 Complete method reference for AutomergeDocument (129\u002B methods). Organize by category: Creation/Disposal, Map Operations, List Operations, Text Operations, Rich Text (Marks/Blocks/Spans), History/Heads, Branching, Persistence, Sync, Object Graph. Include signature, parameters, returns, exceptions, and brief example for each method\r\n- [ ] Write \u0060api/automerge-sync-state.mdx\u0060 \u2014 AutomergeSyncState: Create, Encode, Decode, Reset, SharedHeads\r\n- [ ] Write \u0060api/automerge-cursor.mdx\u0060 \u2014 AutomergeCursor: FromBytes, ToBytes, usage with GetCursor/GetCursorPosition",
+      "taskIds": [
+        "sprint-10-task-1",
+        "sprint-10-task-2",
+        "sprint-10-task-3",
+        "sprint-10-task-4"
+      ]
+    },
+    {
+      "id": "sprint-11",
+      "title": "API Reference \u2014 Types and Repo",
+      "description": "- [ ] Write \u0060api/automerge-spans.mdx\u0060 \u2014 AutomergeSpan (abstract), AutomergeTextSpan (Text, Marks), AutomergeBlockSpan (BlockType, Parents, AttributesJson)\r\n- [ ] Write \u0060api/automerge-marks.mdx\u0060 \u2014 AutomergeMarkInfo (Name, Value, Start, End), ExpandMode enum, AutomergeScalarValue\r\n- [ ] Write \u0060api/automerge-patches.mdx\u0060 \u2014 AutomergePatch (ObjectId, Path, Action), AutomergePatchAction, AutomergePatchActionKind enum, AutomergePatchPathElement, AutomergeInsertEntry\r\n- [ ] Write \u0060api/automerge-conflicts.mdx\u0060 \u2014 AutomergeConflictValue, AutomergeScalarValue, AutomergeScalarValueKind enum\r\n- [ ] Write \u0060api/automerge-options.mdx\u0060 \u2014 SaveOptions (Deflate, RetainOrphans), LoadOptions, DecodedChange (Hash, Actor, Sequence, Timestamp, Message, Dependencies), ImmutableString, AutomergeContainerType, AutomergePathElement\r\n- [ ] Write \u0060api/repo.mdx\u0060 \u2014 Repo class: constructor/config, Create/Find/Delete/Clone, events, Peers, Handles, Dispose\r\n- [ ] Write \u0060api/doc-handle.mdx\u0060 \u2014 IDocHandle interface, HandleState enum, lifecycle methods, sync operations\r\n- [ ] Write \u0060api/storage.mdx\u0060 \u2014 IStorageAdapter, StorageAdapterBase, StorageKey, Chunk, ChunkInfo, ChunkType\r\n- [ ] Write \u0060api/network.mdx\u0060 \u2014 INetworkAdapter, events, PeerMetadata, IRepoMessage and all message types (SyncMessage, RequestMessage, DocumentSnapshotMessage, etc.)\r\n- [ ] Write \u0060api/identifiers.mdx\u0060 \u2014 DocumentId, PeerId, StorageKey, StorageId, SessionId, AutomergeUrl",
+      "taskIds": [
+        "sprint-11-task-1",
+        "sprint-11-task-2",
+        "sprint-11-task-3",
+        "sprint-11-task-4",
+        "sprint-11-task-5",
+        "sprint-11-task-6",
+        "sprint-11-task-7",
+        "sprint-11-task-8",
+        "sprint-11-task-9",
+        "sprint-11-task-10"
+      ]
+    },
+    {
+      "id": "sprint-12",
+      "title": "Example App \u2014 Collaborative Text Editor",
+      "description": "- [ ] Create \u0060apps/DemoApp.CollaborativeTextEditor/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060\r\n- [ ] Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument, provides text CRDT operations (SpliceText, GetText), save/load, cursor tracking (GetCursor/GetCursorPosition)\r\n- [ ] Implement \u0060Services/SyncService.cs\u0060 \u2014 manages sync state, generates/receives sync messages via InMemoryNetworkAdapter (or SignalR if Aspire available)\r\n- [ ] Implement \u0060ViewModels/TextEditorViewModel.cs\u0060 \u2014 observable text content, cursor position, peer count, commands for text input and sync\r\n- [ ] Implement \u0060Views/TextEditorView.axaml\u0060 \u2014 TextBox bound to document text, status bar showing peer count and sync status\r\n- [ ] Write \u0060README.md\u0060 for the project explaining how to run it and what APIs it demonstrates\r\n- [ ] Write \u0060examples/collaborative-text-editor.mdx\u0060 documentation page with step-by-step walkthrough of the app code and architecture\r\n- [ ] Verify the app builds with \u0060dotnet build apps/DemoApp.CollaborativeTextEditor\u0060",
+      "taskIds": [
+        "sprint-12-task-1",
+        "sprint-12-task-2",
+        "sprint-12-task-3",
+        "sprint-12-task-4",
+        "sprint-12-task-5",
+        "sprint-12-task-6",
+        "sprint-12-task-7",
+        "sprint-12-task-8"
+      ]
+    },
+    {
+      "id": "sprint-13",
+      "title": "Example App \u2014 Task Board",
+      "description": "- [ ] Create \u0060apps/DemoApp.TaskBoard/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060\r\n- [ ] Implement \u0060Models/\u0060 \u2014 Column (map with name, order), TaskItem (map with title, description, status, vote counter)\r\n- [ ] Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument, CRUD operations for columns (PutObject) and tasks (ListInsertObject, ListRemove, ListSplice), counter increments\r\n- [ ] Implement \u0060ViewModels/BoardViewModel.cs\u0060 \u2014 observable columns collection, drag-drop move (ListRemove \u002B ListInsertObject), add/delete columns and tasks\r\n- [ ] Implement \u0060Views/BoardView.axaml\u0060 \u2014 horizontal column layout with vertical task lists, add/remove buttons, vote counter display\r\n- [ ] Write \u0060README.md\u0060 and \u0060examples/task-board.mdx\u0060 documentation page\r\n- [ ] Verify the app builds with \u0060dotnet build apps/DemoApp.TaskBoard\u0060",
+      "taskIds": [
+        "sprint-13-task-1",
+        "sprint-13-task-2",
+        "sprint-13-task-3",
+        "sprint-13-task-4",
+        "sprint-13-task-5",
+        "sprint-13-task-6",
+        "sprint-13-task-7"
+      ]
+    },
+    {
+      "id": "sprint-14",
+      "title": "Example App \u2014 Collaborative Rich Text Editor",
+      "description": "- [ ] Create \u0060apps/DemoApp.CollaborativeEditor/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060\r\n- [ ] Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument with rich text operations: SpliceText, Mark/Unmark (bold, italic, underline, link), SplitBlock/JoinBlock, GetSpans, UpdateSpans\r\n- [ ] Implement \u0060Services/SyncService.cs\u0060 \u2014 multi-peer sync using SignalR or InMemory adapter\r\n- [ ] Implement \u0060Models/FormattingState.cs\u0060 \u2014 tracks active marks at cursor position for toolbar state\r\n- [ ] Implement \u0060ViewModels/EditorViewModel.cs\u0060 \u2014 observable formatted text content, formatting toggle commands (bold, italic, etc.), block type selection, sync status\r\n- [ ] Implement \u0060Views/EditorView.axaml\u0060 \u2014 formatting toolbar (bold/italic/underline/link buttons), text editor area rendering spans with formatting, block type dropdown\r\n- [ ] Write \u0060README.md\u0060 and \u0060examples/collaborative-editor.mdx\u0060 documentation page with detailed walkthrough\r\n- [ ] Verify the app builds with \u0060dotnet build apps/DemoApp.CollaborativeEditor\u0060",
+      "taskIds": [
+        "sprint-14-task-1",
+        "sprint-14-task-2",
+        "sprint-14-task-3",
+        "sprint-14-task-4",
+        "sprint-14-task-5",
+        "sprint-14-task-6",
+        "sprint-14-task-7",
+        "sprint-14-task-8"
+      ]
+    },
+    {
+      "id": "sprint-15",
+      "title": "Example App \u2014 Figma Clone",
+      "description": "- [ ] Create \u0060apps/DemoApp.FigmaClone/\u0060 project scaffold: \u0060.csproj\u0060 (Avalonia Desktop, references Six.Automerge and Six.Automerge.Repo), \u0060Program.cs\u0060, \u0060App.axaml\u0060\r\n- [ ] Implement \u0060Models/\u0060 \u2014 CanvasObject (map with type, x, y, width, height, color, zOrder), Layer (list of object references)\r\n- [ ] Implement \u0060Services/AutomergeService.cs\u0060 \u2014 wraps AutomergeDocument for canvas operations: add/move/resize/recolor objects (PutObject, PutDouble, PutString), manage layers (ListInsertObject, ListRemove)\r\n- [ ] Implement \u0060ViewModels/CanvasViewModel.cs\u0060 \u2014 observable canvas objects, selection state, drag-to-move/resize, Fork for undo (Fork \u002B Merge pattern)\r\n- [ ] Implement \u0060Views/CanvasView.axaml\u0060 \u2014 drawing surface rendering shapes, selection handles, toolbar for shape types, layer panel\r\n- [ ] Implement \u0060Services/SyncService.cs\u0060 \u2014 multi-peer sync so multiple users see real-time shape changes\r\n- [ ] Write \u0060README.md\u0060 and \u0060examples/figma-clone.mdx\u0060 documentation page\r\n- [ ] Verify the app builds with \u0060dotnet build apps/DemoApp.FigmaClone\u0060",
+      "taskIds": [
+        "sprint-15-task-1",
+        "sprint-15-task-2",
+        "sprint-15-task-3",
+        "sprint-15-task-4",
+        "sprint-15-task-5",
+        "sprint-15-task-6",
+        "sprint-15-task-7",
+        "sprint-15-task-8"
+      ]
+    },
+    {
+      "id": "sprint-16",
+      "title": "Examples Overview, Final Sidebar Config, and Polish",
+      "description": "- [ ] Write \u0060examples/index.mdx\u0060 \u2014 examples overview page with cards linking to each example app, describing complexity level and APIs demonstrated\r\n- [ ] Final update of \u0060docs/astro.config.mjs\u0060 \u2014 complete sidebar configuration covering all ~67 pages, verify all slugs match file paths\r\n- [ ] Verify all old \u0060automerge/\u0060 pages have been properly migrated or deleted (no dead links)\r\n- [ ] Review and update \u0060docs/src/content/docs/index.mdx\u0060 landing page \u2014 update feature cards, update \u0022Get Started\u0022 link to new guides path\r\n- [ ] Update \u0060introduction/index.mdx\u0060 with links to new documentation structure\r\n- [ ] Spot-check that all code examples use correct API names (Six.Automerge namespace), correct method signatures, and compile-ready patterns\r\n- [ ] Verify the documentation site builds: run \u0060npm run build\u0060 or \u0060pnpm build\u0060 in \u0060docs/\u0060 directory",
+      "taskIds": [
+        "sprint-16-task-1",
+        "sprint-16-task-2",
+        "sprint-16-task-3",
+        "sprint-16-task-4",
+        "sprint-16-task-5",
+        "sprint-16-task-6",
+        "sprint-16-task-7"
+      ]
+    }
+  ],
+  "currentSprintIndex": 16,
+  "currentTaskId": "sprint-16-task-7",
+  "completedCount": 113,
+  "totalCount": 113,
+  "completionPercent": 100,
+  "hasSprints": true
+}

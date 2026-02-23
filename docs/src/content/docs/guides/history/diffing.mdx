@@ -1,0 +1,231 @@
+---
+title: "Diffing"
+description: Compare document states between commits and track incremental changes with patches
+---
+
+# Overview
+
+Automerge can compute the difference between any two points in a document's history. The result is a list of **patches** — structured descriptions of exactly what changed. This is useful for building undo/redo, change notifications, activity feeds, and conflict resolution UIs.
+
+# Diff Between Heads
+
+Use `Diff` to compare two sets of heads and get the patches that transform the first state into the second:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "title", "Hello");
+doc.Commit("initial");
+var initialHeads = doc.GetHeads();
+
+doc.PutString(root, "title", "Greetings");
+doc.Commit("update");
+var updatedHeads = doc.GetHeads();
+
+var patches = doc.Diff(initialHeads, updatedHeads);
+// 1 patch: PutMap "title" = "Greetings"
+```
+
+# The AutomergePatch Model
+
+Each patch contains three parts:
+
+- **ObjectId** — the object that was modified (root map, a list, a text, etc.)
+- **Path** — the path from the document root to the modified object
+- **Action** — what changed
+
+## Patch Action Kinds
+
+The `AutomergePatchActionKind` enum describes the type of change:
+
+| Kind | Description |
+|------|-------------|
+| `PutMap` | A map key was set or updated |
+| `PutSeq` | A list element was replaced at an index |
+| `Insert` | New elements were inserted into a list |
+| `SpliceText` | Text was inserted or deleted in a text object |
+| `Increment` | A counter was incremented |
+| `DeleteMap` | A map key was deleted |
+| `DeleteSeq` | A list element was removed |
+| `Conflict` | A conflict was detected (concurrent edits to the same key) |
+| `Mark` | A mark (formatting) was applied to text |
+
+## Reading Patch Details
+
+Each `AutomergePatchAction` provides relevant properties depending on its kind:
+
+```csharp
+var patches = doc.Diff(initialHeads, updatedHeads);
+
+foreach(var patch in patches)
+{
+    switch(patch.Action.Kind)
+    {
+        case AutomergePatchActionKind.PutMap:
+            var key = patch.Action.Key;
+            var value = patch.Action.Value;
+            // "title" was set to "Greetings"
+            break;
+
+        case AutomergePatchActionKind.PutSeq:
+            var index = patch.Action.Index;
+            var newValue = patch.Action.Value;
+            // List element at index was replaced
+            break;
+
+        case AutomergePatchActionKind.Insert:
+            var entries = patch.Action.Inserted;
+            // New entries were inserted into a list
+            break;
+
+        case AutomergePatchActionKind.SpliceText:
+            var text = patch.Action.Text;
+            var spliceIndex = patch.Action.Index;
+            // Text was inserted at spliceIndex
+            break;
+
+        case AutomergePatchActionKind.Increment:
+            var delta = patch.Action.IncrementValue;
+            // Counter was incremented by delta
+            break;
+
+        case AutomergePatchActionKind.DeleteMap:
+            var deletedKey = patch.Action.Key;
+            // Key was deleted from map
+            break;
+
+        case AutomergePatchActionKind.DeleteSeq:
+            var deletedIndex = patch.Action.Index;
+            var deletedCount = patch.Action.Length;
+            // Elements removed from list
+            break;
+
+        case AutomergePatchActionKind.Mark:
+            var marks = patch.Action.Marks;
+            // Formatting marks changed
+            break;
+    }
+}
+```
+
+## Inspecting a PutMap Patch
+
+Here is how to fully inspect a `PutMap` patch:
+
+```csharp
+var patches = doc.Diff(initialHeads, updatedHeads);
+var patch = patches[0];
+
+// Path is empty when the change is on the root object
+var path = patch.Path;
+
+// The action describes what changed
+var action = patch.Action;
+// action.Kind == AutomergePatchActionKind.PutMap
+// action.Key == "title"
+
+// The value contains the new data
+var value = action.Value;
+// value.Type == AutomergeValueType.Scalar
+// value.Scalar.Kind == AutomergeScalarValueKind.String
+// value.Scalar.StringValue == "Greetings"
+```
+
+# Incremental Diffing
+
+`DiffIncremental` returns patches for changes made since the last time it was called. This is useful for building reactive UIs that only process new changes:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// First batch
+doc.PutString(root, "a", "1");
+doc.Commit("first");
+var patches1 = doc.DiffIncremental();
+// patches1 contains the "a" change
+
+// Second batch
+doc.PutString(root, "b", "2");
+doc.Commit("second");
+var patches2 = doc.DiffIncremental();
+// patches2 contains only the "b" change
+
+// No changes since last call
+var patches3 = doc.DiffIncremental();
+// patches3 is empty
+```
+
+## Tracking Multiple Commits
+
+`DiffIncremental` accumulates all changes since it was last called, regardless of how many commits were made:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Make 3 commits without calling DiffIncremental
+doc.PutString(root, "x", "1");
+doc.Commit("c1");
+doc.PutString(root, "y", "2");
+doc.Commit("c2");
+doc.PutString(root, "z", "3");
+doc.Commit("c3");
+
+// All 3 changes reported at once
+var all = doc.DiffIncremental();
+// Contains at least 3 patches
+
+// Now no pending diffs
+var empty = doc.DiffIncremental();
+// empty
+
+// New change
+doc.PutString(root, "w", "4");
+doc.Commit("c4");
+
+var latest = doc.DiffIncremental();
+// Contains only the "w" change
+```
+
+# Complete Example
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Build initial state
+doc.PutString(root, "title", "My Document");
+doc.PutInt64(root, "views", 0);
+var list = doc.PutObject(root, "tags", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "draft");
+doc.Commit("initial");
+var v1 = doc.GetHeads();
+
+// Make several changes
+doc.PutString(root, "title", "Published Document");
+doc.PutInt64(root, "views", 42);
+doc.ListInsertString(list, 1, "published");
+doc.Delete(root, "views");
+doc.Commit("publish");
+var v2 = doc.GetHeads();
+
+// Diff to see what changed
+var patches = doc.Diff(v1, v2);
+
+foreach(var patch in patches)
+{
+    var kind = patch.Action.Kind;
+    // Will include:
+    // - PutMap "title" = "Published Document"
+    // - DeleteMap "views"
+    // - Insert into tags list
+}
+```
+
+# Next Steps
+
+- [Change Metadata](/Six.Automerge/guides/history/change-metadata/) — Get detailed information about individual commits
+- [Time Travel](/Six.Automerge/guides/history/time-travel/) — Read document state at historical heads
+- [Commits and Heads](/Six.Automerge/guides/history/commits-and-heads/) — Understand the commit model

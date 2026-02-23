@@ -1,0 +1,12 @@
+{
+  "id": "20260220013849-7c6f80ec",
+  "created": "2026-02-20T01:38:49.1734295Z",
+  "runSlug": "introduction-we-are-implementing-a-c-wrapper",
+  "tags": [
+    "codegen",
+    "parameter-naming",
+    "FFI",
+    "Interoptopus",
+    "error-prevention"
+  ]
+}

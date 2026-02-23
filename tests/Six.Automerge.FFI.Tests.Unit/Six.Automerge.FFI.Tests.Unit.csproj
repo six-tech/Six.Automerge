@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">    
+
+    <PropertyGroup>
+      <RootNamespace>Six.Automerge.FFI.Tests.Unit</RootNamespace>
+    </PropertyGroup>    
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\libs\Six.Automerge.FFI\Six.Automerge.FFI.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge\Six.Automerge.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj" />
+    </ItemGroup>
+
+</Project>

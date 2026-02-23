@@ -1,0 +1,355 @@
+---
+title: "Rich Text: Reading Marks"
+description: Query marks and spans from text containers using GetMarks, GetMarksAtHeads, GetSpans, and GetSpansAtHeads
+---
+
+# Overview
+
+After applying marks to text, you need to read them back — to render formatted text, inspect formatting state, or verify marks survived sync. Automerge provides two complementary read APIs:
+
+- **GetMarks** — Returns a flat list of all marks (name, value, start, end).
+- **GetSpans** — Returns text split at mark boundaries, each span carrying its marks.
+
+Both have historical variants (`GetMarksAtHeads`, `GetSpansAtHeads`) that query marks at a specific point in the document's history.
+
+# GetMarks
+
+`GetMarks` returns all active marks on a text container as a list of `AutomergeMarkInfo` objects:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Mark(textId, 6, 11, "italic", true);
+doc.Commit("mark formatting");
+
+var marks = doc.GetMarks(textId);
+// marks.Count == 2
+
+// Each mark has Name, Value, Start, End
+var boldMark = marks.First(m => m.Name == "bold");
+// boldMark.Start == 0
+// boldMark.End == 5
+// boldMark.Value.Kind == AutomergeScalarValueKind.Boolean
+// boldMark.Value.BoolValue == true
+
+var italicMark = marks.First(m => m.Name == "italic");
+// italicMark.Start == 6
+// italicMark.End == 11
+```
+
+## Mark Value Types
+
+The `Value` property on `AutomergeMarkInfo` is an `AutomergeScalarValue`. Check the `Kind` to determine the type:
+
+```csharp
+var marks = doc.GetMarks(textId);
+
+foreach (var mark in marks)
+{
+    switch (mark.Value.Kind)
+    {
+        case AutomergeScalarValueKind.Boolean:
+            Console.WriteLine($"{mark.Name}: {mark.Value.BoolValue}");
+            break;
+        case AutomergeScalarValueKind.String:
+            Console.WriteLine($"{mark.Name}: {mark.Value.StringValue}");
+            break;
+        case AutomergeScalarValueKind.Int:
+            Console.WriteLine($"{mark.Name}: {mark.Value.IntValue}");
+            break;
+    }
+}
+```
+
+## No Marks
+
+When no marks are applied, `GetMarks` returns an empty list:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Plain text");
+doc.Commit("write text");
+
+var marks = doc.GetMarks(textId);
+// marks is empty
+```
+
+## After Unmark
+
+Unmarking removes the mark from `GetMarks` results:
+
+```csharp
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Commit("mark bold");
+
+doc.Unmark(textId, "bold", 0, 5);
+doc.Commit("unmark bold");
+
+var marks = doc.GetMarks(textId);
+// marks is empty — bold was removed
+```
+
+# GetMarksAtHeads
+
+`GetMarksAtHeads` queries marks at a specific point in the document's history. This lets you inspect what marks existed at any prior commit:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Commit("mark bold");
+
+var headsWithBold = doc.GetHeads();
+
+doc.Mark(textId, 6, 11, "italic", true);
+doc.Commit("mark italic");
+
+// Current state has both marks
+var currentMarks = doc.GetMarks(textId);
+// currentMarks.Count == 2
+
+// Historical state has only bold
+var historicalMarks = doc.GetMarksAtHeads(textId, headsWithBold);
+// historicalMarks.Count == 1
+// historicalMarks[0].Name == "bold"
+```
+
+## Before Any Marks
+
+Querying at a point before marks were applied returns an empty list:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Commit("write text");
+
+var headsNoMarks = doc.GetHeads();
+
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Commit("mark bold");
+
+var historicalMarks = doc.GetMarksAtHeads(textId, headsNoMarks);
+// historicalMarks is empty
+```
+
+## After Unmark — Show Previous State
+
+You can look back to when a mark still existed, even after it's been removed:
+
+```csharp
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Commit("mark bold");
+
+var headsWithBold = doc.GetHeads();
+
+doc.Unmark(textId, "bold", 0, 5);
+doc.Commit("unmark bold");
+
+// Current: no marks
+var currentMarks = doc.GetMarks(textId);
+// currentMarks is empty
+
+// Historical: bold still exists at that point
+var historicalMarks = doc.GetMarksAtHeads(textId, headsWithBold);
+// historicalMarks.Count == 1
+// historicalMarks[0].Name == "bold"
+```
+
+# GetSpans
+
+`GetSpans` returns text split at mark boundaries. Each `AutomergeTextSpan` contains the text content and its associated marks:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Commit("mark bold on Hello");
+
+var spans = doc.GetSpans(textId);
+
+// Span 1: bold "Hello"
+var boldSpan = (AutomergeTextSpan)spans[0];
+// boldSpan.Text == "Hello"
+// boldSpan.Marks contains [bold=true]
+
+// Span 2: plain " World"
+var plainSpan = (AutomergeTextSpan)spans[1];
+// plainSpan.Text == " World"
+// plainSpan.Marks is empty
+```
+
+## Plain Text
+
+Unmarked text returns a single span with no marks:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Commit("write text");
+
+var spans = doc.GetSpans(textId);
+// Single span: AutomergeTextSpan("Hello World", marks: [])
+```
+
+## Multiple Mark Regions
+
+Text with marks on different regions splits into multiple spans:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Bold and Italic");
+doc.Mark(textId, 0, 4, "bold", true);
+doc.Mark(textId, 9, 15, "italic", true);
+doc.Commit("mark regions");
+
+var spans = doc.GetSpans(textId);
+// Span 1: "Bold" with marks: [bold=true]
+// Span 2: " and " with marks: []
+// Span 3: "Italic" with marks: [italic=true]
+```
+
+## Overlapping Marks
+
+When marks overlap, the overlapping region appears as a span with both marks:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "ABCDEF");
+doc.Mark(textId, 0, 4, "bold", true);     // ABCD bold
+doc.Mark(textId, 2, 6, "italic", true);   // CDEF italic
+doc.Commit("overlapping marks");
+
+var spans = doc.GetSpans(textId);
+// Span 1: "AB" with marks: [bold=true]
+// Span 2: "CD" with marks: [bold=true, italic=true]
+// Span 3: "EF" with marks: [italic=true]
+```
+
+This makes `GetSpans` ideal for rendering — you iterate through spans and apply the marks of each span to your UI.
+
+# GetSpansAtHeads
+
+`GetSpansAtHeads` returns spans at a specific point in history:
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Mark(textId, 0, 5, "bold", true);
+doc.Commit("mark bold");
+
+var headsWithBold = doc.GetHeads();
+
+doc.Mark(textId, 6, 11, "italic", true);
+doc.Commit("mark italic");
+
+// Historical spans — only bold
+var historicalSpans = doc.GetSpansAtHeads(textId, headsWithBold);
+var allMarks = historicalSpans
+    .OfType<AutomergeTextSpan>()
+    .SelectMany(s => s.Marks)
+    .ToList();
+// Contains "bold" but not "italic"
+```
+
+# Marks Survive Save/Load
+
+Marks persist through save/load cycles. After loading, `GetMarks` returns the same marks:
+
+```csharp
+byte[] saved;
+using (var doc = AutomergeDocument.Create())
+{
+    var root = doc.RootId;
+    var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+    doc.SpliceText(textId, 0, 0, "Hello World");
+    doc.Mark(textId, 0, 5, "bold", true);
+    doc.Mark(textId, 6, 11, "fontSize", 16L);
+    doc.Commit("write and mark");
+    saved = doc.Save();
+}
+
+using var loaded = AutomergeDocument.Load(saved);
+var loadedTextId = loaded.GetObject(loaded.RootId, "content");
+
+var marks = loaded.GetMarks(loadedTextId);
+// marks.Count == 2
+// bold mark and fontSize mark are both present
+```
+
+# Marks Survive Sync
+
+Marks transfer correctly between peers through both fork/merge and the sync protocol:
+
+## Via Fork/Merge
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var root = doc1.RootId;
+var textId = doc1.PutObject(root, "content", AutomergeContainerType.Text);
+doc1.SpliceText(textId, 0, 0, "Hello World");
+doc1.Mark(textId, 0, 5, "bold", true);
+doc1.Mark(textId, 6, 11, "link", "https://example.com");
+doc1.Commit("write and mark");
+
+using var doc2 = doc1.Fork();
+
+// Both documents see the same marks
+var marks1 = doc1.GetMarks(textId);
+var marks2 = doc2.GetMarks(textId);
+// marks1 and marks2 have identical content
+```
+
+## Via Sync Protocol
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+// ... set up text and marks in doc1 ...
+
+using var doc2 = AutomergeDocument.Create();
+using var sync1 = doc1.CreateSyncState();
+using var sync2 = doc2.CreateSyncState();
+
+for (var i = 0; i < 10; i++)
+{
+    var msg1 = doc1.GenerateSyncMessage(sync1);
+    var msg2 = doc2.GenerateSyncMessage(sync2);
+    if (msg1 == null && msg2 == null) break;
+    if (msg1 != null) doc2.ReceiveSyncMessage(sync2, msg1);
+    if (msg2 != null) doc1.ReceiveSyncMessage(sync1, msg2);
+}
+
+// doc2 now has the same marks as doc1
+var marks = doc2.GetMarks(textId);
+```
+
+# Rendering Rich Text
+
+A typical rendering loop using `GetSpans`:
+
+```csharp
+var spans = doc.GetSpans(textId);
+
+foreach (var span in spans.OfType<AutomergeTextSpan>())
+{
+    var isBold = span.Marks.Any(m => m.Name == "bold" && m.Value.BoolValue);
+    var isItalic = span.Marks.Any(m => m.Name == "italic" && m.Value.BoolValue);
+    var link = span.Marks.FirstOrDefault(m => m.Name == "link")?.Value.StringValue;
+
+    // Apply formatting to your UI framework
+    RenderText(span.Text, isBold, isItalic, link);
+}
+```
+
+# API Reference
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `doc.GetMarks(textId)` | `IReadOnlyList<AutomergeMarkInfo>` | All active marks on the text |
+| `doc.GetMarksAtHeads(textId, heads)` | `IReadOnlyList<AutomergeMarkInfo>` | Marks at a historical point |
+| `doc.GetSpans(textId)` | `IReadOnlyList<AutomergeSpan>` | Text split by mark boundaries |
+| `doc.GetSpansAtHeads(textId, heads)` | `IReadOnlyList<AutomergeSpan>` | Spans at a historical point |
+
+# Next Steps
+
+- [Marks](/Six.Automerge/guides/rich-text/marks/) — Review how to apply and remove marks.
+- [Expand Modes](/Six.Automerge/guides/rich-text/expand-modes/) — Control boundary behavior for marks.
+- [Text — Cursors](/Six.Automerge/guides/text/cursors/) — Stable position references that complement rich text.

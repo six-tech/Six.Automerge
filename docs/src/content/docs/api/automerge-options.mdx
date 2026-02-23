@@ -1,0 +1,346 @@
+---
+title: Options and Utility Types
+description: API reference for SaveOptions, LoadOptions, DecodedChange, ImmutableString, AutomergeContainerType, and AutomergePathElement
+---
+
+# Overview
+
+This page documents the option types used to configure save/load behavior, the `DecodedChange` type for history metadata, the `ImmutableString` value wrapper, and the container type and path element enums.
+
+# SaveOptions
+
+```csharp
+public sealed class SaveOptions
+```
+
+Options for `AutomergeDocument.SaveWithOptions`.
+
+**Namespace:** `Six.Automerge`
+
+## Properties
+
+### Deflate
+
+```csharp
+public bool Deflate { get; init; } = true;
+```
+
+Whether to apply DEFLATE compression to the document data. Compressed output is smaller but takes longer to produce. Default: `true`.
+
+### RetainOrphans
+
+```csharp
+public bool RetainOrphans { get; init; } = true;
+```
+
+Whether to retain orphan changes (changes whose dependencies are missing). Orphans may occur when changes arrive out of order. Default: `true`.
+
+## Example
+
+```csharp
+// Save without compression for speed
+var data = doc.SaveWithOptions(new SaveOptions { Deflate = false });
+
+// Save without orphans for smaller output
+var compact = doc.SaveWithOptions(new SaveOptions { RetainOrphans = false });
+```
+
+# LoadOptions
+
+```csharp
+public sealed class LoadOptions
+```
+
+Options for `AutomergeDocument.LoadWithOptions`.
+
+**Namespace:** `Six.Automerge`
+
+## Properties
+
+### VerificationMode
+
+```csharp
+public VerificationMode VerificationMode { get; init; } = VerificationMode.Check;
+```
+
+Whether to verify change hashes after loading. Default: `Check`.
+
+### OnPartialLoad
+
+```csharp
+public OnPartialLoad OnPartialLoad { get; init; } = OnPartialLoad.Error;
+```
+
+Behavior when the document only partially loads. Default: `Error`.
+
+## Example
+
+```csharp
+// Load without verification for speed (trusted source)
+var options = new LoadOptions
+{
+  VerificationMode = VerificationMode.NoCheck,
+  OnPartialLoad = OnPartialLoad.Ignore
+};
+using var doc = AutomergeDocument.LoadWithOptions(data, options);
+```
+
+# VerificationMode
+
+```csharp
+public enum VerificationMode
+```
+
+| Value | Description |
+|-------|-------------|
+| `Check` | Verify change hashes after loading (default). Detects corruption. |
+| `NoCheck` | Skip hash verification for faster loading. Use only with trusted data. |
+
+# OnPartialLoad
+
+```csharp
+public enum OnPartialLoad
+```
+
+| Value | Description |
+|-------|-------------|
+| `Error` | Return an error when the document only partially loads (default). |
+| `Ignore` | Ignore partial load errors and return whatever was loaded. |
+
+# DecodedChange
+
+```csharp
+public sealed class DecodedChange
+```
+
+Metadata about a committed change in an Automerge document. Returned by `AutomergeDocument.GetChangeMetadata`.
+
+**Namespace:** `Six.Automerge`
+
+## Properties
+
+### Hash
+
+```csharp
+public string Hash { get; init; }
+```
+
+The hash of this change, represented as a lowercase hex string.
+
+### Actor
+
+```csharp
+public string Actor { get; init; }
+```
+
+The actor ID who created this change.
+
+### Sequence
+
+```csharp
+public ulong Sequence { get; init; }
+```
+
+The sequence number of this change for the actor. The first change by an actor has sequence 1.
+
+### TimestampMillis
+
+```csharp
+public long TimestampMillis { get; init; }
+```
+
+The timestamp when this change was made, in Unix milliseconds.
+
+### Message
+
+```csharp
+public string? Message { get; init; }
+```
+
+The optional commit message associated with this change.
+
+### Dependencies
+
+```csharp
+public IReadOnlyList<string> Dependencies { get; init; }
+```
+
+The change hashes that this change depends on. A change with one dependency is linear; multiple dependencies indicate a merge point.
+
+## Example
+
+```csharp
+var heads = doc.GetHeads();
+var change = doc.GetChangeMetadata(heads[0]);
+if(change is not null)
+{
+  Console.WriteLine($"Hash: {change.Hash}");
+  Console.WriteLine($"Actor: {change.Actor}");
+  Console.WriteLine($"Seq: {change.Sequence}");
+  Console.WriteLine($"Time: {DateTimeOffset.FromUnixTimeMilliseconds(change.TimestampMillis)}");
+  Console.WriteLine($"Message: {change.Message}");
+  Console.WriteLine($"Deps: {change.Dependencies.Count}");
+}
+```
+
+# ImmutableString
+
+```csharp
+public readonly struct ImmutableString : IEquatable<ImmutableString>
+```
+
+A string wrapper that signals the value should be replaced atomically rather than merged character-by-character. In Automerge, regular strings in Text containers are collaborative sequences where concurrent edits can merge. `ImmutableString` prevents this by treating the value as an opaque scalar.
+
+**Namespace:** `Six.Automerge`
+
+**When to use:**
+- URLs and identifiers that must remain intact
+- Enum-like constants (e.g., `"pending"`, `"approved"`)
+- Foreign keys and database references
+- Configuration values that should be updated atomically
+
+## Constructor
+
+```csharp
+public ImmutableString(string value)
+```
+
+**Parameters:**
+- `value` — The string value to wrap. Cannot be null.
+
+**Exceptions:**
+- `ArgumentNullException` — When `value` is null.
+
+## Methods
+
+### ToString
+
+```csharp
+public override string ToString()
+```
+
+Returns the wrapped string value.
+
+## Operators
+
+### Implicit conversion to string
+
+```csharp
+public static implicit operator string(ImmutableString immutable)
+```
+
+Converts an `ImmutableString` to a `string` implicitly.
+
+### Equality
+
+Standard equality operators (`==`, `!=`) and `IEquatable<ImmutableString>` are implemented.
+
+## Example
+
+```csharp
+var url = new ImmutableString("https://example.com");
+doc.PutImmutableString(root, "website", url);
+
+ImmutableString? loaded = doc.GetImmutableString(root, "website");
+string urlStr = loaded!.Value; // Implicit conversion to string
+```
+
+# AutomergeContainerType
+
+```csharp
+public enum AutomergeContainerType
+```
+
+Specifies which container type to create with `PutObject` or `ListInsertObject`.
+
+| Value | Description |
+|-------|-------------|
+| `Map` | An ordered map of string keys to values |
+| `List` | An ordered sequence of values |
+| `Text` | A collaborative text sequence supporting marks and blocks |
+
+## Example
+
+```csharp
+var tasks = doc.PutObject(root, "tasks", AutomergeContainerType.List);
+var meta = doc.PutObject(root, "meta", AutomergeContainerType.Map);
+var bio = doc.PutObject(root, "bio", AutomergeContainerType.Text);
+```
+
+# AutomergePathElement
+
+```csharp
+public abstract class AutomergePathElement
+```
+
+Base class for path elements returned by `AutomergeDocument.Parents` and `PathToObject`. Represents one traversal step from a container to a child.
+
+**Namespace:** `Six.Automerge`
+
+## Properties
+
+### ObjectId
+
+```csharp
+public AutomergeObjectId ObjectId { get; }
+```
+
+The container at this step in the path.
+
+# AutomergeMapPathElement
+
+```csharp
+public sealed class AutomergeMapPathElement : AutomergePathElement
+```
+
+A path element through a Map container.
+
+## Properties
+
+### Key
+
+```csharp
+public string Key { get; }
+```
+
+The map key used at this step.
+
+# AutomergeListPathElement
+
+```csharp
+public sealed class AutomergeListPathElement : AutomergePathElement
+```
+
+A path element through a List or Text container.
+
+## Properties
+
+### Index
+
+```csharp
+public ulong Index { get; }
+```
+
+The list index used at this step.
+
+## Example
+
+```csharp
+var path = doc.PathToObject(nestedId);
+foreach(var elem in path)
+{
+  if(elem is AutomergeMapPathElement mapElem)
+    Console.Write($".{mapElem.Key}");
+  else if(elem is AutomergeListPathElement listElem)
+    Console.Write($"[{listElem.Index}]");
+}
+// Output: .tasks[0].description
+```
+
+# See Also
+
+- [AutomergeDocument — SaveWithOptions](/Six.Automerge/api/automerge-document/#savewithoptions) — Saving with options
+- [AutomergeDocument — LoadWithOptions](/Six.Automerge/api/automerge-document/#loadwithoptions) — Loading with options
+- [Save Options Guide](/Six.Automerge/guides/persistence/save-options/) — Save configuration guide
+- [Change Metadata Guide](/Six.Automerge/guides/history/change-metadata/) — Working with change history
+- [Object Graph Navigation](/Six.Automerge/guides/object-graph/navigation/) — Traversing the document tree

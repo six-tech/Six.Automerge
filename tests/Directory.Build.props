@@ -1,0 +1,50 @@
+<!-- Directory.Build.props for tests -->
+<Project>
+    <!-- Import parent Directory.Build.props -->
+    <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props"
+            Condition="Exists('$(MSBuildThisFileDirectory)../Directory.Build.props')"/>
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <!-- Only apply test configuration to actual test projects, not Aspire AppHost -->
+    <PropertyGroup Condition="'$(IsAspireHost)' != 'true'">        
+        <IsTestProject>true</IsTestProject>
+
+        <!-- Coverlet Collector Configuration -->
+        <UseSourceLink>true</UseSourceLink>
+        <CollectCoverage>true</CollectCoverage>
+        <CoverletOutputFormat>cobertura;html;json</CoverletOutputFormat>
+        <CoverletOutput>$(MSBuildThisFileDirectory)coverage\</CoverletOutput>
+        <CoverletOutputDirectory>$(MSBuildThisFileDirectory)coverage\</CoverletOutputDirectory>
+        <MergeWith>$(MSBuildThisFileDirectory)coverage\coverage.json</MergeWith>
+        <Include>**/*.cs</Include>
+        <Exclude>**/*.g.cs,**/*.g.i.cs,**/*.Designer.cs,**/*.AssemblyInfo.cs</Exclude>
+        <ExcludeByFile>**/bin/**/*,**/obj/**/*,**/test/**/*</ExcludeByFile>
+        <ExcludeByAttribute>ExcludeFromCodeCoverage, Obsolete, GeneratedCodeAttribute, CompilerGeneratedAttribute</ExcludeByAttribute>
+        <IncludeTestAssembly>false</IncludeTestAssembly>
+        <SingleHit>false</SingleHit>
+        <ThresholdType>line,branch,method</ThresholdType>
+        <ThresholdStat>total</ThresholdStat>
+        <Threshold>80</Threshold>
+    </PropertyGroup>
+
+    <!-- Only add test packages to actual test projects, not Aspire AppHost or infrastructure servers -->
+    <ItemGroup Condition="'$(IsAspireHost)' != 'true' AND '$(IsTestProject)' != 'false'">
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+        <PackageReference Include="xunit" Version="2.9.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.collector" Version="6.0.4">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+
+        <PackageReference Include="FluentAssertions" Version="8.8.0" />
+    </ItemGroup>
+
+</Project>

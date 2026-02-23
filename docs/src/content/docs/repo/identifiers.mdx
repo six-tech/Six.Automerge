@@ -1,0 +1,325 @@
+---
+title: Identifiers
+description: DocumentId, PeerId, StorageKey, AutomergeUrl, and SessionId — the identity types used across the Repo layer
+---
+
+# Overview
+
+The Repo layer uses several strongly-typed identifiers to distinguish documents, peers,
+storage locations, URLs, and sessions. All are lightweight `readonly record struct` types
+with implicit string conversion, making them safe to use as dictionary keys and easy to
+pass through APIs that expect strings.
+
+| Type | Package | Purpose |
+|------|---------|---------|
+| `DocumentId` | Repo.Abstractions | Identifies a document (Base58Check encoded) |
+| `PeerId` | Repo.Abstractions | Identifies a network peer |
+| `StorageKey` | Repo.Abstractions | Hierarchical key for storage operations |
+| `AutomergeUrl` | Repo | URL representation with scheme and optional heads |
+| `SessionId` | Repo.Abstractions | Identifies a session for ephemeral deduplication |
+
+# DocumentId
+
+A Base58Check-encoded identifier for Automerge documents. This mirrors the branded string
+type from the TypeScript `automerge-repo` implementation.
+
+## Encoding
+
+DocumentId uses [Base58Check](https://en.bitcoin.it/wiki/Base58Check_encoding) encoding,
+which provides:
+
+- Human-readable output (no ambiguous characters like `0`/`O` or `l`/`1`)
+- Built-in checksum for detecting typos and corruption
+- Compact representation of binary data
+
+The binary representation must be at least 16 bytes. By default, `Generate()` encodes
+a random GUID (16 bytes).
+
+## Creating a DocumentId
+
+```csharp
+// Generate a random document ID
+var docId = DocumentId.Generate();
+// Example: "4NMNnkMhL8jXrdJ9jamS58PAVdXu"
+
+// From a known string value
+var docId = DocumentId.Parse("4NMNnkMhL8jXrdJ9jamS58PAVdXu");
+
+// From binary data (at least 16 bytes)
+var bytes = new byte[16];
+RandomNumberGenerator.Fill(bytes);
+var docId = DocumentId.FromBinary(bytes);
+```
+
+## Parsing and Validation
+
+```csharp
+// Parse with exception on failure
+var docId = DocumentId.Parse("4NMNnkMhL8jXrdJ9jamS58PAVdXu");
+
+// Safe parsing
+if(DocumentId.TryParse("4NMNnkMhL8jXrdJ9jamS58PAVdXu", out var docId))
+{
+  // Valid
+}
+
+// Validation only
+bool isValid = DocumentId.IsValid("4NMNnkMhL8jXrdJ9jamS58PAVdXu");
+```
+
+`TryParse` returns `false` for null, whitespace, invalid Base58 characters, failed checksum,
+or binary data shorter than 16 bytes.
+
+## Binary Conversion
+
+```csharp
+var docId = DocumentId.Generate();
+
+// To binary
+byte[] bytes = docId.ToBinary();
+
+// From binary
+var restored = DocumentId.FromBinary(bytes);
+// restored == docId
+```
+
+Also available as static methods: `DocumentId.ToBinary(docId)` and `DocumentId.ToBinary(string)`.
+
+## String Conversion
+
+`DocumentId` has implicit operators for bidirectional string conversion:
+
+```csharp
+// Implicit to string
+DocumentId docId = DocumentId.Generate();
+string value = docId; // implicit conversion
+
+// Implicit from string (calls Parse, throws on invalid)
+DocumentId docId = "4NMNnkMhL8jXrdJ9jamS58PAVdXu";
+```
+
+This allows seamless interop with APIs that use plain strings.
+
+## API Summary
+
+| Member | Description |
+|--------|-------------|
+| `Value` | The Base58Check-encoded string |
+| `Generate()` | Create a random DocumentId from a GUID |
+| `FromBinary(byte[])` | Encode binary data (minimum 16 bytes) |
+| `FromBinary(ReadOnlySpan)` | Span overload |
+| `ToBinary()` | Decode to binary |
+| `Parse(string)` | Parse with exception on failure |
+| `TryParse(string, out DocumentId)` | Safe parse attempt |
+| `IsValid(string)` | Validate without exceptions |
+| `implicit operator string` | Convert to string |
+| `implicit operator DocumentId` | Convert from string (calls Parse) |
+
+# PeerId
+
+A unique identifier for a peer in the network. Each Repo instance generates a `PeerId`
+on startup.
+
+## Format
+
+The format is `"peer-{random}"` where `{random}` is the first 8 hex characters of a GUID:
+
+```csharp
+var peerId = PeerId.Generate();
+// Example: "peer-a1b2c3d4"
+```
+
+This mirrors the TypeScript implementation which uses `Math.random().toString(36).slice(4)`.
+
+## Usage
+
+```csharp
+// Generate
+var peerId = PeerId.Generate();
+
+// From known value
+var peerId = new PeerId("peer-alice");
+
+// Implicit string conversion
+string value = peerId;        // "peer-alice"
+PeerId fromStr = "peer-bob";  // implicit from string
+```
+
+## API Summary
+
+| Member | Description |
+|--------|-------------|
+| `PeerId(string)` | Constructor (throws if null/whitespace) |
+| `Generate()` | Create with format `"peer-{8-hex-chars}"` |
+| `implicit operator string` | Convert to string |
+| `implicit operator PeerId` | Convert from string |
+| `ToString()` | Returns the string value |
+
+# StorageKey
+
+A hierarchical key for organizing data in storage adapters. Each key consists of ordered
+string components that form a path-like structure.
+
+## Factory Methods
+
+StorageKey provides purpose-specific factories for common storage patterns:
+
+```csharp
+// Document snapshot: [documentId, "snapshot", snapshotHash]
+var key = StorageKey.DocumentSnapshot("abc123", "hash456");
+
+// Incremental change: [documentId, "incremental", changeHash]
+var key = StorageKey.DocumentIncremental("abc123", "hash789");
+
+// Sync state: [documentId, "sync-state", storageId]
+var key = StorageKey.DocumentSyncState("abc123", "storage-1");
+
+// Generic: [namespace, key]
+var key = StorageKey.Generic("metadata", "config");
+```
+
+## Prefix Matching
+
+`StartsWith` enables hierarchical filtering for range operations:
+
+```csharp
+var prefix = new StorageKey(new[] { "abc123" });
+
+var snapshotKey = StorageKey.DocumentSnapshot("abc123", "hash456");
+snapshotKey.StartsWith(prefix); // true
+
+var otherKey = StorageKey.DocumentSnapshot("xyz789", "hash456");
+otherKey.StartsWith(prefix); // false
+```
+
+This is used by `IStorageAdapter.LoadRange` and `RemoveRange` to find all data for a
+specific document.
+
+## Debug Representation
+
+```csharp
+var key = StorageKey.DocumentSnapshot("abc123", "hash456");
+key.ToDebugString(); // "abc123/snapshot/hash456"
+key.ToString();      // same as ToDebugString()
+```
+
+## API Summary
+
+| Member | Description |
+|--------|-------------|
+| `Components` | The ordered key components |
+| `StorageKey(IReadOnlyList)` | Constructor from components |
+| `DocumentSnapshot(docId, hash)` | Factory: `[docId, "snapshot", hash]` |
+| `DocumentIncremental(docId, hash)` | Factory: `[docId, "incremental", hash]` |
+| `DocumentSyncState(docId, storageId)` | Factory: `[docId, "sync-state", storageId]` |
+| `Generic(namespace, key)` | Factory: `[namespace, key]` |
+| `StartsWith(prefix)` | Check hierarchical prefix match |
+| `ToDebugString()` | Components joined with `"/"` |
+
+# AutomergeUrl
+
+A static utility class for working with Automerge URLs. The URL format is:
+
+```
+automerge:<documentId>[#head1|head2|...]
+```
+
+Examples:
+
+- `automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu`
+- `automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu#head1|head2`
+
+## Parsing
+
+```csharp
+var parsed = AutomergeUrl.Parse("automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu#head1|head2");
+
+DocumentId docId = parsed.DocumentId;
+IReadOnlyList<string>? heads = parsed.Heads; // ["head1", "head2"]
+```
+
+`Parse` throws `FormatException` if the URL does not start with `automerge:` or contains
+an invalid document ID.
+
+## Formatting
+
+```csharp
+// Without heads
+string url = AutomergeUrl.Format(docId);
+// "automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu"
+
+// With heads
+string url = AutomergeUrl.Format(docId, new[] { "head1", "head2" });
+// "automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu#head1|head2"
+```
+
+## Generating and Validating
+
+```csharp
+// Generate a new URL with a random document ID
+string url = AutomergeUrl.Generate();
+
+// Validate without throwing
+bool isValid = AutomergeUrl.IsValid("automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu");
+
+// Extract just the document ID
+DocumentId docId = AutomergeUrl.GetDocumentId("automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu");
+```
+
+## ParsedAutomergeUrl
+
+The result of `Parse`:
+
+```csharp
+public sealed record ParsedAutomergeUrl(
+  DocumentId DocumentId,
+  IReadOnlyList<string>? Heads);
+```
+
+`Heads` is `null` when no fragment is present in the URL.
+
+## API Summary
+
+| Member | Description |
+|--------|-------------|
+| `Parse(string)` | Parse URL into DocumentId and optional heads |
+| `Format(DocumentId, heads?)` | Format into URL string |
+| `Format(string, heads?)` | String-based overload |
+| `Generate()` | New URL with random DocumentId |
+| `IsValid(string)` | Validate without exceptions |
+| `GetDocumentId(string)` | Extract DocumentId from URL |
+
+# SessionId
+
+Identifies a transient session for ephemeral message deduplication. A new `SessionId` is
+generated each time a peer starts — it does not persist across restarts.
+
+## Purpose
+
+The `NetworkSubsystem` uses `SessionId` together with a message counter to build deduplication
+keys in the format `peerId:sessionId:count`. This prevents the same ephemeral message from
+being processed multiple times when it arrives through different network adapters.
+
+## Usage
+
+```csharp
+var sessionId = SessionId.Generate();
+// Example: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6" (32 hex chars, GUID "N" format)
+```
+
+## API Summary
+
+| Member | Description |
+|--------|-------------|
+| `SessionId(string)` | Constructor (throws if null/whitespace) |
+| `Generate()` | Create from GUID in "N" format (32 hex chars) |
+| `implicit operator string` | Convert to string |
+| `implicit operator SessionId` | Convert from string |
+| `ToString()` | Returns the string value |
+
+# Next Steps
+
+- [Getting Started](/Six.Automerge/repo/getting-started/) — create a Repo and work with documents
+- [Doc Handles](/Six.Automerge/repo/doc-handles/) — document references that use DocumentId
+- [Storage Adapters](/Six.Automerge/repo/storage/) — how StorageKey organizes persisted data
+- [Network Adapters](/Six.Automerge/repo/network/) — peer communication using PeerId

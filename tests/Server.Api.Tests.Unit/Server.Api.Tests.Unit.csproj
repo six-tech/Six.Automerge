@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\apps\Server.Api\Server.Api.csproj"/>
+        <ProjectReference Include="..\..\libs\Six.Automerge.SyncServer\Six.Automerge.SyncServer.csproj"/>
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj"/>
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Storage.FileSystem\Six.Automerge.Repo.Storage.FileSystem.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NSubstitute" Version="5.3.0"/>
+    </ItemGroup>
+
+    <Target Name="CopyNativeLibs" BeforeTargets="Build">
+        <Exec Command="dotnet $(MSBuildThisFileDirectory)..\..\scripts\copy-native-libs.cs -- -o $(OutputPath)" />
+    </Target>
+
+</Project>

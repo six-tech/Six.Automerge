@@ -1,0 +1,327 @@
+---
+title: "Figma Clone"
+description: Build a collaborative canvas editor with Avalonia and Automerge CRDTs using maps, lists, doubles, fork, and sync
+---
+
+# Overview
+
+This walkthrough builds a collaborative canvas editor desktop application using Automerge CRDTs. It demonstrates spatial data operations: maps for shape properties, doubles for coordinates, lists for layers, Fork for undo snapshots, and bidirectional sync for multi-peer collaboration.
+
+The finished app provides a drawing canvas where users can create rectangles and ellipses, drag shapes to reposition them, change colors, manage layers, undo changes, and see edits synced to a simulated peer in real time.
+
+# Architecture
+
+```
+CanvasViewModel
+  ├── AutomergeService (local)
+  │     └── AutomergeDocument
+  │           └── root (map)
+  │                 └── "layers" (list)
+  │                       └── layer (map)
+  │                             ├── "name", "visible"
+  │                             └── "shapes" (list)
+  │                                   └── shape (map)
+  │                                         ├── "name", "type", "color"
+  │                                         ├── "x", "y" (f64)
+  │                                         ├── "width", "height" (f64)
+  │                                         └── "zOrder" (int64)
+  └── SyncService
+        └── AutomergeService (peer, forked)
+```
+
+**AutomergeService** wraps an `AutomergeDocument` and exposes typed canvas operations.
+**SyncService** manages bidirectional Automerge sync between local and peer documents.
+**CanvasViewModel** bridges the service layer to the Avalonia UI with observable collections and commands.
+
+# Step 1: Project Setup
+
+Create an Avalonia Desktop project that references the Automerge libraries:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.6"/>
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\Six.Automerge\Six.Automerge.csproj"/>
+    <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj"/>
+  </ItemGroup>
+</Project>
+```
+
+# Step 2: AutomergeService
+
+The service initializes the document with a `layers` list containing one default layer, and provides typed operations for shapes and layers:
+
+```csharp
+sealed class AutomergeService : IDisposable
+{
+  readonly AutomergeDocument _document;
+  readonly AutomergeObjectId _layersListId;
+
+  public AutomergeService()
+  {
+    _document = AutomergeDocument.Create();
+    _layersListId = _document.PutObject(
+      _document.RootId, "layers", AutomergeContainerType.List);
+
+    // Create default layer
+    var layerId = _document.ListInsertObject(
+      _layersListId, 0, AutomergeContainerType.Map);
+    _document.PutString(layerId, "name", "Layer 1");
+    _document.PutBoolean(layerId, "visible", true);
+    _document.PutObject(layerId, "shapes", AutomergeContainerType.List);
+    _document.Commit("Initialize canvas");
+  }
+```
+
+## Adding Shapes with Double Coordinates
+
+Each shape is a map object stored in a layer's shapes list. Position and size use `PutDouble` for precise floating-point coordinates:
+
+```csharp
+  public CanvasObject AddShapeToLayer(
+    AutomergeObjectId shapesListId,
+    string name, ShapeType type,
+    double x, double y,
+    double width, double height,
+    string color)
+  {
+    ulong index = _document.ListLength(shapesListId);
+    var shapeId = _document.ListInsertObject(
+      shapesListId, index, AutomergeContainerType.Map);
+    _document.PutString(shapeId, "name", name);
+    _document.PutString(shapeId, "type", type.ToString());
+    _document.PutDouble(shapeId, "x", x);
+    _document.PutDouble(shapeId, "y", y);
+    _document.PutDouble(shapeId, "width", width);
+    _document.PutDouble(shapeId, "height", height);
+    _document.PutString(shapeId, "color", color);
+    _document.PutInt64(shapeId, "zOrder", (long)index);
+    _document.Commit($"Add shape: {name}");
+    // ... return CanvasObject
+  }
+```
+
+## Moving and Resizing
+
+Move and resize operations update individual properties and commit:
+
+```csharp
+  public void MoveShape(AutomergeObjectId shapeId, double x, double y)
+  {
+    _document.PutDouble(shapeId, "x", x);
+    _document.PutDouble(shapeId, "y", y);
+    _document.Commit("Move shape");
+  }
+
+  public void ResizeShape(AutomergeObjectId shapeId, double width, double height)
+  {
+    _document.PutDouble(shapeId, "width", width);
+    _document.PutDouble(shapeId, "height", height);
+    _document.Commit("Resize shape");
+  }
+```
+
+## Layer Management
+
+Layers are maps inside the root layers list, each containing a shapes sub-list and a boolean visibility flag:
+
+```csharp
+  public Layer AddLayer(string name)
+  {
+    ulong index = _document.ListLength(_layersListId);
+    var layerId = _document.ListInsertObject(
+      _layersListId, index, AutomergeContainerType.Map);
+    _document.PutString(layerId, "name", name);
+    _document.PutBoolean(layerId, "visible", true);
+    var shapesListId = _document.PutObject(
+      layerId, "shapes", AutomergeContainerType.List);
+    _document.Commit($"Add layer: {name}");
+    // ... return Layer
+  }
+
+  public void ToggleLayerVisibility(AutomergeObjectId layerId, bool isVisible)
+  {
+    _document.PutBoolean(layerId, "visible", isVisible);
+    _document.Commit($"Set layer visibility: {isVisible}");
+  }
+```
+
+## Reading Canvas State
+
+Read the full canvas by iterating layers and their shapes, using `GetDouble` for coordinates:
+
+```csharp
+  public List<Layer> ReadCanvas()
+  {
+    var layers = new List<Layer>();
+    ulong layerCount = _document.ListLength(_layersListId);
+
+    for(ulong i = 0; i < layerCount; i++)
+    {
+      var layerId = _document.ListGetObject(_layersListId, i);
+      var shapesListId = _document.GetObject(layerId, "shapes");
+
+      var layer = new Layer
+      {
+        ObjectId = layerId,
+        ShapesListId = shapesListId,
+        Name = _document.GetString(layerId, "name") ?? string.Empty,
+        IsVisible = _document.GetBoolean(layerId, "visible") ?? true,
+      };
+
+      ulong shapeCount = _document.ListLength(shapesListId);
+      for(ulong j = 0; j < shapeCount; j++)
+      {
+        var shapeId = _document.ListGetObject(shapesListId, j);
+        layer.Shapes.Add(new CanvasObject
+        {
+          ObjectId = shapeId,
+          X = _document.GetDouble(shapeId, "x") ?? 0,
+          Y = _document.GetDouble(shapeId, "y") ?? 0,
+          Width = _document.GetDouble(shapeId, "width") ?? 0,
+          Height = _document.GetDouble(shapeId, "height") ?? 0,
+          // ... other properties
+        });
+      }
+
+      layers.Add(layer);
+    }
+    return layers;
+  }
+```
+
+# Step 3: Fork for Undo
+
+The Fork API creates a copy of the document that shares the same history. By forking before each mutation, you get a snapshot that can be used for single-step undo:
+
+```csharp
+  AutomergeService? _undoSnapshot;
+
+  void TakeUndoSnapshot()
+  {
+    _undoSnapshot?.Dispose();
+    _undoSnapshot = _service.Fork();
+  }
+
+  void Undo()
+  {
+    if(_undoSnapshot is null) return;
+
+    byte[] savedSnapshot = _undoSnapshot.Save();
+    _undoSnapshot.Dispose();
+    _undoSnapshot = null;
+
+    var restored = AutomergeService.Load(savedSnapshot);
+    RefreshFromService(restored);
+    restored.Dispose();
+  }
+```
+
+Each shape operation calls `TakeUndoSnapshot()` before modifying the document, so pressing Undo reverts to the state before the last operation.
+
+# Step 4: SyncService
+
+The SyncService creates a forked peer and runs bidirectional sync on a 500ms timer:
+
+```csharp
+sealed class SyncService : IDisposable
+{
+  readonly AutomergeService _local;
+  readonly AutomergeService _peer;
+  readonly AutomergeSyncState _syncLocalToPeer;
+  readonly AutomergeSyncState _syncPeerToLocal;
+  readonly Timer _syncTimer;
+  readonly object _syncLock = new();
+
+  public SyncService(AutomergeService local, AutomergeService peer)
+  {
+    _local = local;
+    _peer = peer;
+    _syncLocalToPeer = _local.Document.CreateSyncState();
+    _syncPeerToLocal = _peer.Document.CreateSyncState();
+    _syncTimer = new Timer(500);
+    _syncTimer.Elapsed += OnSyncTimerElapsed;
+  }
+
+  public bool RunSyncRound()
+  {
+    lock(_syncLock)
+    {
+      bool exchanged = false;
+      for(int i = 0; i < 10; i++)
+      {
+        var msgA = _local.Document.GenerateSyncMessage(_syncLocalToPeer);
+        var msgB = _peer.Document.GenerateSyncMessage(_syncPeerToLocal);
+        if(msgA is null && msgB is null) break;
+        if(msgA is not null)
+        {
+          _peer.Document.ReceiveSyncMessage(_syncPeerToLocal, msgA);
+          exchanged = true;
+        }
+        if(msgB is not null)
+        {
+          _local.Document.ReceiveSyncMessage(_syncLocalToPeer, msgB);
+          exchanged = true;
+        }
+      }
+      return exchanged;
+    }
+  }
+}
+```
+
+Both documents converge after each sync round. Shape additions, moves, and color changes from either peer appear in both documents.
+
+# Step 5: Canvas Rendering
+
+The Avalonia Canvas renders shapes using Rectangle and Ellipse controls positioned with `Canvas.SetLeft` and `Canvas.SetTop`:
+
+```csharp
+  void AddShapeToCanvas(ShapeViewModel shape)
+  {
+    Control shapeControl = CreateShapeControl(shape);
+    Canvas.SetLeft(shapeControl, shape.X);
+    Canvas.SetTop(shapeControl, shape.Y);
+    _canvas.Children.Add(shapeControl);
+  }
+
+  Control CreateShapeControl(ShapeViewModel shape)
+  {
+    var brush = new SolidColorBrush(Color.Parse(shape.Color));
+    Control inner = shape.Type == ShapeType.Ellipse
+      ? new Ellipse { Width = shape.Width, Height = shape.Height, Fill = brush }
+      : new Rectangle { Width = shape.Width, Height = shape.Height, Fill = brush };
+
+    return new Border { Child = inner, Tag = shape };
+  }
+```
+
+Pointer events handle drawing new shapes (click-drag on empty canvas), moving existing shapes (click-drag on shape), and selection (click on shape shows selection border).
+
+# Key APIs Used
+
+| API | Purpose |
+|-----|---------|
+| `PutDouble(id, key, value)` | Set x, y, width, height coordinates |
+| `GetDouble(id, key)` | Read coordinate values |
+| `PutBoolean(id, key, value)` | Set layer visibility |
+| `GetBoolean(id, key)` | Read visibility state |
+| `PutObject(id, key, Map/List)` | Create shape maps, layer maps, shape lists |
+| `ListInsertObject(list, idx, Map)` | Add shapes and layers |
+| `ListRemove(list, idx)` | Remove shapes and layers |
+| `Fork()` | Create undo snapshot with shared document history |
+| `Save()` / `Load(bytes)` | Persist and restore canvas state |
+| `GenerateSyncMessage(state)` | Produce sync data for peer |
+| `ReceiveSyncMessage(state, msg)` | Apply sync data from peer |
+| `CreateSyncState()` | Initialize per-peer sync tracking |

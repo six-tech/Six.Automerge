@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "runSlug": "rust-compilation-and-artefacts-currently-we-a",
+  "status": "completed",
+  "currentIteration": 4,
+  "sessionId": "1de4488c-7cc0-4cf7-8b6e-b26f6f29b72f",
+  "specFiles": [
+    ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md"
+  ],
+  "startedAt": "2026-02-21T15:17:58.9035543Z",
+  "lastIterationAt": "2026-02-21T16:02:23.156038Z",
+  "stopReason": "All sprints completed"
+}

@@ -1,0 +1,76 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DemoApp.PlainEditor.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+        x:Class="DemoApp.PlainEditor.Views.EditorWindow"
+        x:DataType="vm:EditorViewModel"
+        Title="Plain Text Editor — Benchmark"
+        Width="1000" Height="700">
+
+    <Design.DataContext>
+        <vm:EditorViewModel/>
+    </Design.DataContext>
+
+    <DockPanel>
+        <!-- Top toolbar -->
+        <Border DockPanel.Dock="Top" Padding="8">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center">
+                    <TextBlock FontSize="12" Foreground="#666666" VerticalAlignment="Center"
+                               Name="CharCountHeaderText">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Chars: {0}">
+                                <Binding Path="DocumentText.Length"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Plain Text Editor" FontWeight="Bold" FontSize="16"
+                               VerticalAlignment="Center" Margin="0,0,16,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Bottom status bar -->
+        <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="12"
+                        Margin="8,4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <TextBlock FontSize="11" VerticalAlignment="Center" Name="CursorPositionText">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="Pos: {0}">
+                            <Binding Path="CursorPosition"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+                <TextBlock FontSize="11" VerticalAlignment="Center" Name="SelectionLengthText">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="Sel: {0}">
+                            <Binding Path="SelectionLength"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+                <TextBlock FontSize="11" VerticalAlignment="Center" Name="CharCountText">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="Chars: {0}">
+                            <Binding Path="DocumentText.Length"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <!-- Plain text editor -->
+        <TextBox Text="{Binding DocumentText, Mode=TwoWay}"
+                 AcceptsReturn="True"
+                 AcceptsTab="True"
+                 TextWrapping="Wrap"
+                 Watermark="Start typing here..."
+                 Margin="8"
+                 Name="LocalEditor"/>
+    </DockPanel>
+
+</Window>

@@ -1,0 +1,219 @@
+---
+title: "Fork at Heads"
+description: Create branches from specific historical points to build concurrent timelines
+---
+
+# Overview
+
+`ForkAtHeads` creates a new independent document starting from a specific point in history. Unlike `Fork`, which copies the latest state, `ForkAtHeads` lets you go back to any commit and branch from there. This enables what-if scenarios, concurrent branches, and time-based branching.
+
+# Basic Usage
+
+Provide the heads you want to fork at:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "title", "Original");
+doc.Commit();
+var headsBeforeFork = doc.GetHeads();
+
+using var forked = doc.ForkAtHeads(headsBeforeFork);
+
+// Both documents have the same content at that point
+var originalJson = doc.HydrateJson();
+var forkedJson = forked.HydrateJson();
+```
+
+# Independent Changes
+
+Changes to the forked document do not affect the original:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "counter", "0");
+doc.Commit();
+var heads = doc.GetHeads();
+
+using var forked = doc.ForkAtHeads(heads);
+
+forked.PutString(forked.RootId, "counter", "100");
+forked.Commit();
+
+var originalJson = doc.HydrateJson();
+// "counter": "0"
+
+var forkedJson = forked.HydrateJson();
+// "counter": "100"
+```
+
+Changes to the original do not affect the fork:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "value", "original");
+doc.Commit();
+var heads = doc.GetHeads();
+
+using var forked = doc.ForkAtHeads(heads);
+
+doc.PutString(doc.RootId, "value", "modified");
+doc.Commit();
+
+var originalJson = doc.HydrateJson();
+// "value": "modified"
+
+var forkedJson = forked.HydrateJson();
+// "value": "original"
+```
+
+# Creating Concurrent Branches
+
+Fork at an earlier point, make changes, then merge back to create a concurrent branch in the history:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "text", "base");
+doc.Commit();
+var baseHeads = doc.GetHeads();
+
+// Advance the original
+doc.PutString(doc.RootId, "text", "main branch");
+doc.Commit();
+
+// Fork at the base point and make a concurrent change
+using var forked = doc.ForkAtHeads(baseHeads);
+forked.PutString(forked.RootId, "text", "forked branch");
+forked.Commit();
+
+// Merge the fork back
+var mergedHashes = doc.Merge(forked);
+// The document now contains the history of both branches
+```
+
+# What-If Scenarios
+
+Fork at a past state to explore alternative outcomes without affecting the main document:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "initial", "value");
+doc.Commit();
+var baseHeads = doc.GetHeads();
+
+doc.PutString(doc.RootId, "main", "change");
+doc.Commit();
+
+// What if we had gone a different direction?
+using var forked = doc.ForkAtHeads(baseHeads);
+forked.PutString(forked.RootId, "forked", "change");
+forked.Commit();
+
+// The fork has the initial value plus its own change
+var forkedJson = forked.HydrateJson();
+// Contains "initial" and "forked" but not "main"
+
+// The original is unaffected
+var currentJson = doc.HydrateJson();
+// Contains "initial" and "main" but not "forked"
+```
+
+# Multiple Forks from the Same Point
+
+You can create multiple independent forks from the same historical point:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "counter", "0");
+doc.Commit();
+var heads = doc.GetHeads();
+
+using var fork1 = doc.ForkAtHeads(heads);
+using var fork2 = doc.ForkAtHeads(heads);
+
+fork1.PutString(fork1.RootId, "counter", "1");
+fork1.Commit();
+
+fork2.PutString(fork2.RootId, "counter", "2");
+fork2.Commit();
+
+// Each fork is independent
+var json1 = fork1.HydrateJson();
+// "counter": "1"
+
+var json2 = fork2.HydrateJson();
+// "counter": "2"
+```
+
+# Lifecycle
+
+Forked documents are independent objects that must be disposed separately:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "key", "value");
+doc.Commit();
+var heads = doc.GetHeads();
+
+var forked = doc.ForkAtHeads(heads);
+forked.Dispose();
+
+// Original document still works
+var json = doc.HydrateJson();
+// "key": "value"
+```
+
+# Error Handling
+
+`ForkAtHeads` validates its input:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "key", "value");
+doc.Commit();
+
+// Null heads throws ArgumentNullException
+// doc.ForkAtHeads(null!)
+
+// Empty heads throws ArgumentException
+// doc.ForkAtHeads(Array.Empty<string>())
+```
+
+# Complete Example
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Create a base document
+doc.PutString(root, "title", "Feature Spec");
+doc.PutString(root, "status", "draft");
+doc.Commit("Create spec");
+var draftHeads = doc.GetHeads();
+
+// Continue working on the main branch
+doc.PutString(root, "status", "approved");
+doc.PutString(root, "approver", "Alice");
+doc.Commit("Approve spec");
+
+// Create a what-if branch from the draft
+using var experimental = doc.ForkAtHeads(draftHeads);
+experimental.PutString(experimental.RootId, "status", "experimental");
+experimental.PutString(experimental.RootId, "notes", "Trying a different approach");
+experimental.Commit("Start experiment");
+
+// Create another branch for a different scenario
+using var alternative = doc.ForkAtHeads(draftHeads);
+alternative.PutString(alternative.RootId, "status", "alternative");
+alternative.Commit("Alternative approach");
+
+// Main: approved, with approver
+// Experimental: experimental, with notes
+// Alternative: alternative
+// All started from the same draft point
+```
+
+# Next Steps
+
+- [Fork and Merge](/Six.Automerge/guides/branching/fork-and-merge/) — Fork from the latest state and merge changes back
+- [Clone](/Six.Automerge/guides/branching/clone/) — Create exact duplicates of documents
+- [Isolate and Integrate](/Six.Automerge/guides/history/isolate-integrate/) — Switch document view to a historical point

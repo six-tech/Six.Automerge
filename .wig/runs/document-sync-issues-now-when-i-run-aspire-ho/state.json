@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "runSlug": "document-sync-issues-now-when-i-run-aspire-ho",
+  "status": "completed",
+  "currentIteration": 6,
+  "sessionId": "329b12aa-7b95-4d8d-8f3e-4edb9cd02bd7",
+  "specFiles": [
+    ".wig/specs/document-sync-issues-now-when-i-run-aspire-ho/implementation-plan.md"
+  ],
+  "startedAt": "2026-02-22T15:24:09.1690638Z",
+  "lastIterationAt": "2026-02-22T16:16:58.2046342Z",
+  "stopReason": "All sprints completed"
+}

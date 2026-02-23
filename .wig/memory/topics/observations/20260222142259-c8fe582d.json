@@ -1,0 +1,14 @@
+{
+  "id": "20260222142259-c8fe582d",
+  "created": "2026-02-22T14:22:59.7973558Z",
+  "runSlug": "demoapp-collaborativeeditor-issues-3-the-dem",
+  "contentHash": "B2303E14C35061A2",
+  "type": "observation",
+  "tags": [
+    "e2e-testing",
+    "peer-count",
+    "multi-replica",
+    "textbox-behavior",
+    "testing"
+  ]
+}

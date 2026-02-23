@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <RootNamespace>Six.Automerge.TextEdit.Tests.Unit</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Reactive" Version="6.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\libs\Six.Automerge.FFI\Six.Automerge.FFI.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge\Six.Automerge.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.TextEdit\Six.Automerge.TextEdit.csproj" />
+    </ItemGroup>
+
+    <Target Name="CopyNativeLibs" BeforeTargets="Build">
+        <Exec Command="dotnet $(MSBuildThisFileDirectory)..\..\scripts\copy-native-libs.cs -- -o $(OutputPath)" />
+    </Target>
+
+</Project>

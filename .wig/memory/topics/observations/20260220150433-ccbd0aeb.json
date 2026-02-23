@@ -1,0 +1,13 @@
+{
+  "id": "20260220150433-ccbd0aeb",
+  "created": "2026-02-20T15:04:33.6711816Z",
+  "runSlug": "introduction-you-have-written-example-applicati",
+  "contentHash": "F7138E1906ABE8CD",
+  "type": "observation",
+  "tags": [
+    "build",
+    "aspire",
+    "signalr",
+    "verification"
+  ]
+}

@@ -1,0 +1,1608 @@
+---
+title: AutomergeDocument
+description: Complete method reference for AutomergeDocument — the core class for creating, reading, and writing Automerge CRDT documents
+---
+
+# Overview
+
+`AutomergeDocument` is the primary class for working with Automerge CRDT documents. It provides methods for creating documents, reading and writing data, managing history, synchronizing with peers, and persisting state.
+
+The class implements `IDisposable` because it holds a native Rust resource. Always use a `using` statement.
+
+```csharp
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+```
+
+# Creation and Disposal
+
+## Create
+
+```csharp
+public static AutomergeDocument Create(string? actorId = null)
+```
+
+Creates a new empty Automerge document.
+
+**Parameters:**
+- `actorId` — Optional actor identifier. If null, a random actor ID is generated. If a valid hex string, it is used directly as the Automerge actor. If a non-hex string, it is UTF-8 encoded and used as the actor bytes.
+
+**Returns:** A new `AutomergeDocument`.
+
+**Exceptions:**
+- `AutomergeException` — If the actor ID is invalid.
+
+```csharp
+using var doc = AutomergeDocument.Create();
+using var docWithActor = AutomergeDocument.Create("my-app-device-1");
+```
+
+## Load
+
+```csharp
+public static AutomergeDocument Load(byte[] data)
+```
+
+Loads a document from binary data produced by `Save`.
+
+**Parameters:**
+- `data` — The binary document data. Must not be null or empty.
+
+**Returns:** A new `AutomergeDocument` containing the loaded state.
+
+**Exceptions:**
+- `ArgumentNullException` — When `data` is null.
+- `ArgumentException` — When `data` is empty.
+- `AutomergeException` — When the data is invalid or corrupted.
+
+```csharp
+byte[] saved = originalDoc.Save();
+using var restored = AutomergeDocument.Load(saved);
+```
+
+## LoadWithOptions
+
+```csharp
+public static AutomergeDocument LoadWithOptions(byte[] data, LoadOptions options)
+```
+
+Loads a document with configurable verification and error handling.
+
+**Parameters:**
+- `data` — The binary document data. Must not be null or empty.
+- `options` — Load configuration. See `LoadOptions`.
+
+**Returns:** A new `AutomergeDocument`.
+
+**Exceptions:**
+- `ArgumentNullException` — When `data` or `options` is null.
+- `ArgumentException` — When `data` is empty.
+- `AutomergeException` — When the data is invalid.
+
+```csharp
+var options = new LoadOptions
+{
+  VerificationMode = VerificationMode.NoCheck,
+  OnPartialLoad = OnPartialLoad.Ignore
+};
+using var doc = AutomergeDocument.LoadWithOptions(saved, options);
+```
+
+## Dispose
+
+```csharp
+public void Dispose()
+```
+
+Releases the native Automerge document. Automatically rolls back any uncommitted changes before disposal to prevent native panics.
+
+## RootId
+
+```csharp
+public AutomergeObjectId RootId { get; }
+```
+
+Gets the root object ID. Every document has a root Map container where top-level data is stored.
+
+**Exceptions:**
+- `ObjectDisposedException` — When the document has been disposed.
+
+```csharp
+var root = doc.RootId;
+doc.PutString(root, "title", "My Document");
+```
+
+## ActorId
+
+```csharp
+public string ActorId { get; set; }
+```
+
+Gets or sets the actor identifier for this document. The actor ID identifies who made changes and is important for synchronization.
+
+When getting: returns the human-readable string if the hex can be decoded to printable UTF-8, otherwise returns the raw hex.
+
+When setting: hex strings are used directly; non-hex strings are UTF-8 encoded.
+
+**Exceptions:**
+- `ArgumentException` — When setting to null or whitespace.
+- `AutomergeException` — When the value is invalid.
+
+```csharp
+doc.ActorId = "user-alice-device-1";
+var actor = doc.ActorId;
+```
+
+## PendingOperations
+
+```csharp
+public ulong PendingOperations { get; }
+```
+
+Gets the number of uncommitted operations. Returns 0 after a `Commit` or `Rollback`.
+
+# Commit and Rollback
+
+## Commit
+
+```csharp
+public string? Commit(string? message = null, long? timestampMillis = null)
+```
+
+Commits all pending operations as a single change.
+
+**Parameters:**
+- `message` — Optional commit message describing the change.
+- `timestampMillis` — Optional Unix timestamp in milliseconds. If null, Automerge uses its default.
+
+**Returns:** The change hash as a lowercase hex string, or null if there were no pending operations.
+
+```csharp
+doc.PutString(root, "title", "Hello");
+var hash = doc.Commit("Set title");
+```
+
+## Rollback
+
+```csharp
+public ulong Rollback()
+```
+
+Discards all uncommitted operations and returns the number of operations rolled back.
+
+**Returns:** The number of operations that were rolled back.
+
+```csharp
+doc.PutString(root, "title", "mistake");
+var count = doc.Rollback(); // count = 1, change discarded
+```
+
+## EmptyChange
+
+```csharp
+public string EmptyChange(string? message = null, long? timestampMillis = null)
+```
+
+Creates a commit with no operations. Useful for creating a merge point or recording metadata.
+
+**Parameters:**
+- `message` — Optional commit message.
+- `timestampMillis` — Optional timestamp.
+
+**Returns:** The change hash as a lowercase hex string.
+
+# Map Operations
+
+## PutString
+
+```csharp
+public void PutString(AutomergeObjectId objectId, string key, string value)
+```
+
+Sets a string value at the given key in a Map container.
+
+**Parameters:**
+- `objectId` — The target Map object.
+- `key` — The property key.
+- `value` — The string value to store.
+
+```csharp
+doc.PutString(root, "name", "Alice");
+```
+
+## GetString
+
+```csharp
+public string? GetString(AutomergeObjectId objectId, string key)
+```
+
+Gets a string value from a Map container.
+
+**Parameters:**
+- `objectId` — The target Map object.
+- `key` — The property key.
+
+**Returns:** The string value, or null if the key does not exist or the value is not a string.
+
+```csharp
+var name = doc.GetString(root, "name"); // "Alice"
+var missing = doc.GetString(root, "nonexistent"); // null
+```
+
+## PutImmutableString
+
+```csharp
+public void PutImmutableString(AutomergeObjectId objectId, string key, ImmutableString value)
+```
+
+Sets an immutable string value. Stored identically to `PutString`, but signals that the value should be replaced atomically rather than merged character-by-character. Use for URLs, IDs, and enum-like constants.
+
+## GetImmutableString
+
+```csharp
+public ImmutableString? GetImmutableString(AutomergeObjectId objectId, string key)
+```
+
+Gets an immutable string value. Returns null if the key does not exist or the value is not a string.
+
+## PutBoolean
+
+```csharp
+public void PutBoolean(AutomergeObjectId objectId, string key, bool value)
+```
+
+Sets a boolean value at the given key.
+
+## GetBoolean
+
+```csharp
+public bool? GetBoolean(AutomergeObjectId objectId, string key)
+```
+
+Gets a boolean value. Returns null if the key does not exist or the value is not a boolean.
+
+## PutInt64
+
+```csharp
+public void PutInt64(AutomergeObjectId objectId, string key, long value)
+```
+
+Sets a 64-bit signed integer value at the given key.
+
+## GetInt64
+
+```csharp
+public long? GetInt64(AutomergeObjectId objectId, string key)
+```
+
+Gets a 64-bit signed integer value. Returns null if the key does not exist or the value is not an integer.
+
+## PutUInt64
+
+```csharp
+public void PutUInt64(AutomergeObjectId objectId, string key, ulong value)
+```
+
+Sets a 64-bit unsigned integer value at the given key.
+
+## GetUInt64
+
+```csharp
+public ulong? GetUInt64(AutomergeObjectId objectId, string key)
+```
+
+Gets a 64-bit unsigned integer value. Returns null if the key does not exist or the value is not an unsigned integer.
+
+## PutDouble
+
+```csharp
+public void PutDouble(AutomergeObjectId objectId, string key, double value)
+```
+
+Sets a double-precision floating-point value at the given key.
+
+## GetDouble
+
+```csharp
+public double? GetDouble(AutomergeObjectId objectId, string key)
+```
+
+Gets a double-precision floating-point value. Returns null if the key does not exist or the value is not a double.
+
+## PutBytes
+
+```csharp
+public void PutBytes(AutomergeObjectId objectId, string key, ReadOnlySpan<byte> value)
+```
+
+Sets a byte array value at the given key.
+
+## GetBytes
+
+```csharp
+public byte[]? GetBytes(AutomergeObjectId objectId, string key)
+```
+
+Gets a byte array value. Returns null if the key does not exist or the value is not bytes.
+
+## PutNull
+
+```csharp
+public void PutNull(AutomergeObjectId objectId, string key)
+```
+
+Sets an explicit null value at the given key.
+
+## PutCounter
+
+```csharp
+public void PutCounter(AutomergeObjectId objectId, string key, long value)
+```
+
+Sets a CRDT counter at the given key with an initial value. Counters support concurrent increments from multiple peers without conflicts.
+
+## GetCounter
+
+```csharp
+public long? GetCounter(AutomergeObjectId objectId, string key)
+```
+
+Gets the current counter value. Returns null if the key does not exist or the value is not a counter.
+
+## PutTimestamp
+
+```csharp
+public void PutTimestamp(AutomergeObjectId objectId, string key, long unixMilliseconds)
+```
+
+Sets a timestamp value at the given key, stored as Unix milliseconds.
+
+## GetTimestamp
+
+```csharp
+public long? GetTimestamp(AutomergeObjectId objectId, string key)
+```
+
+Gets a timestamp value as Unix milliseconds. Returns null if the key does not exist or the value is not a timestamp.
+
+## PutObject
+
+```csharp
+public AutomergeObjectId PutObject(AutomergeObjectId objectId, string key, AutomergeContainerType type)
+```
+
+Creates a nested container (Map, List, or Text) at the given key.
+
+**Parameters:**
+- `objectId` — The parent Map object.
+- `key` — The property key.
+- `type` — The container type: `AutomergeContainerType.Map`, `List`, or `Text`.
+
+**Returns:** The `AutomergeObjectId` of the newly created container.
+
+```csharp
+var tasks = doc.PutObject(root, "tasks", AutomergeContainerType.List);
+var meta = doc.PutObject(root, "metadata", AutomergeContainerType.Map);
+var bio = doc.PutObject(root, "bio", AutomergeContainerType.Text);
+```
+
+## GetObject
+
+```csharp
+public AutomergeObjectId? GetObject(AutomergeObjectId objectId, string key)
+```
+
+Gets the object ID of a nested container at the given key. Returns null if the key does not exist or the value is not a container.
+
+```csharp
+var tasksId = doc.GetObject(root, "tasks");
+if(tasksId != null)
+{
+  var length = doc.ListLength(tasksId);
+}
+```
+
+## Delete
+
+```csharp
+public void Delete(AutomergeObjectId objectId, string key)
+```
+
+Deletes the value at the given key from a Map container.
+
+```csharp
+doc.Delete(root, "temporary_field");
+```
+
+## GetStringAtHeads
+
+```csharp
+public string? GetStringAtHeads(AutomergeObjectId objectId, string key, IEnumerable<string> heads)
+```
+
+Gets a string value as it existed at a specific point in history.
+
+**Parameters:**
+- `objectId` — The target Map object.
+- `key` — The property key.
+- `heads` — The change hashes representing the historical state.
+
+**Returns:** The string value at that point in history, or null.
+
+## Increment (Map)
+
+```csharp
+public void Increment(AutomergeObjectId objectId, string key, long delta)
+```
+
+Increments a counter value in a Map container. The key must already contain a counter (set via `PutCounter`).
+
+**Parameters:**
+- `objectId` — The target Map object.
+- `key` — The property key containing a counter.
+- `delta` — The amount to increment (can be negative to decrement).
+
+```csharp
+doc.PutCounter(root, "views", 0);
+doc.Increment(root, "views", 1);
+doc.Increment(root, "views", 5);
+var views = doc.GetCounter(root, "views"); // 6
+```
+
+## GetKeys
+
+```csharp
+public IReadOnlyList<string> GetKeys(AutomergeObjectId mapId)
+```
+
+Gets all keys in a Map container.
+
+**Returns:** A list of property keys in the map.
+
+```csharp
+var keys = doc.GetKeys(root); // ["name", "age", "tasks"]
+```
+
+## GetKeysAtHeads
+
+```csharp
+public IReadOnlyList<string> GetKeysAtHeads(AutomergeObjectId mapId, IEnumerable<string> heads)
+```
+
+Gets all keys as they existed at a specific point in history.
+
+## Values
+
+```csharp
+public IReadOnlyList<AutomergeConflictValue> Values(AutomergeObjectId objectId)
+```
+
+Gets all values in a Map or List container as `AutomergeConflictValue` entries.
+
+## ValuesAtHeads
+
+```csharp
+public IReadOnlyList<AutomergeConflictValue> ValuesAtHeads(AutomergeObjectId objectId, IEnumerable<string> heads)
+```
+
+Gets all values as they existed at a specific point in history.
+
+## MapRange
+
+```csharp
+public IReadOnlyList<AutomergeConflictValue> MapRange(AutomergeObjectId mapId, string startKey, string endKey)
+```
+
+Gets values for keys in the lexicographic range [startKey, endKey).
+
+**Parameters:**
+- `mapId` — The target Map object.
+- `startKey` — The inclusive start key.
+- `endKey` — The exclusive end key.
+
+**Returns:** Conflict values for keys in the specified range.
+
+## MapRangeFull
+
+```csharp
+public IReadOnlyList<AutomergeConflictValue> MapRangeFull(AutomergeObjectId mapId)
+```
+
+Gets all key-value pairs in a Map as conflict values. Equivalent to calling `MapRange` over the entire key space.
+
+## GetAll (Map)
+
+```csharp
+public IReadOnlyList<AutomergeConflictValue> GetAll(AutomergeObjectId objectId, string key)
+```
+
+Gets all concurrent values at a key, including conflicts. When multiple peers set the same key concurrently, this returns all values with their operation IDs.
+
+**Returns:** A list of conflict values. Contains one entry if no conflict, multiple if concurrent writes occurred.
+
+```csharp
+var values = doc.GetAll(root, "status");
+foreach(var v in values)
+{
+  if(v.IsObject)
+    Console.WriteLine($"Object: {v.ObjectId} ({v.ObjectType})");
+  else
+    Console.WriteLine($"Scalar: {v.Scalar} (op: {v.OperationId})");
+}
+```
+
+## GetAllAtHeads (Map)
+
+```csharp
+public IReadOnlyList<AutomergeConflictValue> GetAllAtHeads(
+  AutomergeObjectId objectId, string key, IEnumerable<string> heads)
+```
+
+Gets all concurrent values at a key as they existed at a historical point.
+
+# List Operations
+
+## ListInsertString
+
+```csharp
+public void ListInsertString(AutomergeObjectId listId, ulong index, string value)
+```
+
+Inserts a string value at the given index in a List container. Existing items at and after the index shift right.
+
+**Parameters:**
+- `listId` — The target List object.
+- `index` — The position to insert at (0-based). Must be between 0 and the current list length (inclusive).
+- `value` — The string value to insert.
+
+```csharp
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "first");
+doc.ListInsertString(list, 1, "second");
+```
+
+## ListInsertBoolean
+
+```csharp
+public void ListInsertBoolean(AutomergeObjectId listId, ulong index, bool value)
+```
+
+Inserts a boolean value at the given index.
+
+## ListInsertInt64
+
+```csharp
+public void ListInsertInt64(AutomergeObjectId listId, ulong index, long value)
+```
+
+Inserts a 64-bit signed integer at the given index.
+
+## ListInsertUInt64
+
+```csharp
+public void ListInsertUInt64(AutomergeObjectId listId, ulong index, ulong value)
+```
+
+Inserts a 64-bit unsigned integer at the given index.
+
+## ListInsertDouble
+
+```csharp
+public void ListInsertDouble(AutomergeObjectId listId, ulong index, double value)
+```
+
+Inserts a double-precision floating-point value at the given index.
+
+## ListInsertBytes
+
+```csharp
+public void ListInsertBytes(AutomergeObjectId listId, ulong index, ReadOnlySpan<byte> value)
+```
+
+Inserts a byte array at the given index.
+
+## ListInsertNull
+
+```csharp
+public void ListInsertNull(AutomergeObjectId listId, ulong index)
+```
+
+Inserts an explicit null at the given index.
+
+## ListInsertObject
+
+```csharp
+public AutomergeObjectId ListInsertObject(AutomergeObjectId listId, ulong index, AutomergeContainerType type)
+```
+
+Inserts a nested container at the given index.
+
+**Returns:** The `AutomergeObjectId` of the newly created container.
+
+```csharp
+var tasks = doc.PutObject(root, "tasks", AutomergeContainerType.List);
+var task = doc.ListInsertObject(tasks, 0, AutomergeContainerType.Map);
+doc.PutString(task, "title", "Buy groceries");
+doc.PutBoolean(task, "done", false);
+```
+
+## ListPutString
+
+```csharp
+public void ListPutString(AutomergeObjectId listId, ulong index, string value)
+```
+
+Replaces the value at the given index with a string. Unlike `ListInsert*`, this overwrites an existing element rather than inserting a new one.
+
+**Parameters:**
+- `listId` — The target List object.
+- `index` — The position to overwrite (must be within current list bounds).
+- `value` — The new string value.
+
+## ListPutBoolean
+
+```csharp
+public void ListPutBoolean(AutomergeObjectId listId, ulong index, bool value)
+```
+
+Replaces the value at the given index with a boolean.
+
+## ListPutInt64
+
+```csharp
+public void ListPutInt64(AutomergeObjectId listId, ulong index, long value)
+```
+
+Replaces the value at the given index with a 64-bit signed integer.
+
+## ListPutUInt64
+
+```csharp
+public void ListPutUInt64(AutomergeObjectId listId, ulong index, ulong value)
+```
+
+Replaces the value at the given index with a 64-bit unsigned integer.
+
+## ListPutDouble
+
+```csharp
+public void ListPutDouble(AutomergeObjectId listId, ulong index, double value)
+```
+
+Replaces the value at the given index with a double.
+
+## ListPutBytes
+
+```csharp
+public void ListPutBytes(AutomergeObjectId listId, ulong index, ReadOnlySpan<byte> value)
+```
+
+Replaces the value at the given index with a byte array.
+
+## ListPutNull
+
+```csharp
+public void ListPutNull(AutomergeObjectId listId, ulong index)
+```
+
+Replaces the value at the given index with null.
+
+## ListPutObject
+
+```csharp
+public AutomergeObjectId ListPutObject(AutomergeObjectId listId, ulong index, AutomergeContainerType type)
+```
+
+Replaces the value at the given index with a nested container.
+
+**Returns:** The `AutomergeObjectId` of the newly created container.
+
+## ListRemove
+
+```csharp
+public void ListRemove(AutomergeObjectId listId, ulong index)
+```
+
+Removes the element at the given index. Elements after the index shift left.
+
+```csharp
+doc.ListRemove(list, 0); // Remove first element
+```
+
+## ListSplice
+
+```csharp
+public void ListSplice(
+  AutomergeObjectId listId, ulong index, long delete, IReadOnlyList<AutomergeScalarValue> values)
+```
+
+Removes `delete` elements starting at `index`, then inserts the given values at that position. Similar to JavaScript's `Array.splice`.
+
+**Parameters:**
+- `listId` — The target List object.
+- `index` — The starting position.
+- `delete` — The number of elements to remove.
+- `values` — Scalar values to insert at the position.
+
+## ListGetString
+
+```csharp
+public string? ListGetString(AutomergeObjectId listId, ulong index)
+```
+
+Gets the string value at the given index. Returns null if the index is out of bounds or the value is not a string.
+
+## ListGetBoolean
+
+```csharp
+public bool? ListGetBoolean(AutomergeObjectId listId, ulong index)
+```
+
+Gets the boolean value at the given index. Returns null if out of bounds or wrong type.
+
+## ListGetInt64
+
+```csharp
+public long? ListGetInt64(AutomergeObjectId listId, ulong index)
+```
+
+Gets the 64-bit signed integer at the given index. Returns null if out of bounds or wrong type.
+
+## ListGetUInt64
+
+```csharp
+public ulong? ListGetUInt64(AutomergeObjectId listId, ulong index)
+```
+
+Gets the 64-bit unsigned integer at the given index. Returns null if out of bounds or wrong type.
+
+## ListGetDouble
+
+```csharp
+public double? ListGetDouble(AutomergeObjectId listId, ulong index)
+```
+
+Gets the double at the given index. Returns null if out of bounds or wrong type.
+
+## ListGetBytes
+
+```csharp
+public byte[]? ListGetBytes(AutomergeObjectId listId, ulong index)
+```
+
+Gets the byte array at the given index. Returns null if out of bounds or wrong type.
+
+## ListGetObject
+
+```csharp
+public AutomergeObjectId? ListGetObject(AutomergeObjectId listId, ulong index)
+```
+
+Gets the object ID of a nested container at the given index. Returns null if the index is out of bounds or the value is not a container.
+
+## ListGetStringAtHeads
+
+```csharp
+public string? ListGetStringAtHeads(AutomergeObjectId listId, ulong index, IEnumerable<string> heads)
+```
+
+Gets a string value at a historical point in time.
+
+## ListLength
+
+```csharp
+public ulong ListLength(AutomergeObjectId listId)
+```
+
+Gets the number of elements in a List container.
+
+```csharp
+var count = doc.ListLength(list); // 3
+```
+
+## ListRange
+
+```csharp
+public IReadOnlyList<AutomergeConflictValue> ListRange(
+  AutomergeObjectId listId, ulong startIndex, ulong endIndex)
+```
+
+Gets values in the index range [startIndex, endIndex) as conflict values.
+
+## ListRangeFull
+
+```csharp
+public IReadOnlyList<AutomergeConflictValue> ListRangeFull(AutomergeObjectId listId)
+```
+
+Gets all values in a List as conflict values.
+
+## GetAll (List)
+
+```csharp
+public IReadOnlyList<AutomergeConflictValue> GetAll(AutomergeObjectId listId, ulong index)
+```
+
+Gets all concurrent values at a list index, including conflicts.
+
+## GetAllAtHeads (List)
+
+```csharp
+public IReadOnlyList<AutomergeConflictValue> GetAllAtHeads(
+  AutomergeObjectId listId, ulong index, IEnumerable<string> heads)
+```
+
+Gets all concurrent values at a list index at a historical point.
+
+## Increment (List)
+
+```csharp
+public void Increment(AutomergeObjectId listId, ulong index, long delta)
+```
+
+Increments a counter value at the given list index.
+
+# Text Operations
+
+## SpliceText
+
+```csharp
+public void SpliceText(AutomergeObjectId textId, ulong index, long deleteCount, string text)
+```
+
+Inserts and/or deletes text at the given position. This is the primary text editing operation.
+
+**Parameters:**
+- `textId` — The target Text object.
+- `index` — The character position (0-based).
+- `deleteCount` — Number of characters to delete starting at `index`.
+- `text` — Text to insert at `index` (after deletion). Use empty string to only delete.
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello world");    // Insert
+doc.SpliceText(textId, 5, 6, "");               // Delete " world"
+doc.SpliceText(textId, 5, 0, " everyone");      // Insert " everyone"
+// Result: "Hello everyone"
+```
+
+## GetText
+
+```csharp
+public string GetText(AutomergeObjectId textId)
+```
+
+Gets the full text content of a Text container.
+
+**Returns:** The text content as a string.
+
+```csharp
+var content = doc.GetText(textId); // "Hello everyone"
+```
+
+## GetTextAtHeads
+
+```csharp
+public string GetTextAtHeads(AutomergeObjectId textId, IEnumerable<string> heads)
+```
+
+Gets the text content as it existed at a specific point in history.
+
+## GetCursor
+
+```csharp
+public AutomergeCursor GetCursor(AutomergeObjectId objectId, ulong index)
+```
+
+Creates a cursor that tracks a logical position in a List or Text. The cursor follows the element at the given index even as concurrent edits shift indices.
+
+**Parameters:**
+- `objectId` — The target List or Text object.
+- `index` — The current index to track.
+
+**Returns:** An `AutomergeCursor` that can be serialized and later resolved back to a position.
+
+```csharp
+var cursor = doc.GetCursor(textId, 5);
+// After concurrent inserts/deletes, resolve current position:
+var currentPos = doc.GetCursorPosition(textId, cursor);
+```
+
+## GetCursorPosition
+
+```csharp
+public ulong GetCursorPosition(AutomergeObjectId objectId, AutomergeCursor cursor)
+```
+
+Resolves a cursor to its current index position. The position reflects all changes applied since the cursor was created.
+
+**Parameters:**
+- `objectId` — The List or Text object the cursor belongs to.
+- `cursor` — The cursor to resolve.
+
+**Returns:** The current index position.
+
+# Rich Text — Marks
+
+## Mark (string value)
+
+```csharp
+public void Mark(
+  AutomergeObjectId textId, ulong start, ulong end,
+  string name, string markValue, ExpandMode expand = ExpandMode.After)
+```
+
+Applies a string-valued mark to a range of text.
+
+**Parameters:**
+- `textId` — The target Text object.
+- `start` — Start index (inclusive).
+- `end` — End index (exclusive).
+- `name` — The mark name (e.g., "bold", "link", "color").
+- `markValue` — The string value (e.g., a URL for a link mark).
+- `expand` — Controls whether the mark expands when text is inserted at its boundaries. Default: `ExpandMode.After`.
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello world");
+doc.Mark(textId, 0, 5, "bold", "true");
+doc.Mark(textId, 6, 11, "link", "https://example.com");
+```
+
+## Mark (boolean value)
+
+```csharp
+public void Mark(
+  AutomergeObjectId textId, ulong start, ulong end,
+  string name, bool markValue, ExpandMode expand = ExpandMode.After)
+```
+
+Applies a boolean-valued mark to a range of text.
+
+```csharp
+doc.Mark(textId, 0, 5, "bold", true);
+```
+
+## Mark (integer value)
+
+```csharp
+public void Mark(
+  AutomergeObjectId textId, ulong start, ulong end,
+  string name, long markValue, ExpandMode expand = ExpandMode.After)
+```
+
+Applies an integer-valued mark to a range of text.
+
+```csharp
+doc.Mark(textId, 0, 11, "fontSize", 16L);
+```
+
+## Unmark
+
+```csharp
+public void Unmark(
+  AutomergeObjectId textId, string name, ulong start, ulong end,
+  ExpandMode expand = ExpandMode.After)
+```
+
+Removes a mark from a range of text.
+
+**Parameters:**
+- `textId` — The target Text object.
+- `name` — The mark name to remove.
+- `start` — Start index (inclusive).
+- `end` — End index (exclusive).
+- `expand` — Should match the expand mode used when the mark was created.
+
+```csharp
+doc.Unmark(textId, "bold", 0, 5);
+```
+
+## GetMarks
+
+```csharp
+public IReadOnlyList<AutomergeMarkInfo> GetMarks(AutomergeObjectId textId)
+```
+
+Gets all marks currently applied to a Text object.
+
+**Returns:** A list of `AutomergeMarkInfo` entries, each with `Name`, `Value`, `Start`, and `End`.
+
+```csharp
+var marks = doc.GetMarks(textId);
+foreach(var mark in marks)
+{
+  Console.WriteLine($"{mark.Name}: {mark.Start}-{mark.End}");
+}
+```
+
+## GetMarksAtHeads
+
+```csharp
+public IReadOnlyList<AutomergeMarkInfo> GetMarksAtHeads(
+  AutomergeObjectId textId, IEnumerable<string> heads)
+```
+
+Gets all marks at a historical point in time.
+
+# Rich Text — Spans
+
+## GetSpans
+
+```csharp
+public IReadOnlyList<AutomergeSpan> GetSpans(AutomergeObjectId textId)
+```
+
+Gets the text as a sequence of spans. Each span is either an `AutomergeTextSpan` (text with marks) or an `AutomergeBlockSpan` (block-level marker).
+
+**Returns:** An ordered list of spans representing the rich text structure.
+
+```csharp
+var spans = doc.GetSpans(textId);
+foreach(var span in spans)
+{
+  if(span is AutomergeTextSpan textSpan)
+    Console.WriteLine($"Text: \"{textSpan.Text}\" marks: {textSpan.Marks.Count}");
+  else if(span is AutomergeBlockSpan blockSpan)
+    Console.WriteLine($"Block: {blockSpan.BlockType}");
+}
+```
+
+## GetSpansAtHeads
+
+```csharp
+public IReadOnlyList<AutomergeSpan> GetSpansAtHeads(
+  AutomergeObjectId textId, IEnumerable<string> heads)
+```
+
+Gets spans at a historical point in time.
+
+## UpdateSpans
+
+```csharp
+public void UpdateSpans(AutomergeObjectId textId, IReadOnlyList<AutomergeSpan> spans)
+```
+
+Replaces the text content by computing a minimal diff against the current state and applying only the necessary changes. This is the recommended way to update rich text content from an editor.
+
+**Parameters:**
+- `textId` — The target Text object.
+- `spans` — The desired span structure.
+
+# Rich Text — Blocks
+
+## SplitBlock
+
+```csharp
+public AutomergeObjectId SplitBlock(AutomergeObjectId textId, ulong index)
+```
+
+Inserts a block marker at the given index, splitting the text into two sections.
+
+**Parameters:**
+- `textId` — The target Text object.
+- `index` — Position to insert the block marker.
+
+**Returns:** The `AutomergeObjectId` of the new block marker. Use `PutString` to set its "type" and other properties.
+
+```csharp
+doc.SpliceText(textId, 0, 0, "First paragraphSecond paragraph");
+var blockId = doc.SplitBlock(textId, 15);
+doc.PutString(blockId, "type", "paragraph");
+```
+
+## JoinBlock
+
+```csharp
+public void JoinBlock(AutomergeObjectId textId, ulong index)
+```
+
+Removes a block marker at the given index, joining the text on either side.
+
+# History and Heads
+
+## GetHeads
+
+```csharp
+public IReadOnlyList<string> GetHeads()
+```
+
+Gets the current head change hashes. Heads represent the latest state of the document. A document with one head is linear; multiple heads indicate concurrent branches.
+
+**Returns:** A list of change hashes as lowercase hex strings.
+
+```csharp
+var heads = doc.GetHeads(); // ["a1b2c3d4..."]
+```
+
+## BaseHeads
+
+```csharp
+public IReadOnlyList<string> BaseHeads()
+```
+
+Gets the base heads before any uncommitted changes. If there are no pending operations, this returns the same as `GetHeads`.
+
+## GetChanges
+
+```csharp
+public IReadOnlyList<byte[]> GetChanges(IEnumerable<string> knownHeads)
+```
+
+Gets all changes made since the specified heads. Pass empty heads to get all changes.
+
+**Parameters:**
+- `knownHeads` — The heads the caller already knows about.
+
+**Returns:** A list of binary-encoded changes.
+
+## GetLastLocalChange
+
+```csharp
+public byte[]? GetLastLocalChange()
+```
+
+Gets the most recent locally-created change as binary data. Returns null if no local changes have been made.
+
+## GetChangeMetadata
+
+```csharp
+public DecodedChange? GetChangeMetadata(string hash)
+```
+
+Gets detailed metadata about a specific change.
+
+**Parameters:**
+- `hash` — The change hash as a hex string.
+
+**Returns:** A `DecodedChange` with properties: `Hash`, `Actor`, `Sequence`, `TimestampMillis`, `Message`, `Dependencies`. Returns null if the hash does not exist.
+
+**Exceptions:**
+- `ArgumentException` — When the hash format is invalid.
+
+```csharp
+var heads = doc.GetHeads();
+var change = doc.GetChangeMetadata(heads[0]);
+Console.WriteLine($"Actor: {change.Actor}, Message: {change.Message}");
+```
+
+## TopoHistoryTraversal
+
+```csharp
+public IReadOnlyList<string> TopoHistoryTraversal()
+```
+
+Returns all change hashes in topological order (dependencies before dependents).
+
+**Returns:** A list of change hashes as lowercase hex strings.
+
+## GetChangesAdded
+
+```csharp
+public IReadOnlyList<byte[]> GetChangesAdded(AutomergeDocument other)
+```
+
+Gets changes present in `other` but not in this document.
+
+**Parameters:**
+- `other` — The document to compare against.
+
+**Returns:** Binary-encoded changes that exist in `other` but not in this document.
+
+## GetMissingDeps
+
+```csharp
+public IReadOnlyList<string> GetMissingDeps(IEnumerable<string> heads)
+```
+
+Identifies change hashes that are referenced as dependencies but not present in the document.
+
+**Parameters:**
+- `heads` — The heads to check for missing dependencies.
+
+**Returns:** A list of missing change hashes.
+
+## LengthAtHeads
+
+```csharp
+public ulong LengthAtHeads(AutomergeObjectId objectId, IEnumerable<string> heads)
+```
+
+Gets the length of a List or Text container at a historical point.
+
+# Branching
+
+## Fork
+
+```csharp
+public AutomergeDocument Fork()
+```
+
+Creates an independent copy of the document with a new actor ID. The forked document shares the same history but diverges from this point. Changes made to the fork can be merged back later.
+
+**Returns:** A new `AutomergeDocument` that is a fork of the current state.
+
+```csharp
+using var fork = doc.Fork();
+fork.PutString(fork.RootId, "key", "fork-value");
+fork.Commit("Change on fork");
+doc.Merge(fork); // Merge changes back
+```
+
+## ForkAtHeads
+
+```csharp
+public AutomergeDocument ForkAtHeads(IEnumerable<string> heads)
+```
+
+Creates a fork at a specific historical point. Useful for creating concurrent branches from a past state.
+
+**Parameters:**
+- `heads` — The heads to fork at. Must not be empty.
+
+**Returns:** A new `AutomergeDocument` representing the state at those heads.
+
+**Exceptions:**
+- `ArgumentNullException` — When `heads` is null.
+- `ArgumentException` — When `heads` is empty or contains invalid hashes.
+
+## Clone
+
+```csharp
+public AutomergeDocument Clone()
+```
+
+Creates an exact copy of the document via Save/Load. Unlike `Fork`, the clone has the same actor ID (you should set a new one before making changes).
+
+**Returns:** A new `AutomergeDocument` with the same state.
+
+## ViewAtHeads
+
+```csharp
+public AutomergeDocument ViewAtHeads(IEnumerable<string> heads)
+```
+
+Creates a read-only view of the document at a specific historical point. Internally creates a clone and isolates it to the specified heads.
+
+**Parameters:**
+- `heads` — The heads representing the desired point in history.
+
+**Returns:** A new `AutomergeDocument` showing the state at those heads.
+
+## Merge
+
+```csharp
+public IReadOnlyList<string> Merge(AutomergeDocument other)
+```
+
+Merges all changes from another document into this one. After merging, this document contains changes from both documents.
+
+**Parameters:**
+- `other` — The document to merge from.
+
+**Returns:** The new head hashes after merging.
+
+**Exceptions:**
+- `ArgumentNullException` — When `other` is null.
+
+```csharp
+var newHeads = doc.Merge(otherDoc);
+```
+
+## Isolate
+
+```csharp
+public void Isolate(IEnumerable<string> heads)
+```
+
+Hides changes after the specified heads, making the document appear as it was at that point. The hidden changes are not lost — call `Integrate` to restore them.
+
+**Parameters:**
+- `heads` — The heads to isolate to.
+
+## Integrate
+
+```csharp
+public void Integrate()
+```
+
+Restores any changes previously hidden by `Isolate`, returning the document to its full state.
+
+# Persistence
+
+## Save
+
+```csharp
+public byte[] Save()
+```
+
+Saves the complete document state as binary data. The result can be loaded with `Load`.
+
+**Returns:** Binary data containing the full document.
+
+```csharp
+byte[] data = doc.Save();
+File.WriteAllBytes("document.bin", data);
+```
+
+## SaveIncremental
+
+```csharp
+public byte[] SaveIncremental()
+```
+
+Saves only the changes made since the last call to `Save` or `SaveIncremental`. Uses an internal cursor to track what has been saved.
+
+**Returns:** Binary data containing only new changes. Returns empty array if no new changes.
+
+```csharp
+doc.Save(); // Full save, resets incremental cursor
+doc.PutString(root, "key", "value");
+doc.Commit("update");
+byte[] delta = doc.SaveIncremental(); // Only the new change
+```
+
+## SaveAfter
+
+```csharp
+public byte[] SaveAfter(IEnumerable<string> heads)
+```
+
+Saves all changes made after the specified heads. Unlike `SaveIncremental`, this provides explicit control over the baseline.
+
+**Parameters:**
+- `heads` — The baseline heads. Pass empty collection to save all changes.
+
+**Returns:** Binary data containing changes after the specified heads.
+
+```csharp
+var baseHeads = doc.GetHeads();
+doc.PutString(root, "key", "new value");
+doc.Commit("update");
+byte[] delta = doc.SaveAfter(baseHeads);
+```
+
+## SaveNoCompress
+
+```csharp
+public byte[] SaveNoCompress()
+```
+
+Saves the document without DEFLATE compression. The output is larger but faster to produce.
+
+## SaveWithOptions
+
+```csharp
+public byte[] SaveWithOptions(SaveOptions options)
+```
+
+Saves with configurable options.
+
+**Parameters:**
+- `options` — A `SaveOptions` instance with:
+  - `Deflate` — Apply compression (default: true)
+  - `RetainOrphans` — Keep orphan changes (default: true)
+
+```csharp
+var data = doc.SaveWithOptions(new SaveOptions { Deflate = false });
+```
+
+## LoadIncremental (byte array)
+
+```csharp
+public ulong LoadIncremental(byte[] data)
+```
+
+Applies incremental changes to the document. The data should come from `SaveIncremental` or `SaveAfter`.
+
+**Parameters:**
+- `data` — Binary change data.
+
+**Returns:** The number of operations applied.
+
+## LoadIncremental (span)
+
+```csharp
+public ulong LoadIncremental(ReadOnlySpan<byte> data)
+```
+
+Applies incremental changes from a span. Convenience overload that converts to byte array internally.
+
+## ApplyChange
+
+```csharp
+public void ApplyChange(ReadOnlySpan<byte> change)
+```
+
+Applies a single binary-encoded change to the document.
+
+## ApplyChanges
+
+```csharp
+public void ApplyChanges(IEnumerable<byte[]> changes)
+```
+
+Applies multiple binary-encoded changes to the document.
+
+## Bundle
+
+```csharp
+public byte[] Bundle(IEnumerable<string> heads)
+```
+
+Bundles changes relative to the specified heads into a single binary payload.
+
+**Parameters:**
+- `heads` — The baseline heads.
+
+**Returns:** Binary data containing bundled changes.
+
+# Synchronization
+
+## CreateSyncState
+
+```csharp
+public AutomergeSyncState CreateSyncState()
+```
+
+Creates a new sync state for synchronizing with a peer. Convenience method equivalent to `AutomergeSyncState.Create()`.
+
+**Returns:** A new `AutomergeSyncState`.
+
+## GenerateSyncMessage
+
+```csharp
+public byte[]? GenerateSyncMessage(AutomergeSyncState state)
+```
+
+Generates the next sync message to send to a peer. Returns null when synchronization is complete (no more messages to send).
+
+**Parameters:**
+- `state` — The sync state for this peer connection.
+
+**Returns:** Binary sync message to send, or null if synchronized.
+
+## ReceiveSyncMessage
+
+```csharp
+public void ReceiveSyncMessage(AutomergeSyncState state, ReadOnlySpan<byte> message)
+```
+
+Processes a sync message received from a peer. Updates both the document and the sync state.
+
+**Parameters:**
+- `state` — The sync state for this peer connection.
+- `message` — The binary sync message received from the peer.
+
+**Example — Full sync loop between two documents:**
+
+```csharp
+using var syncAB = docA.CreateSyncState();
+using var syncBA = docB.CreateSyncState();
+
+for(int i = 0; i < 10; i++)
+{
+  var msgA = docA.GenerateSyncMessage(syncAB);
+  var msgB = docB.GenerateSyncMessage(syncBA);
+
+  if(msgA == null && msgB == null)
+    break; // Synchronized
+
+  if(msgA != null)
+    docB.ReceiveSyncMessage(syncBA, msgA);
+  if(msgB != null)
+    docA.ReceiveSyncMessage(syncAB, msgB);
+}
+```
+
+# Diff and Patches
+
+## Diff
+
+```csharp
+public IReadOnlyList<AutomergePatch> Diff(
+  IEnumerable<string> beforeHeads, IEnumerable<string> afterHeads)
+```
+
+Computes the differences between two points in the document history.
+
+**Parameters:**
+- `beforeHeads` — The starting state.
+- `afterHeads` — The ending state.
+
+**Returns:** A list of patches describing what changed. Each `AutomergePatch` contains an `ObjectId`, `Path` from root, and `Action` describing the change.
+
+```csharp
+var before = doc.GetHeads();
+doc.PutString(root, "status", "active");
+doc.Commit("update status");
+var after = doc.GetHeads();
+
+var patches = doc.Diff(before, after);
+foreach(var patch in patches)
+{
+  Console.WriteLine($"{patch.Action.Kind} on {patch.ObjectId}");
+}
+```
+
+## DiffIncremental
+
+```csharp
+public IReadOnlyList<AutomergePatch> DiffIncremental()
+```
+
+Gets patches for changes since the last call to `DiffIncremental`. Uses an internal cursor similar to `SaveIncremental`.
+
+**Returns:** A list of patches describing recent changes.
+
+# Hydration
+
+## HydrateJson
+
+```csharp
+public string HydrateJson()
+```
+
+Converts the entire document to a JSON string representation.
+
+**Returns:** A JSON string of the current document state.
+
+```csharp
+var json = doc.HydrateJson();
+// {"name":"Alice","age":30,"tasks":["buy groceries"]}
+```
+
+## HydrateJsonAtHeads
+
+```csharp
+public string HydrateJsonAtHeads(IEnumerable<string> heads)
+```
+
+Converts the document to JSON as it existed at a specific point in history.
+
+# Object Graph
+
+## GetObjectType
+
+```csharp
+public AutomergeContainerType GetObjectType(AutomergeObjectId objectId)
+```
+
+Gets the container type of an object.
+
+**Returns:** `AutomergeContainerType.Map`, `List`, or `Text`.
+
+```csharp
+var type = doc.GetObjectType(root); // Map
+```
+
+## Parents
+
+```csharp
+public IReadOnlyList<AutomergePathElement> Parents(AutomergeObjectId objectId)
+```
+
+Gets the parent chain from the given object up to the root. Each element is either an `AutomergeMapPathElement` (with `Key`) or an `AutomergeListPathElement` (with `Index`).
+
+**Returns:** Path elements from the object toward the root.
+
+## PathToObject
+
+```csharp
+public IReadOnlyList<AutomergePathElement> PathToObject(AutomergeObjectId objectId)
+```
+
+Gets the path from the root down to the given object. Reverse of `Parents`.
+
+**Returns:** Path elements from root to the object.
+
+```csharp
+var path = doc.PathToObject(nestedObjId);
+foreach(var elem in path)
+{
+  if(elem is AutomergeMapPathElement mapElem)
+    Console.Write($".{mapElem.Key}");
+  else if(elem is AutomergeListPathElement listElem)
+    Console.Write($"[{listElem.Index}]");
+}
+```

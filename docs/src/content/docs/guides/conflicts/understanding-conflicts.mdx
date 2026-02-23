@@ -1,0 +1,159 @@
+---
+title: "Understanding Conflicts"
+description: When conflicts occur in CRDTs, how Automerge resolves them automatically, and why manual conflict handling is sometimes needed
+---
+
+# Overview
+
+In a collaborative system, **conflicts** happen when two or more peers modify the same property concurrently — before either has seen the other's changes. Because Automerge is a CRDT (Conflict-free Replicated Data Type), it guarantees that all peers converge to the same state, even when conflicts occur.
+
+However, "conflict-free" doesn't mean conflicts don't exist — it means Automerge resolves them deterministically so every peer agrees on the outcome.
+
+# When Conflicts Occur
+
+A conflict arises when:
+
+1. Two peers start from the same document state
+2. Both modify the same key in a map (or the same index in a list)
+3. Neither has received the other's changes yet
+4. The documents are merged
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+doc1.PutString(doc1.RootId, "color", "white");
+doc1.Commit("base");
+
+// Fork creates an independent copy
+using var doc2 = doc1.Fork();
+
+// Concurrent changes to the same key
+doc1.PutString(doc1.RootId, "color", "red");
+doc1.Commit("peer 1 picks red");
+
+doc2.PutString(doc2.RootId, "color", "blue");
+doc2.Commit("peer 2 picks blue");
+
+// Merge brings both histories together — conflict on "color"
+doc1.Merge(doc2);
+```
+
+After the merge, both `"red"` and `"blue"` are stored as conflicting values for the `"color"` key.
+
+# What Does NOT Create Conflicts
+
+These situations are **not** conflicts:
+
+- **Sequential edits**: If peer A writes, commits, syncs to peer B, and then peer B writes, there is no conflict. B's change builds on A's.
+- **Different keys**: Peers writing to different keys concurrently (`doc1` sets `"color"`, `doc2` sets `"size"`) never conflict.
+- **Text edits at different positions**: Two peers inserting characters at different positions in the same text object merge cleanly.
+- **Counter increments**: Counters are designed for concurrent modification. Multiple peers incrementing the same counter merge additively — no conflict.
+
+# Automatic Resolution
+
+When Automerge detects a conflict, it picks a **winner** automatically. The winning value is what you get when you read the property normally:
+
+```csharp
+// After merging concurrent changes to "color"
+var color = doc1.GetString(doc1.RootId, "color");
+// Returns either "red" or "blue" — deterministic across all peers
+```
+
+The winner is chosen by comparing **operation IDs** (a combination of the actor ID and a sequence counter). This is a deterministic tiebreaker — it always picks the same winner on every peer, guaranteeing convergence.
+
+:::note
+The winning value is **not** based on timestamps or "last writer wins" in the wall-clock sense. It uses Automerge's internal operation ordering, which is consistent across all peers regardless of clock skew.
+:::
+
+# All Values Are Preserved
+
+The key insight is that Automerge **preserves all conflicting values**. The automatic resolution picks a default winner, but you can inspect all values and implement your own resolution:
+
+```csharp
+// Get ALL values for a conflicting key
+var values = doc1.GetAll(doc1.RootId, "color");
+
+// values.Count == 2 (both "red" and "blue" are present)
+foreach(var value in values)
+{
+    Console.WriteLine(value.Scalar!.StringValue);
+}
+```
+
+This is fundamentally different from "last writer wins" (LWW) systems where the losing value is discarded forever.
+
+# Why Manual Conflict Handling Matters
+
+Automatic resolution is convenient, but it's not always the right answer for your application:
+
+**Scenario 1: User Preferences**
+Two users independently set the document title. The automatic winner might not be the "right" title. Your UI could show both options and let a user choose.
+
+**Scenario 2: Numeric Values**
+If two peers set a price to different values (`$10` vs `$15`), automatically picking one could have business consequences. You might want to flag this for human review.
+
+**Scenario 3: Container Type Conflicts**
+One peer replaces a key's value with a map, another replaces it with a list. Both containers exist in the document, but they serve completely different purposes. Your application needs to decide which structure to keep.
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+doc1.PutObject(doc1.RootId, "data", AutomergeContainerType.Map);
+doc1.Commit("base");
+
+using var doc2 = doc1.Fork();
+
+// One peer wants a list, the other wants a new map
+doc1.PutObject(doc1.RootId, "data", AutomergeContainerType.List);
+doc1.Commit("change to list");
+
+doc2.PutObject(doc2.RootId, "data", AutomergeContainerType.Map);
+doc2.Commit("replace with new map");
+
+doc1.Merge(doc2);
+
+var values = doc1.GetAll(doc1.RootId, "data");
+// Both containers exist — each with its own ObjectId and ObjectType
+```
+
+# Conflict Resolution Strategies
+
+Here are common approaches to handling conflicts in your application:
+
+## Accept the Winner
+The simplest strategy — use automatic resolution and ignore alternatives. Works well for low-stakes data.
+
+## Show All Values
+Display all conflicting values to the user and let them choose. Best for collaborative editors where human judgment matters.
+
+## Merge Values
+For certain data types, you can combine the values programmatically. For example, concatenating text or taking the maximum of two numbers.
+
+## Application-Specific Rules
+Implement domain rules: "the manager's value always wins", "the most recent timestamp wins", or "the longer text wins".
+
+After choosing a resolution, write the resolved value back to eliminate the conflict:
+
+```csharp
+// Resolve by writing a definitive value
+doc1.PutString(doc1.RootId, "color", "green");
+doc1.Commit("resolved color conflict");
+
+// Now GetAll returns a single value
+var values = doc1.GetAll(doc1.RootId, "color");
+// values.Count == 1
+```
+
+# How Conflicts Propagate
+
+Conflicts are part of the document state and sync to all peers. If peer A and peer B create a conflict, peer C (who syncs with both) will see the same conflicting values. All peers agree on:
+
+- Which values are in conflict
+- Which value is the automatic winner
+- The operation IDs for each conflicting value
+
+When any peer resolves the conflict by writing a new value, that resolution syncs to all other peers.
+
+# Next Steps
+
+- [Detecting Conflicts](/Six.Automerge/guides/conflicts/detecting-conflicts/) — Use `GetAll` and `GetAllAtHeads` to find conflicts programmatically
+- [Conflict Values](/Six.Automerge/guides/conflicts/conflict-values/) — Work with the `AutomergeConflictValue` model and implement resolution strategies
+- [Fork and Merge](/Six.Automerge/guides/branching/fork-and-merge/) — Create concurrent editing scenarios with `Fork` and `Merge`

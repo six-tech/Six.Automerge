@@ -1,0 +1,259 @@
+---
+title: Network Adapters
+description: Connect Automerge repositories for peer-to-peer document synchronization through the INetworkAdapter interface
+---
+
+# Overview
+
+Network adapters give the Repo a way to communicate with other peers. They transport sync messages,
+announce peer connections, and report disconnections. Without a network adapter, the Repo operates
+in local-only mode — documents are persisted but never synchronized.
+
+The library ships with these implementations:
+
+- [**InMemoryNetworkAdapter**](/Six.Automerge/repo/network/in-memory/) — for testing (in the core `Six.Automerge.Repo` package)
+- **SignalR** — for real-time web communication (in `Six.Automerge.Repo.Network.SignalR.Client` / `.Server`)
+- **Orleans** — for distributed actor-based sync (in `Six.Automerge.Repo.Network.OrleansSync`)
+
+You can implement `INetworkAdapter` for any transport: WebSocket, WebRTC, MQTT, gRPC, etc.
+
+# The INetworkAdapter Interface
+
+```csharp
+public interface INetworkAdapter
+{
+  // Identity
+  string AdapterId { get; }
+  bool IsReady { get; }
+  Task WhenReady();
+
+  // Operations
+  void Connect(PeerId peerId, PeerMetadata? metadata = null);
+  void Send(IRepoMessage message);
+  Task Disconnect();
+
+  // Events
+  event EventHandler<PeerCandidateEventArgs>? PeerCandidate;
+  event EventHandler<PeerDisconnectedEventArgs>? PeerDisconnected;
+  event EventHandler<MessageReceivedEventArgs>? MessageReceived;
+  event EventHandler? Closed;
+}
+```
+
+All methods and events must be thread-safe. Events may be raised from any thread, and methods may be
+called from any thread.
+
+# Properties
+
+## AdapterId
+
+A unique string identifying this adapter instance. Useful for debugging when multiple adapters are
+registered with the same Repo.
+
+## IsReady
+
+Returns `true` when the adapter is connected and ready to send and receive messages. The Repo checks
+this before attempting to send sync messages.
+
+## WhenReady
+
+Returns a `Task` that completes when the adapter transitions to the ready state. The Repo awaits this
+during document discovery to ensure the network is available before requesting documents from peers.
+
+# Methods
+
+## Connect
+
+Initiates a connection to a peer. This is called by the Repo when it wants to establish communication
+with a known peer:
+
+```csharp
+adapter.Connect(peerId, new PeerMetadata
+{
+  StorageId = new StorageId("storage-1"),
+  IsEphemeral = false
+});
+```
+
+The implementation should eventually raise a `PeerCandidate` event when the connection is established.
+
+## Send
+
+Sends a message through the adapter. The Repo calls this when the synchronizer generates a sync message
+that needs to be delivered to a peer:
+
+```csharp
+adapter.Send(syncMessage);
+```
+
+The message includes the target peer ID. The adapter is responsible for routing it to the correct
+recipient.
+
+## Disconnect
+
+Disconnects the adapter and cleans up resources. This is called during Repo shutdown:
+
+```csharp
+await adapter.Disconnect();
+```
+
+The implementation should notify all connected peers of the disconnection and raise `PeerDisconnected`
+events.
+
+# Events
+
+## PeerCandidate
+
+Raised when a new peer is discovered or a connection is established. The Repo uses this to trigger
+sync for all documents with the new peer:
+
+```csharp
+adapter.PeerCandidate += (sender, args) =>
+{
+  Console.WriteLine($"Peer connected: {args.PeerId}");
+  if(args.Metadata is not null)
+  {
+    Console.WriteLine($"  StorageId: {args.Metadata.StorageId}");
+    Console.WriteLine($"  Ephemeral: {args.Metadata.IsEphemeral}");
+  }
+};
+```
+
+## PeerDisconnected
+
+Raised when a peer disconnects. The Repo uses this to clean up sync state for the disconnected peer:
+
+```csharp
+adapter.PeerDisconnected += (sender, args) =>
+{
+  Console.WriteLine($"Peer disconnected: {args.PeerId}");
+};
+```
+
+## MessageReceived
+
+Raised when a sync message arrives from a peer. The Repo forwards this to the synchronizer:
+
+```csharp
+adapter.MessageReceived += (sender, args) =>
+{
+  Console.WriteLine($"Message received from: {args.Message.SenderId}");
+};
+```
+
+## Closed
+
+Raised when the adapter itself shuts down:
+
+```csharp
+adapter.Closed += (sender, args) =>
+{
+  Console.WriteLine("Network adapter closed");
+};
+```
+
+# PeerMetadata
+
+Metadata associated with a peer connection:
+
+```csharp
+public sealed record PeerMetadata
+{
+  public StorageId? StorageId { get; init; }
+  public bool IsEphemeral { get; init; }
+  public IReadOnlyDictionary<string, object>? CustomData { get; init; }
+}
+```
+
+| Property | Description |
+|----------|-------------|
+| `StorageId` | Identifies the peer's storage location. If provided, sync state is persisted for this peer |
+| `IsEphemeral` | If true, sync state is not saved for this peer even if a StorageId is present |
+| `CustomData` | Application-specific metadata (usernames, capabilities, etc.) |
+
+# Multiple Adapters
+
+A Repo can use multiple network adapters simultaneously. This enables scenarios like connecting to
+both a local network and a cloud relay:
+
+```csharp
+var localAdapter = new InMemoryNetworkAdapter();
+var signalrAdapter = new SignalRNetworkAdapter(hubUrl);
+
+var repo = new Repo(new RepoConfig
+{
+  Storage = storage,
+  NetworkAdapters = [localAdapter, signalrAdapter]
+});
+```
+
+The `NetworkSubsystem` manages all adapters, routing messages to the appropriate transport and
+deduplicating ephemeral messages to prevent gossip loops.
+
+# How the NetworkSubsystem Works
+
+The Repo's internal `NetworkSubsystem` coordinates all registered adapters:
+
+1. **Peer discovery** — when any adapter raises `PeerCandidate`, the subsystem notifies the synchronizer to start syncing all documents with the new peer
+2. **Message routing** — outgoing sync messages are sent through the appropriate adapter based on the target peer
+3. **Message reception** — incoming messages from any adapter are forwarded to the synchronizer
+4. **Deduplication** — ephemeral messages include a unique ID to prevent the same message from being processed multiple times when received through different adapters
+5. **Peer tracking** — maintains a list of currently connected peers and their metadata
+
+# Implementing a Custom Adapter
+
+Here is a skeleton for a WebSocket-based adapter:
+
+```csharp
+public class WebSocketNetworkAdapter : INetworkAdapter
+{
+  readonly WebSocket _socket;
+
+  public string AdapterId { get; } = "websocket-" + Guid.NewGuid().ToString("N")[..8];
+  public bool IsReady => _socket.State == WebSocketState.Open;
+
+  public event EventHandler<PeerCandidateEventArgs>? PeerCandidate;
+  public event EventHandler<PeerDisconnectedEventArgs>? PeerDisconnected;
+  public event EventHandler<MessageReceivedEventArgs>? MessageReceived;
+  public event EventHandler? Closed;
+
+  public Task WhenReady()
+  {
+    // Return a task that completes when the WebSocket connects
+  }
+
+  public void Connect(PeerId peerId, PeerMetadata? metadata = null)
+  {
+    // Send a connection request through the WebSocket
+  }
+
+  public void Send(IRepoMessage message)
+  {
+    // Serialize and send the message through the WebSocket
+  }
+
+  public async Task Disconnect()
+  {
+    await _socket.CloseAsync(
+      WebSocketCloseStatus.NormalClosure,
+      "Shutting down",
+      CancellationToken.None);
+
+    Closed?.Invoke(this, EventArgs.Empty);
+  }
+}
+```
+
+Key implementation requirements:
+
+- Raise `PeerCandidate` when a new peer connects (with metadata if available)
+- Raise `PeerDisconnected` when a peer drops
+- Raise `MessageReceived` for every incoming sync message
+- Raise `Closed` when the adapter shuts down
+- All event handlers may be called from any thread
+
+# Next Steps
+
+- [InMemoryNetworkAdapter](/Six.Automerge/repo/network/in-memory/) — testing network communication
+- [Storage Adapters](/Six.Automerge/repo/storage/) — persist documents to durable storage
+- [Getting Started](/Six.Automerge/repo/getting-started/) — full Repo setup walkthrough

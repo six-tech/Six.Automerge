@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <!--        <InvariantGlobalization>true</InvariantGlobalization>-->
+        <!--        <PublishAot>true</PublishAot>-->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Server.Api.Tests.Unit" />
+    </ItemGroup>
+
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />  
+    </ItemGroup>
+    
+    
+    <ItemGroup>
+        <ProjectReference Include="..\..\infra\Infra.ServiceDefaults\Infra.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.SyncServer\Six.Automerge.SyncServer.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Storage.FileSystem\Six.Automerge.Repo.Storage.FileSystem.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Network.SignalR.Server\Six.Automerge.Repo.Network.SignalR.Server.csproj" />
+    </ItemGroup>
+
+    <Target Name="CopyNativeLibs" BeforeTargets="Build">
+        <Exec Command="dotnet $(MSBuildThisFileDirectory)..\..\scripts\copy-native-libs.cs -- -o $(OutputPath)" />
+    </Target>
+
+</Project>

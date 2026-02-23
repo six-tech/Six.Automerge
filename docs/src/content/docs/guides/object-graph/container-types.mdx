@@ -1,0 +1,221 @@
+---
+title: "Container Types"
+description: Understand AutomergeContainerType, use GetObjectType to identify containers, and work with mixed container hierarchies
+---
+
+# Overview
+
+Every non-scalar value in Automerge is a container — an object that holds other values. Automerge has three container types: Map, List, and Text. Understanding container types is essential for navigating the object graph and building generic document operations.
+
+# AutomergeContainerType
+
+The `AutomergeContainerType` enum defines the three container types:
+
+| Value | Description | C# Creation |
+|-------|-------------|-------------|
+| `Map` | Key-value pairs with string keys | `PutObject(parent, key, AutomergeContainerType.Map)` |
+| `List` | Ordered sequence of values | `PutObject(parent, key, AutomergeContainerType.List)` |
+| `Text` | Collaborative text CRDT | `PutObject(parent, key, AutomergeContainerType.Text)` |
+
+The root of every document is implicitly a Map.
+
+# GetObjectType
+
+Use `GetObjectType` to determine what kind of container an object ID refers to:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var map = doc.PutObject(root, "config", AutomergeContainerType.Map);
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+var text = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.Commit("containers");
+
+Console.WriteLine(doc.GetObjectType(map));  // Map
+Console.WriteLine(doc.GetObjectType(list)); // List
+Console.WriteLine(doc.GetObjectType(text)); // Text
+```
+
+This is useful when processing objects generically — for example, when iterating over values and deciding how to render or process each container.
+
+# Map Containers
+
+Maps hold key-value pairs where keys are strings. The root object is always a Map.
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var userMap = doc.PutObject(root, "user", AutomergeContainerType.Map);
+doc.PutString(userMap, "name", "Alice");
+
+var addressMap = doc.PutObject(userMap, "address", AutomergeContainerType.Map);
+doc.PutString(addressMap, "city", "Seattle");
+doc.PutString(addressMap, "country", "USA");
+
+doc.Commit("nested map");
+
+// Hydrates to:
+// {"user": {"name": "Alice", "address": {"city": "Seattle", "country": "USA"}}}
+```
+
+Maps support: `PutString`, `PutInt64`, `PutBoolean`, `PutDouble`, `PutCounter`, `PutTimestamp`, `PutBytes`, `PutNull`, `PutObject`, `Delete`, `GetKeys`, `GetString`, `GetInt64`, etc.
+
+# List Containers
+
+Lists hold ordered sequences of values indexed by position.
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var listId = doc.PutObject(root, "tags", AutomergeContainerType.List);
+doc.ListInsertString(listId, 0, "csharp");
+doc.ListInsertString(listId, 1, "automerge");
+doc.Commit("list");
+
+// Hydrates to:
+// {"tags": ["csharp", "automerge"]}
+```
+
+Lists support: `ListInsertString`, `ListInsertInt64`, `ListInsertObject`, `ListPutString`, `ListRemove`, `ListLength`, `ListRange`, etc.
+
+# Text Containers
+
+Text containers are specialized for collaborative text editing. They support character-level insertions and deletions, plus rich text marks.
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var textId = doc.PutObject(root, "description", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "A collaborative document");
+doc.Commit("text");
+
+// Hydrates to:
+// {"description": "A collaborative document"}
+```
+
+Text supports: `SpliceText`, `GetTextLength`, `Mark`, `Unmark`, `GetMarks`, `GetSpans`, etc.
+
+# Mixed Container Hierarchies
+
+Real-world documents mix all three container types. A common pattern is maps inside lists:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var users = doc.PutObject(root, "users", AutomergeContainerType.List);
+
+var user1 = doc.ListInsertObject(users, 0, AutomergeContainerType.Map);
+doc.PutString(user1, "name", "Alice");
+doc.PutInt64(user1, "age", 30);
+
+var user2 = doc.ListInsertObject(users, 1, AutomergeContainerType.Map);
+doc.PutString(user2, "name", "Bob");
+doc.PutInt64(user2, "age", 25);
+
+doc.Commit("maps in list");
+
+// Hydrates to:
+// {"users": [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]}
+```
+
+# Deep Nesting
+
+Containers can be nested to arbitrary depth:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var level1 = doc.PutObject(root, "level1", AutomergeContainerType.Map);
+var level2 = doc.PutObject(level1, "level2", AutomergeContainerType.Map);
+var level3 = doc.PutObject(level2, "level3", AutomergeContainerType.Map);
+doc.PutString(level3, "deep", "value");
+
+doc.Commit("deep nesting");
+
+// Hydrates to:
+// {"level1": {"level2": {"level3": {"deep": "value"}}}}
+```
+
+# Working with Values
+
+The `Values` method returns all values in a container. Each value can be a scalar or a nested object:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "name", "test");
+doc.PutObject(root, "nested", AutomergeContainerType.Map);
+doc.Commit("mixed");
+
+var values = doc.Values(root);
+
+foreach(var value in values)
+{
+    if(value.IsObject)
+    {
+        Console.WriteLine($"Container: {value.ObjectType}");
+        // Use value.ObjectId to navigate into the container
+    }
+    else
+    {
+        Console.WriteLine($"Scalar: {value.Scalar?.StringValue}");
+    }
+}
+```
+
+# Generic Object Processing
+
+Combine `GetObjectType` with recursive processing:
+
+```csharp
+void PrintObject(AutomergeDocument doc, AutomergeObjectId objectId, int indent = 0)
+{
+    var prefix = new string(' ', indent * 2);
+    var type = doc.GetObjectType(objectId);
+
+    switch(type)
+    {
+        case AutomergeContainerType.Map:
+            var keys = doc.GetKeys(objectId);
+            foreach(var key in keys)
+            {
+                Console.WriteLine($"{prefix}{key}:");
+                // Process each value...
+            }
+            break;
+
+        case AutomergeContainerType.List:
+            var length = doc.ListLength(objectId);
+            for(ulong i = 0; i < length; i++)
+            {
+                Console.WriteLine($"{prefix}[{i}]:");
+                // Process each element...
+            }
+            break;
+
+        case AutomergeContainerType.Text:
+            Console.WriteLine($"{prefix}(text content)");
+            break;
+    }
+}
+```
+
+# Best Practices
+
+- **Check type before operating** — Use `GetObjectType` to verify an object is the expected container type before calling type-specific methods
+- **Handle all three types** — When writing generic traversal code, always handle Map, List, and Text
+- **Use `HydrateJson` for debugging** — When unsure about document structure, hydrate to JSON to see the full tree
+
+# Next Steps
+
+- [Object Graph Navigation](/Six.Automerge/guides/object-graph/navigation/) — Walk the ancestor chain from any object to the root
+- [Basic Map Operations](/Six.Automerge/guides/maps/basic-operations/) — Working with map containers
+- [Basic List Operations](/Six.Automerge/guides/lists/basic-operations/) — Working with list containers
+- [Basic Text Operations](/Six.Automerge/guides/text/basic-operations/) — Working with text containers

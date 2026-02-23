@@ -1,0 +1,12 @@
+{
+  "id": "20260221233244-a4f56dcc",
+  "created": "2026-02-21T23:32:44.0512769Z",
+  "runSlug": "demoapp-collaborativeeditor-issues-the-collab",
+  "contentHash": "9770A79BFCBD4B4C",
+  "type": "observation",
+  "tags": [
+    "race-conditions",
+    "synchronization",
+    "semaphore"
+  ]
+}

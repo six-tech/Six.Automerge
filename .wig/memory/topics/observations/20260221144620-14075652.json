@@ -1,0 +1,14 @@
+{
+  "id": "20260221144620-14075652",
+  "created": "2026-02-21T14:46:20.2036243Z",
+  "runSlug": "proposal-05-projectnameandnamespacerename",
+  "contentHash": "469BC9B94C9A61CA",
+  "type": "observation",
+  "tags": [
+    "cargo-cleanup",
+    "native-lib-naming",
+    "cross-platform",
+    "stale-artifacts",
+    "crate-rename"
+  ]
+}

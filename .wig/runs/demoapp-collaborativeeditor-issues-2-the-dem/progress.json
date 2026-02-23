@@ -1,0 +1,697 @@
+{
+  "tasks": [
+    {
+      "id": "sprint-1-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Delete \u0060apps/DemoApp.CollaborativeTextEditor/\u0060 project directory entirely",
+      "description": "Delete \u0060apps/DemoApp.CollaborativeTextEditor/\u0060 project directory entirely",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Delete \u0060tests/DemoApp.CollaborativeTextEditor.Tests/\u0060 test project directory entirely",
+      "description": "Delete \u0060tests/DemoApp.CollaborativeTextEditor.Tests/\u0060 test project directory entirely",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Remove any references to CollaborativeTextEditor from \u0060infra/Infra.AppHost/AppHost.cs\u0060 and any other project files",
+      "description": "Remove any references to CollaborativeTextEditor from \u0060infra/Infra.AppHost/AppHost.cs\u0060 and any other project files",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Remove Orleans dependencies from \u0060infra/Infra.AppHost/AppHost.cs\u0060 and \u0060apps/Server.Api/\u0060 (remove Silo references, Azure Storage emulator, Orleans clustering/grain storage config). Keep Server.Api as a simple ASP.NET Core app with SignalR",
+      "description": "Remove Orleans dependencies from \u0060infra/Infra.AppHost/AppHost.cs\u0060 and \u0060apps/Server.Api/\u0060 (remove Silo references, Azure Storage emulator, Orleans clustering/grain storage config). Keep Server.Api as a simple ASP.NET Core app with SignalR",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Add \u0060SyncDebounceRate\u0060 property to \u0060RepoConfig\u0060 (default 100ms), pass it through to \u0060CollectionSynchronizer\u0060 and \u0060DocSynchronizer\u0060",
+      "description": "Add \u0060SyncDebounceRate\u0060 property to \u0060RepoConfig\u0060 (default 100ms), pass it through to \u0060CollectionSynchronizer\u0060 and \u0060DocSynchronizer\u0060",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement deferred-final sync throttle in \u0060DocSynchronizer.NotifyLocalChange()\u0060 \u2014 use the existing \u0060Throttle\u003CT\u003E\u0060 helper or create a per-peer throttle that batches sync messages (100ms default, configurable via \u0060SyncDebounceRate\u0060)",
+      "description": "Implement deferred-final sync throttle in \u0060DocSynchronizer.NotifyLocalChange()\u0060 \u2014 use the existing \u0060Throttle\u003CT\u003E\u0060 helper or create a per-peer throttle that batches sync messages (100ms default, configurable via \u0060SyncDebounceRate\u0060)",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-7",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Run all existing tests (\u0060dotnet test\u0060 from repo root) to verify nothing is broken by cleanup and throttle changes",
+      "description": "Run all existing tests (\u0060dotnet test\u0060 from repo root) to verify nothing is broken by cleanup and throttle changes",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-2-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Create \u0060libs/Six.Automerge.TextEdit/Six.Automerge.TextEdit.csproj\u0060 with references to \u0060Six.Automerge\u0060 and \u0060Six.Automerge.Repo\u0060. Add StyleCop, nullable, TreatWarningsAsErrors, and copyright header consistent with other libs",
+      "description": "Create \u0060libs/Six.Automerge.TextEdit/Six.Automerge.TextEdit.csproj\u0060 with references to \u0060Six.Automerge\u0060 and \u0060Six.Automerge.Repo\u0060. Add StyleCop, nullable, TreatWarningsAsErrors, and copyright header consistent with other libs",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060TextDiff\u0060 static class: \u0060ComputeSplice(oldText, newText)\u0060 returning \u0060(int Offset, int DeleteCount, string InsertText)\u0060. Extract and clean up the diff algorithm from current \u0060EditorViewModel.ApplyTextChange()\u0060",
+      "description": "Implement \u0060TextDiff\u0060 static class: \u0060ComputeSplice(oldText, newText)\u0060 returning \u0060(int Offset, int DeleteCount, string InsertText)\u0060. Extract and clean up the diff algorithm from current \u0060EditorViewModel.ApplyTextChange()\u0060",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060ChangeDebouncer\u0060 class: queues text changes, waits for configurable silence period (default 50ms), then flushes accumulated change via callback. Uses \u0060CancellationTokenSource\u0060 timer reset pattern (deferred-final)",
+      "description": "Implement \u0060ChangeDebouncer\u0060 class: queues text changes, waits for configurable silence period (default 50ms), then flushes accumulated change via callback. Uses \u0060CancellationTokenSource\u0060 timer reset pattern (deferred-final)",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060FormattedSpan\u0060 and \u0060FormattedText\u0060 models: \u0060FormattedSpan\u0060 has \u0060Text\u0060, \u0060Offset\u0060, \u0060Length\u0060, \u0060Marks\u0060 dictionary. \u0060FormattedText\u0060 has \u0060Spans\u0060 list and \u0060PlainText\u0060. Build \u0060FormattedText.FromSpans(IReadOnlyList\u003CAutomergeSpan\u003E)\u0060 factory that converts Automerge spans to the model",
+      "description": "Implement \u0060FormattedSpan\u0060 and \u0060FormattedText\u0060 models: \u0060FormattedSpan\u0060 has \u0060Text\u0060, \u0060Offset\u0060, \u0060Length\u0060, \u0060Marks\u0060 dictionary. \u0060FormattedText\u0060 has \u0060Spans\u0060 list and \u0060PlainText\u0060. Build \u0060FormattedText.FromSpans(IReadOnlyList\u003CAutomergeSpan\u003E)\u0060 factory that converts Automerge spans to the model",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060CursorTracker\u0060 class: \u0060SaveAsync(DocHandle, textObjectId, position)\u0060 returns \u0060CursorState\u0060, \u0060RestoreAsync(DocHandle, textObjectId, CursorState)\u0060 returns updated position. Wraps Automerge cursor APIs behind async DocHandle.ReadAsync calls",
+      "description": "Implement \u0060CursorTracker\u0060 class: \u0060SaveAsync(DocHandle, textObjectId, position)\u0060 returns \u0060CursorState\u0060, \u0060RestoreAsync(DocHandle, textObjectId, CursorState)\u0060 returns updated position. Wraps Automerge cursor APIs behind async DocHandle.ReadAsync calls",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060TextDocument\u0060 class \u2014 core constructor taking \u0060DocHandle\u003Cobject\u003E\u0060 and \u0060TextDocumentOptions\u0060. Wire \u0060DocHandle.Changed\u0060 event. Implement \u0060Text\u0060 and \u0060FormattedText\u0060 cached properties. Implement internal refresh logic that reads text and spans from DocHandle under async lock",
+      "description": "Implement \u0060TextDocument\u0060 class \u2014 core constructor taking \u0060DocHandle\u003Cobject\u003E\u0060 and \u0060TextDocumentOptions\u0060. Wire \u0060DocHandle.Changed\u0060 event. Implement \u0060Text\u0060 and \u0060FormattedText\u0060 cached properties. Implement internal refresh logic that reads text and spans from DocHandle under async lock",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-7",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060TextDocument.ApplyTextChangeAsync(newText)\u0060 \u2014 uses ChangeDebouncer \u2192 TextDiff \u2192 DocHandle.ChangeAsync(SpliceText). Updates cached state and fires \u0060TextChanged\u0060 event",
+      "description": "Implement \u0060TextDocument.ApplyTextChangeAsync(newText)\u0060 \u2014 uses ChangeDebouncer \u2192 TextDiff \u2192 DocHandle.ChangeAsync(SpliceText). Updates cached state and fires \u0060TextChanged\u0060 event",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-8",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060TextDocument.ApplyMarkAsync()\u0060 and \u0060RemoveMarkAsync()\u0060 \u2014 uses DocHandle.ChangeAsync(Mark/Unmark). Updates cached FormattedText and fires \u0060FormattedTextChanged\u0060 event",
+      "description": "Implement \u0060TextDocument.ApplyMarkAsync()\u0060 and \u0060RemoveMarkAsync()\u0060 \u2014 uses DocHandle.ChangeAsync(Mark/Unmark). Updates cached FormattedText and fires \u0060FormattedTextChanged\u0060 event",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-3-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060TextDocument.CreateAsync(Repo, options)\u0060 \u2014 creates a new document with text field, returns wired TextDocument",
+      "description": "Implement \u0060TextDocument.CreateAsync(Repo, options)\u0060 \u2014 creates a new document with text field, returns wired TextDocument",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060TextDocument.OpenAsync(Repo, documentId, options)\u0060 \u2014 finds existing document, waits for ready, returns wired TextDocument. Returns null if document not found within timeout",
+      "description": "Implement \u0060TextDocument.OpenAsync(Repo, documentId, options)\u0060 \u2014 finds existing document, waits for ready, returns wired TextDocument. Returns null if document not found within timeout",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060TextDocumentOptions\u0060 record: \u0060TextFieldKey\u0060 (default \u0022content\u0022), \u0060ChangeDebounceMs\u0060 (default 50), \u0060SyncDebounceRate\u0060 (default 100, maps to RepoConfig), \u0060AutoFlushOnDispose\u0060 (default true)",
+      "description": "Implement \u0060TextDocumentOptions\u0060 record: \u0060TextFieldKey\u0060 (default \u0022content\u0022), \u0060ChangeDebounceMs\u0060 (default 50), \u0060SyncDebounceRate\u0060 (default 100, maps to RepoConfig), \u0060AutoFlushOnDispose\u0060 (default true)",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Create \u0060tests/Six.Automerge.TextEdit.Tests.Unit/\u0060 test project. Write tests for \u0060TextDiff.ComputeSplice\u0060 covering: insert, delete, replace, empty strings, unicode, identical strings",
+      "description": "Create \u0060tests/Six.Automerge.TextEdit.Tests.Unit/\u0060 test project. Write tests for \u0060TextDiff.ComputeSplice\u0060 covering: insert, delete, replace, empty strings, unicode, identical strings",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Write tests for \u0060ChangeDebouncer\u0060: single change flushes after delay, rapid changes batch, flush cancels pending, dispose flushes",
+      "description": "Write tests for \u0060ChangeDebouncer\u0060: single change flushes after delay, rapid changes batch, flush cancels pending, dispose flushes",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Write tests for \u0060FormattedText.FromSpans\u0060: plain text, bold span, multiple marks, overlapping marks, empty text",
+      "description": "Write tests for \u0060FormattedText.FromSpans\u0060: plain text, bold span, multiple marks, overlapping marks, empty text",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-7",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Write tests for \u0060TextDocument\u0060: create, apply text change, apply mark, remote change event, cursor save/restore, concurrent local\u002Bremote edits",
+      "description": "Write tests for \u0060TextDocument\u0060: create, apply text change, apply mark, remote change event, cursor save/restore, concurrent local\u002Bremote edits",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-8",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Run \u0060dotnet test\u0060 on the new test project to verify all tests pass",
+      "description": "Run \u0060dotnet test\u0060 on the new test project to verify all tests pass",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-4-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Create \u0060libs/Six.Automerge.SyncServer/Six.Automerge.SyncServer.csproj\u0060 with references to \u0060Six.Automerge.Repo\u0060 and \u0060Six.Automerge.Repo.Abstractions\u0060. Same StyleCop/nullable setup as other libs",
+      "description": "Create \u0060libs/Six.Automerge.SyncServer/Six.Automerge.SyncServer.csproj\u0060 with references to \u0060Six.Automerge.Repo\u0060 and \u0060Six.Automerge.Repo.Abstractions\u0060. Same StyleCop/nullable setup as other libs",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060IServerTransport\u0060 interface with \u0060SendAsync(PeerId, IRepoMessage)\u0060, \u0060BroadcastAsync(documentId, IRepoMessage)\u0060, and events for \u0060PeerConnected\u0060, \u0060PeerDisconnected\u0060, \u0060MessageReceived\u0060",
+      "description": "Implement \u0060IServerTransport\u0060 interface with \u0060SendAsync(PeerId, IRepoMessage)\u0060, \u0060BroadcastAsync(documentId, IRepoMessage)\u0060, and events for \u0060PeerConnected\u0060, \u0060PeerDisconnected\u0060, \u0060MessageReceived\u0060",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060SyncServerOptions\u0060 record: \u0060Storage\u0060 (required), \u0060PersistenceInterval\u0060 (default 5s), \u0060SyncDebounceRate\u0060 (default 100ms), \u0060SaveDebounceRate\u0060 (default 100ms), \u0060LoggerFactory\u0060",
+      "description": "Implement \u0060SyncServerOptions\u0060 record: \u0060Storage\u0060 (required), \u0060PersistenceInterval\u0060 (default 5s), \u0060SyncDebounceRate\u0060 (default 100ms), \u0060SaveDebounceRate\u0060 (default 100ms), \u0060LoggerFactory\u0060",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060DebouncedPersistence\u0060 class: tracks dirty documents via \u0060ConcurrentDictionary\u003Cstring, bool\u003E\u0060, runs a \u0060PeriodicTimer\u0060 at \u0060PersistenceInterval\u0060, flushes all dirty documents by calling \u0060Repo.Flush()\u0060 on each",
+      "description": "Implement \u0060DebouncedPersistence\u0060 class: tracks dirty documents via \u0060ConcurrentDictionary\u003Cstring, bool\u003E\u0060, runs a \u0060PeriodicTimer\u0060 at \u0060PersistenceInterval\u0060, flushes all dirty documents by calling \u0060Repo.Flush()\u0060 on each",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060SyncServer\u0060 class: creates internal Repo with passive ShareConfig (\u0060Announce = () =\u003E false\u0060, \u0060Access = () =\u003E true\u0060), FileSystemStorage, and an in-process \u0060INetworkAdapter\u0060 that bridges to \u0060IServerTransport\u0060. Exposes \u0060OnPeerConnectedAsync\u0060, \u0060OnPeerDisconnectedAsync\u0060, \u0060OnMessageReceivedAsync\u0060 methods called by transport layer",
+      "description": "Implement \u0060SyncServer\u0060 class: creates internal Repo with passive ShareConfig (\u0060Announce = () =\u003E false\u0060, \u0060Access = () =\u003E true\u0060), FileSystemStorage, and an in-process \u0060INetworkAdapter\u0060 that bridges to \u0060IServerTransport\u0060. Exposes \u0060OnPeerConnectedAsync\u0060, \u0060OnPeerDisconnectedAsync\u0060, \u0060OnMessageReceivedAsync\u0060 methods called by transport layer",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement document management methods on SyncServer: \u0060ListDocumentsAsync()\u0060 scans storage, \u0060ExportDocumentAsync(id)\u0060 calls \u0060Repo.Export()\u0060, \u0060DeleteDocumentAsync(id)\u0060 calls \u0060Repo.Delete()\u0060",
+      "description": "Implement document management methods on SyncServer: \u0060ListDocumentsAsync()\u0060 scans storage, \u0060ExportDocumentAsync(id)\u0060 calls \u0060Repo.Export()\u0060, \u0060DeleteDocumentAsync(id)\u0060 calls \u0060Repo.Delete()\u0060",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-7",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Create \u0060tests/Six.Automerge.SyncServer.Tests.Unit/\u0060 test project. Write tests using \u0060InMemoryStorageAdapter\u0060 and \u0060InMemoryNetworkAdapter\u0060: server creates document on first sync, server persists on timer, server handles peer disconnect, server lists documents",
+      "description": "Create \u0060tests/Six.Automerge.SyncServer.Tests.Unit/\u0060 test project. Write tests using \u0060InMemoryStorageAdapter\u0060 and \u0060InMemoryNetworkAdapter\u0060: server creates document on first sync, server persists on timer, server handles peer disconnect, server lists documents",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-8",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Run \u0060dotnet test\u0060 to verify all SyncServer tests pass",
+      "description": "Run \u0060dotnet test\u0060 to verify all SyncServer tests pass",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-5-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Remove \u0060ServerRepoManager\u0060, \u0060CollaborativeHubAdapter\u0060, \u0060CollaborativeHubAdapterFactory\u0060, and \u0060SignalRServerNetworkAdapter\u0060 from \u0060apps/Server.Api/\u0060. These are replaced by SyncServer",
+      "description": "Remove \u0060ServerRepoManager\u0060, \u0060CollaborativeHubAdapter\u0060, \u0060CollaborativeHubAdapterFactory\u0060, and \u0060SignalRServerNetworkAdapter\u0060 from \u0060apps/Server.Api/\u0060. These are replaced by SyncServer",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Create \u0060SignalRServerTransport\u0060 class implementing \u0060IServerTransport\u0060 in Server.Api: maps SignalR hub context to transport interface methods. Uses \u0060IHubContext\u003CDocumentsHub\u003E\u0060 for sending",
+      "description": "Create \u0060SignalRServerTransport\u0060 class implementing \u0060IServerTransport\u0060 in Server.Api: maps SignalR hub context to transport interface methods. Uses \u0060IHubContext\u003CDocumentsHub\u003E\u0060 for sending",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Refactor \u0060DocumentsHub\u0060 to delegate to \u0060SyncServer\u0060 instead of managing its own Repo: \u0060Handshake()\u0060 \u2192 \u0060syncServer.OnPeerConnectedAsync()\u0060, \u0060SendMessage()\u0060 \u2192 \u0060syncServer.OnMessageReceivedAsync()\u0060, \u0060OnDisconnectedAsync()\u0060 \u2192 \u0060syncServer.OnPeerDisconnectedAsync()\u0060, \u0060ListDocuments()\u0060 \u2192 \u0060syncServer.ListDocumentsAsync()\u0060",
+      "description": "Refactor \u0060DocumentsHub\u0060 to delegate to \u0060SyncServer\u0060 instead of managing its own Repo: \u0060Handshake()\u0060 \u2192 \u0060syncServer.OnPeerConnectedAsync()\u0060, \u0060SendMessage()\u0060 \u2192 \u0060syncServer.OnMessageReceivedAsync()\u0060, \u0060OnDisconnectedAsync()\u0060 \u2192 \u0060syncServer.OnPeerDisconnectedAsync()\u0060, \u0060ListDocuments()\u0060 \u2192 \u0060syncServer.ListDocumentsAsync()\u0060",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Update Server.Api \u0060Program.cs\u0060: register \u0060SyncServer\u0060 as singleton \u002B \u0060IHostedService\u0060, configure with FileSystemStorageAdapter and 5s persistence interval, wire \u0060SignalRServerTransport\u0060",
+      "description": "Update Server.Api \u0060Program.cs\u0060: register \u0060SyncServer\u0060 as singleton \u002B \u0060IHostedService\u0060, configure with FileSystemStorageAdapter and 5s persistence interval, wire \u0060SignalRServerTransport\u0060",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Update \u0060tests/Server.Api.Tests.Unit/\u0060 to use the new SyncServer-based architecture. Rewrite tests that reference removed classes",
+      "description": "Update \u0060tests/Server.Api.Tests.Unit/\u0060 to use the new SyncServer-based architecture. Rewrite tests that reference removed classes",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-5-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Build Server.Api and run its tests to verify everything compiles and passes",
+      "description": "Build Server.Api and run its tests to verify everything compiles and passes",
+      "status": "done",
+      "completedAtIteration": 5,
+      "sprintId": "sprint-5"
+    },
+    {
+      "id": "sprint-6-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Add \u0060Six.Automerge.TextEdit\u0060 reference to \u0060DemoApp.CollaborativeEditor.csproj\u0060. Remove direct \u0060Six.Automerge\u0060 reference if only used for AutomergeService (keep if needed for types like AutomergeContainerType)",
+      "description": "Add \u0060Six.Automerge.TextEdit\u0060 reference to \u0060DemoApp.CollaborativeEditor.csproj\u0060. Remove direct \u0060Six.Automerge\u0060 reference if only used for AutomergeService (keep if needed for types like AutomergeContainerType)",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Delete \u0060apps/DemoApp.CollaborativeEditor/src/Services/AutomergeService.cs\u0060 \u2014 all its functionality is now in Six.Automerge.TextEdit",
+      "description": "Delete \u0060apps/DemoApp.CollaborativeEditor/src/Services/AutomergeService.cs\u0060 \u2014 all its functionality is now in Six.Automerge.TextEdit",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Refactor \u0060EditorViewModel\u0060: replace \u0060AutomergeService\u0060 and \u0060DocHandle\u003Cobject\u003E\u0060 fields with single \u0060TextDocument\u0060 field. Replace \u0060ApplyTextChange()\u0060 with \u0060await _textDocument.ApplyTextChangeAsync(newText)\u0060. Replace \u0060WithDocumentLock()\u0060 calls with \u0060TextDocument\u0060 async methods. Remove \u0060SaveCursorBeforeEdit\u0060/\u0060RestoreCursorAfterEdit\u0060 (handled by TextDocument internally). Add \u0060FormattedText\u0060 property for UI binding. Make all methods properly async (no fire-and-forget .Wait())",
+      "description": "Refactor \u0060EditorViewModel\u0060: replace \u0060AutomergeService\u0060 and \u0060DocHandle\u003Cobject\u003E\u0060 fields with single \u0060TextDocument\u0060 field. Replace \u0060ApplyTextChange()\u0060 with \u0060await _textDocument.ApplyTextChangeAsync(newText)\u0060. Replace \u0060WithDocumentLock()\u0060 calls with \u0060TextDocument\u0060 async methods. Remove \u0060SaveCursorBeforeEdit\u0060/\u0060RestoreCursorAfterEdit\u0060 (handled by TextDocument internally). Add \u0060FormattedText\u0060 property for UI binding. Make all methods properly async (no fire-and-forget .Wait())",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Refactor \u0060EditorWindow.axaml.cs\u0060: \u0060HandleCreateAsync\u0060 uses \u0060TextDocument.CreateAsync(repo)\u0060. \u0060HandleJoinAsync\u0060 uses \u0060TextDocument.OpenAsync(repo, docId)\u0060. \u0060HandleResumeAsync\u0060 uses \u0060TextDocument.OpenAsync(repo, docId)\u0060. Remove direct DocHandle/AutomergeService creation",
+      "description": "Refactor \u0060EditorWindow.axaml.cs\u0060: \u0060HandleCreateAsync\u0060 uses \u0060TextDocument.CreateAsync(repo)\u0060. \u0060HandleJoinAsync\u0060 uses \u0060TextDocument.OpenAsync(repo, docId)\u0060. \u0060HandleResumeAsync\u0060 uses \u0060TextDocument.OpenAsync(repo, docId)\u0060. Remove direct DocHandle/AutomergeService creation",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Fix SyncStatus lifecycle: set \u0022Creating...\u0022 \u2192 \u0022Ready\u0022 on create, \u0022Joining...\u0022 \u2192 \u0022Syncing...\u0022 \u2192 \u0022Ready\u0022 on join, \u0022Resuming...\u0022 \u2192 \u0022Ready\u0022 on resume. Subscribe to RepoService connection state changes to update status dynamically (e.g., \u0022Syncing (3 peers)\u0022, \u0022Disconnected\u0022, \u0022Reconnecting\u0022)",
+      "description": "Fix SyncStatus lifecycle: set \u0022Creating...\u0022 \u2192 \u0022Ready\u0022 on create, \u0022Joining...\u0022 \u2192 \u0022Syncing...\u0022 \u2192 \u0022Ready\u0022 on join, \u0022Resuming...\u0022 \u2192 \u0022Ready\u0022 on resume. Subscribe to RepoService connection state changes to update status dynamically (e.g., \u0022Syncing (3 peers)\u0022, \u0022Disconnected\u0022, \u0022Reconnecting\u0022)",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Update \u0060FormattingState.cs\u0060 model if needed, or remove it if \u0060FormattedText\u0060 from TextEdit replaces its functionality",
+      "description": "Update \u0060FormattingState.cs\u0060 model if needed, or remove it if \u0060FormattedText\u0060 from TextEdit replaces its functionality",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-6-task-7",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Build and run \u0060dotnet test tests/DemoApp.CollaborativeEditor.Tests\u0060 \u2014 expect failures since tests reference old API. Fix compile errors but don\u0027t rewrite tests yet (that\u0027s Sprint 8)",
+      "description": "Build and run \u0060dotnet test tests/DemoApp.CollaborativeEditor.Tests\u0060 \u2014 expect failures since tests reference old API. Fix compile errors but don\u0027t rewrite tests yet (that\u0027s Sprint 8)",
+      "status": "done",
+      "completedAtIteration": 6,
+      "sprintId": "sprint-6"
+    },
+    {
+      "id": "sprint-7-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Create \u0060RichTextEditor\u0060 UserControl in \u0060apps/DemoApp.CollaborativeEditor/src/Controls/\u0060: a Panel with overlaid TextBox (transparent foreground for input) and TextBlock (for formatted display). Name controls: \u0060InputTextBox\u0060, \u0060DisplayTextBlock\u0060. Expose \u0060Text\u0060 (string), \u0060FormattedText\u0060 (FormattedText), \u0060CaretIndex\u0060 (int), \u0060SelectionStart\u0060/\u0060SelectionEnd\u0060 (int) as styled/dependency properties",
+      "description": "Create \u0060RichTextEditor\u0060 UserControl in \u0060apps/DemoApp.CollaborativeEditor/src/Controls/\u0060: a Panel with overlaid TextBox (transparent foreground for input) and TextBlock (for formatted display). Name controls: \u0060InputTextBox\u0060, \u0060DisplayTextBlock\u0060. Expose \u0060Text\u0060 (string), \u0060FormattedText\u0060 (FormattedText), \u0060CaretIndex\u0060 (int), \u0060SelectionStart\u0060/\u0060SelectionEnd\u0060 (int) as styled/dependency properties",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Implement \u0060FormattedTextRenderer\u0060 helper class that converts \u0060FormattedText\u0060 \u2192 Avalonia \u0060InlineCollection\u0060: for each \u0060FormattedSpan\u0060, create a \u0060Run\u0060 with \u0060FontWeight.Bold\u0060 if IsBold, \u0060FontStyle.Italic\u0060 if IsItalic, \u0060TextDecorations.Underline\u0060 if IsUnderline. Call this on FormattedText property change",
+      "description": "Implement \u0060FormattedTextRenderer\u0060 helper class that converts \u0060FormattedText\u0060 \u2192 Avalonia \u0060InlineCollection\u0060: for each \u0060FormattedSpan\u0060, create a \u0060Run\u0060 with \u0060FontWeight.Bold\u0060 if IsBold, \u0060FontStyle.Italic\u0060 if IsItalic, \u0060TextDecorations.Underline\u0060 if IsUnderline. Call this on FormattedText property change",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Synchronize caret position between TextBox (input layer) and TextBlock (display layer): when TextBox.CaretIndex changes, position a visible caret indicator in the display layer. Ensure selection highlight is visible",
+      "description": "Synchronize caret position between TextBox (input layer) and TextBlock (display layer): when TextBox.CaretIndex changes, position a visible caret indicator in the display layer. Ensure selection highlight is visible",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Replace \u0060\u003CTextBox Name=\u0022LocalEditor\u0022 .../\u003E\u0060 in \u0060EditorWindow.axaml\u0060 with the new \u0060\u003Ccontrols:RichTextEditor Name=\u0022LocalEditor\u0022 .../\u003E\u0060. Update bindings: \u0060Text=\u0022{Binding DocumentText}\u0022\u0060, \u0060FormattedText=\u0022{Binding FormattedText}\u0022\u0060. Update \u0060EditorWindow.axaml.cs\u0060 to wire caret/selection events from the new control",
+      "description": "Replace \u0060\u003CTextBox Name=\u0022LocalEditor\u0022 .../\u003E\u0060 in \u0060EditorWindow.axaml\u0060 with the new \u0060\u003Ccontrols:RichTextEditor Name=\u0022LocalEditor\u0022 .../\u003E\u0060. Update bindings: \u0060Text=\u0022{Binding DocumentText}\u0022\u0060, \u0060FormattedText=\u0022{Binding FormattedText}\u0022\u0060. Update \u0060EditorWindow.axaml.cs\u0060 to wire caret/selection events from the new control",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Update toolbar button bindings: Bold/Italic/Underline toggle buttons should trigger \u0060EditorViewModel.ToggleBoldAsync()\u0060 etc., and reflect current formatting state at cursor",
+      "description": "Update toolbar button bindings: Bold/Italic/Underline toggle buttons should trigger \u0060EditorViewModel.ToggleBoldAsync()\u0060 etc., and reflect current formatting state at cursor",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-7-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Build and run the app manually with \u0060dotnet run --project apps/DemoApp.CollaborativeEditor\u0060 to verify the rich text control renders correctly. Test typing, formatting, and caret movement visually",
+      "description": "Build and run the app manually with \u0060dotnet run --project apps/DemoApp.CollaborativeEditor\u0060 to verify the rich text control renders correctly. Test typing, formatting, and caret movement visually",
+      "status": "done",
+      "completedAtIteration": 7,
+      "sprintId": "sprint-7"
+    },
+    {
+      "id": "sprint-8-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Rewrite \u0060tests/DemoApp.CollaborativeEditor.Tests/src/EditorViewModelTests.cs\u0060 for the new TextDocument-based EditorViewModel: test initialization, text changes via TextDocument, mark toggling, remote change handling, cursor position tracking, SyncStatus lifecycle",
+      "description": "Rewrite \u0060tests/DemoApp.CollaborativeEditor.Tests/src/EditorViewModelTests.cs\u0060 for the new TextDocument-based EditorViewModel: test initialization, text changes via TextDocument, mark toggling, remote change handling, cursor position tracking, SyncStatus lifecycle",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Rewrite \u0060tests/DemoApp.CollaborativeEditor.Tests/src/AutomergeServiceTests.cs\u0060 or delete it (AutomergeService is gone). If FormattingState.cs still exists, keep FormattingStateTests; otherwise delete those too",
+      "description": "Rewrite \u0060tests/DemoApp.CollaborativeEditor.Tests/src/AutomergeServiceTests.cs\u0060 or delete it (AutomergeService is gone). If FormattingState.cs still exists, keep FormattingStateTests; otherwise delete those too",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Add additional tests for multi-peer scenarios: create TextDocument on repo A, open on repo B (using InMemoryNetworkAdapter), type on A \u2192 verify B receives changes, apply mark on A \u2192 verify B gets formatted spans",
+      "description": "Add additional tests for multi-peer scenarios: create TextDocument on repo A, open on repo B (using InMemoryNetworkAdapter), type on A \u2192 verify B receives changes, apply mark on A \u2192 verify B gets formatted spans",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Run \u0060dotnet test\u0060 from repo root to verify ALL test projects pass (TextEdit, SyncServer, CollaborativeEditor, existing Repo tests, FFI tests)",
+      "description": "Run \u0060dotnet test\u0060 from repo root to verify ALL test projects pass (TextEdit, SyncServer, CollaborativeEditor, existing Repo tests, FFI tests)",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-8-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Fix any test failures discovered during the full test run",
+      "description": "Fix any test failures discovered during the full test run",
+      "status": "done",
+      "completedAtIteration": 8,
+      "sprintId": "sprint-8"
+    },
+    {
+      "id": "sprint-9-task-1",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Verify \u0060infra/Infra.AppHost/AppHost.cs\u0060 is correctly configured: Server.Api with SyncServer, CollaborativeEditor with 4 replicas, no Orleans references",
+      "description": "Verify \u0060infra/Infra.AppHost/AppHost.cs\u0060 is correctly configured: Server.Api with SyncServer, CollaborativeEditor with 4 replicas, no Orleans references",
+      "status": "pending",
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-2",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Start the full stack with \u0060dotnet run --project infra/Infra.AppHost\u0060. Verify Aspire dashboard shows all resources healthy (api \u002B 4 editor replicas)",
+      "description": "Start the full stack with \u0060dotnet run --project infra/Infra.AppHost\u0060. Verify Aspire dashboard shows all resources healthy (api \u002B 4 editor replicas)",
+      "status": "pending",
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-3",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Use \u0060six-avalonia-mcp\u0060 to connect to editor replica 1: create a new document, verify \u0022Ready\u0022 status is shown. Copy the document ID",
+      "description": "Use \u0060six-avalonia-mcp\u0060 to connect to editor replica 1: create a new document, verify \u0022Ready\u0022 status is shown. Copy the document ID",
+      "status": "pending",
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-4",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Use \u0060six-avalonia-mcp\u0060 on replicas 2, 3, 4: join the document using the copied ID. Verify all show \u0022Ready\u0022 status and sync with replica 1",
+      "description": "Use \u0060six-avalonia-mcp\u0060 on replicas 2, 3, 4: join the document using the copied ID. Verify all show \u0022Ready\u0022 status and sync with replica 1",
+      "status": "pending",
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-5",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Test typing on replica 1 (type a paragraph of text with varied content). Verify text appears on replicas 2, 3, 4 within ~500ms. Check Aspire traces for sync message flow",
+      "description": "Test typing on replica 1 (type a paragraph of text with varied content). Verify text appears on replicas 2, 3, 4 within ~500ms. Check Aspire traces for sync message flow",
+      "status": "pending",
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-6",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Test marks: select text on replica 1, apply bold. Verify bold formatting is visible on all replicas. Repeat for italic and underline",
+      "description": "Test marks: select text on replica 1, apply bold. Verify bold formatting is visible on all replicas. Repeat for italic and underline",
+      "status": "pending",
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-7",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Test concurrent editing: type simultaneously on replicas 1 and 2 for 2\u002B minutes. Verify no crashes, no data loss, documents converge. Check Aspire dashboard for errors/warnings in all services",
+      "description": "Test concurrent editing: type simultaneously on replicas 1 and 2 for 2\u002B minutes. Verify no crashes, no data loss, documents converge. Check Aspire dashboard for errors/warnings in all services",
+      "status": "pending",
+      "sprintId": "sprint-9"
+    },
+    {
+      "id": "sprint-9-task-8",
+      "specFile": ".wig/specs/demoapp-collaborativeeditor-issues-2-the-dem/implementation-plan.md",
+      "title": "Test crash resilience: kill replica 3 process. Verify replicas 1, 2, 4 continue working without issues. Restart replica 3, rejoin document, verify it syncs back to current state",
+      "description": "Test crash resilience: kill replica 3 process. Verify replicas 1, 2, 4 continue working without issues. Restart replica 3, rejoin document, verify it syncs back to current state",
+      "status": "pending",
+      "sprintId": "sprint-9"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "sprint-1",
+      "title": "Cleanup \u0026 Sync Throttling Foundation",
+      "description": "- [ ] Delete \u0060apps/DemoApp.CollaborativeTextEditor/\u0060 project directory entirely\r\n- [ ] Delete \u0060tests/DemoApp.CollaborativeTextEditor.Tests/\u0060 test project directory entirely\r\n- [ ] Remove any references to CollaborativeTextEditor from \u0060infra/Infra.AppHost/AppHost.cs\u0060 and any other project files\r\n- [ ] Remove Orleans dependencies from \u0060infra/Infra.AppHost/AppHost.cs\u0060 and \u0060apps/Server.Api/\u0060 (remove Silo references, Azure Storage emulator, Orleans clustering/grain storage config). Keep Server.Api as a simple ASP.NET Core app with SignalR\r\n- [ ] Add \u0060SyncDebounceRate\u0060 property to \u0060RepoConfig\u0060 (default 100ms), pass it through to \u0060CollectionSynchronizer\u0060 and \u0060DocSynchronizer\u0060\r\n- [ ] Implement deferred-final sync throttle in \u0060DocSynchronizer.NotifyLocalChange()\u0060 \u2014 use the existing \u0060Throttle\u003CT\u003E\u0060 helper or create a per-peer throttle that batches sync messages (100ms default, configurable via \u0060SyncDebounceRate\u0060)\r\n- [ ] Run all existing tests (\u0060dotnet test\u0060 from repo root) to verify nothing is broken by cleanup and throttle changes",
+      "taskIds": [
+        "sprint-1-task-1",
+        "sprint-1-task-2",
+        "sprint-1-task-3",
+        "sprint-1-task-4",
+        "sprint-1-task-5",
+        "sprint-1-task-6",
+        "sprint-1-task-7"
+      ]
+    },
+    {
+      "id": "sprint-2",
+      "title": "Six.Automerge.TextEdit Library \u2014 Core",
+      "description": "- [ ] Create \u0060libs/Six.Automerge.TextEdit/Six.Automerge.TextEdit.csproj\u0060 with references to \u0060Six.Automerge\u0060 and \u0060Six.Automerge.Repo\u0060. Add StyleCop, nullable, TreatWarningsAsErrors, and copyright header consistent with other libs\r\n- [ ] Implement \u0060TextDiff\u0060 static class: \u0060ComputeSplice(oldText, newText)\u0060 returning \u0060(int Offset, int DeleteCount, string InsertText)\u0060. Extract and clean up the diff algorithm from current \u0060EditorViewModel.ApplyTextChange()\u0060\r\n- [ ] Implement \u0060ChangeDebouncer\u0060 class: queues text changes, waits for configurable silence period (default 50ms), then flushes accumulated change via callback. Uses \u0060CancellationTokenSource\u0060 timer reset pattern (deferred-final)\r\n- [ ] Implement \u0060FormattedSpan\u0060 and \u0060FormattedText\u0060 models: \u0060FormattedSpan\u0060 has \u0060Text\u0060, \u0060Offset\u0060, \u0060Length\u0060, \u0060Marks\u0060 dictionary. \u0060FormattedText\u0060 has \u0060Spans\u0060 list and \u0060PlainText\u0060. Build \u0060FormattedText.FromSpans(IReadOnlyList\u003CAutomergeSpan\u003E)\u0060 factory that converts Automerge spans to the model\r\n- [ ] Implement \u0060CursorTracker\u0060 class: \u0060SaveAsync(DocHandle, textObjectId, position)\u0060 returns \u0060CursorState\u0060, \u0060RestoreAsync(DocHandle, textObjectId, CursorState)\u0060 returns updated position. Wraps Automerge cursor APIs behind async DocHandle.ReadAsync calls\r\n- [ ] Implement \u0060TextDocument\u0060 class \u2014 core constructor taking \u0060DocHandle\u003Cobject\u003E\u0060 and \u0060TextDocumentOptions\u0060. Wire \u0060DocHandle.Changed\u0060 event. Implement \u0060Text\u0060 and \u0060FormattedText\u0060 cached properties. Implement internal refresh logic that reads text and spans from DocHandle under async lock\r\n- [ ] Implement \u0060TextDocument.ApplyTextChangeAsync(newText)\u0060 \u2014 uses ChangeDebouncer \u2192 TextDiff \u2192 DocHandle.ChangeAsync(SpliceText). Updates cached state and fires \u0060TextChanged\u0060 event\r\n- [ ] Implement \u0060TextDocument.ApplyMarkAsync()\u0060 and \u0060RemoveMarkAsync()\u0060 \u2014 uses DocHandle.ChangeAsync(Mark/Unmark). Updates cached FormattedText and fires \u0060FormattedTextChanged\u0060 event",
+      "taskIds": [
+        "sprint-2-task-1",
+        "sprint-2-task-2",
+        "sprint-2-task-3",
+        "sprint-2-task-4",
+        "sprint-2-task-5",
+        "sprint-2-task-6",
+        "sprint-2-task-7",
+        "sprint-2-task-8"
+      ]
+    },
+    {
+      "id": "sprint-3",
+      "title": "Six.Automerge.TextEdit \u2014 Factory Methods \u0026 Tests",
+      "description": "- [ ] Implement \u0060TextDocument.CreateAsync(Repo, options)\u0060 \u2014 creates a new document with text field, returns wired TextDocument\r\n- [ ] Implement \u0060TextDocument.OpenAsync(Repo, documentId, options)\u0060 \u2014 finds existing document, waits for ready, returns wired TextDocument. Returns null if document not found within timeout\r\n- [ ] Implement \u0060TextDocumentOptions\u0060 record: \u0060TextFieldKey\u0060 (default \u0022content\u0022), \u0060ChangeDebounceMs\u0060 (default 50), \u0060SyncDebounceRate\u0060 (default 100, maps to RepoConfig), \u0060AutoFlushOnDispose\u0060 (default true)\r\n- [ ] Create \u0060tests/Six.Automerge.TextEdit.Tests.Unit/\u0060 test project. Write tests for \u0060TextDiff.ComputeSplice\u0060 covering: insert, delete, replace, empty strings, unicode, identical strings\r\n- [ ] Write tests for \u0060ChangeDebouncer\u0060: single change flushes after delay, rapid changes batch, flush cancels pending, dispose flushes\r\n- [ ] Write tests for \u0060FormattedText.FromSpans\u0060: plain text, bold span, multiple marks, overlapping marks, empty text\r\n- [ ] Write tests for \u0060TextDocument\u0060: create, apply text change, apply mark, remote change event, cursor save/restore, concurrent local\u002Bremote edits\r\n- [ ] Run \u0060dotnet test\u0060 on the new test project to verify all tests pass",
+      "taskIds": [
+        "sprint-3-task-1",
+        "sprint-3-task-2",
+        "sprint-3-task-3",
+        "sprint-3-task-4",
+        "sprint-3-task-5",
+        "sprint-3-task-6",
+        "sprint-3-task-7",
+        "sprint-3-task-8"
+      ]
+    },
+    {
+      "id": "sprint-4",
+      "title": "Six.Automerge.SyncServer Library",
+      "description": "- [ ] Create \u0060libs/Six.Automerge.SyncServer/Six.Automerge.SyncServer.csproj\u0060 with references to \u0060Six.Automerge.Repo\u0060 and \u0060Six.Automerge.Repo.Abstractions\u0060. Same StyleCop/nullable setup as other libs\r\n- [ ] Implement \u0060IServerTransport\u0060 interface with \u0060SendAsync(PeerId, IRepoMessage)\u0060, \u0060BroadcastAsync(documentId, IRepoMessage)\u0060, and events for \u0060PeerConnected\u0060, \u0060PeerDisconnected\u0060, \u0060MessageReceived\u0060\r\n- [ ] Implement \u0060SyncServerOptions\u0060 record: \u0060Storage\u0060 (required), \u0060PersistenceInterval\u0060 (default 5s), \u0060SyncDebounceRate\u0060 (default 100ms), \u0060SaveDebounceRate\u0060 (default 100ms), \u0060LoggerFactory\u0060\r\n- [ ] Implement \u0060DebouncedPersistence\u0060 class: tracks dirty documents via \u0060ConcurrentDictionary\u003Cstring, bool\u003E\u0060, runs a \u0060PeriodicTimer\u0060 at \u0060PersistenceInterval\u0060, flushes all dirty documents by calling \u0060Repo.Flush()\u0060 on each\r\n- [ ] Implement \u0060SyncServer\u0060 class: creates internal Repo with passive ShareConfig (\u0060Announce = () =\u003E false\u0060, \u0060Access = () =\u003E true\u0060), FileSystemStorage, and an in-process \u0060INetworkAdapter\u0060 that bridges to \u0060IServerTransport\u0060. Exposes \u0060OnPeerConnectedAsync\u0060, \u0060OnPeerDisconnectedAsync\u0060, \u0060OnMessageReceivedAsync\u0060 methods called by transport layer\r\n- [ ] Implement document management methods on SyncServer: \u0060ListDocumentsAsync()\u0060 scans storage, \u0060ExportDocumentAsync(id)\u0060 calls \u0060Repo.Export()\u0060, \u0060DeleteDocumentAsync(id)\u0060 calls \u0060Repo.Delete()\u0060\r\n- [ ] Create \u0060tests/Six.Automerge.SyncServer.Tests.Unit/\u0060 test project. Write tests using \u0060InMemoryStorageAdapter\u0060 and \u0060InMemoryNetworkAdapter\u0060: server creates document on first sync, server persists on timer, server handles peer disconnect, server lists documents\r\n- [ ] Run \u0060dotnet test\u0060 to verify all SyncServer tests pass",
+      "taskIds": [
+        "sprint-4-task-1",
+        "sprint-4-task-2",
+        "sprint-4-task-3",
+        "sprint-4-task-4",
+        "sprint-4-task-5",
+        "sprint-4-task-6",
+        "sprint-4-task-7",
+        "sprint-4-task-8"
+      ]
+    },
+    {
+      "id": "sprint-5",
+      "title": "Refactor Server.Api to Use SyncServer",
+      "description": "- [ ] Remove \u0060ServerRepoManager\u0060, \u0060CollaborativeHubAdapter\u0060, \u0060CollaborativeHubAdapterFactory\u0060, and \u0060SignalRServerNetworkAdapter\u0060 from \u0060apps/Server.Api/\u0060. These are replaced by SyncServer\r\n- [ ] Create \u0060SignalRServerTransport\u0060 class implementing \u0060IServerTransport\u0060 in Server.Api: maps SignalR hub context to transport interface methods. Uses \u0060IHubContext\u003CDocumentsHub\u003E\u0060 for sending\r\n- [ ] Refactor \u0060DocumentsHub\u0060 to delegate to \u0060SyncServer\u0060 instead of managing its own Repo: \u0060Handshake()\u0060 \u2192 \u0060syncServer.OnPeerConnectedAsync()\u0060, \u0060SendMessage()\u0060 \u2192 \u0060syncServer.OnMessageReceivedAsync()\u0060, \u0060OnDisconnectedAsync()\u0060 \u2192 \u0060syncServer.OnPeerDisconnectedAsync()\u0060, \u0060ListDocuments()\u0060 \u2192 \u0060syncServer.ListDocumentsAsync()\u0060\r\n- [ ] Update Server.Api \u0060Program.cs\u0060: register \u0060SyncServer\u0060 as singleton \u002B \u0060IHostedService\u0060, configure with FileSystemStorageAdapter and 5s persistence interval, wire \u0060SignalRServerTransport\u0060\r\n- [ ] Update \u0060tests/Server.Api.Tests.Unit/\u0060 to use the new SyncServer-based architecture. Rewrite tests that reference removed classes\r\n- [ ] Build Server.Api and run its tests to verify everything compiles and passes",
+      "taskIds": [
+        "sprint-5-task-1",
+        "sprint-5-task-2",
+        "sprint-5-task-3",
+        "sprint-5-task-4",
+        "sprint-5-task-5",
+        "sprint-5-task-6"
+      ]
+    },
+    {
+      "id": "sprint-6",
+      "title": "Refactor EditorViewModel to Use TextDocument",
+      "description": "- [ ] Add \u0060Six.Automerge.TextEdit\u0060 reference to \u0060DemoApp.CollaborativeEditor.csproj\u0060. Remove direct \u0060Six.Automerge\u0060 reference if only used for AutomergeService (keep if needed for types like AutomergeContainerType)\r\n- [ ] Delete \u0060apps/DemoApp.CollaborativeEditor/src/Services/AutomergeService.cs\u0060 \u2014 all its functionality is now in Six.Automerge.TextEdit\r\n- [ ] Refactor \u0060EditorViewModel\u0060: replace \u0060AutomergeService\u0060 and \u0060DocHandle\u003Cobject\u003E\u0060 fields with single \u0060TextDocument\u0060 field. Replace \u0060ApplyTextChange()\u0060 with \u0060await _textDocument.ApplyTextChangeAsync(newText)\u0060. Replace \u0060WithDocumentLock()\u0060 calls with \u0060TextDocument\u0060 async methods. Remove \u0060SaveCursorBeforeEdit\u0060/\u0060RestoreCursorAfterEdit\u0060 (handled by TextDocument internally). Add \u0060FormattedText\u0060 property for UI binding. Make all methods properly async (no fire-and-forget .Wait())\r\n- [ ] Refactor \u0060EditorWindow.axaml.cs\u0060: \u0060HandleCreateAsync\u0060 uses \u0060TextDocument.CreateAsync(repo)\u0060. \u0060HandleJoinAsync\u0060 uses \u0060TextDocument.OpenAsync(repo, docId)\u0060. \u0060HandleResumeAsync\u0060 uses \u0060TextDocument.OpenAsync(repo, docId)\u0060. Remove direct DocHandle/AutomergeService creation\r\n- [ ] Fix SyncStatus lifecycle: set \u0022Creating...\u0022 \u2192 \u0022Ready\u0022 on create, \u0022Joining...\u0022 \u2192 \u0022Syncing...\u0022 \u2192 \u0022Ready\u0022 on join, \u0022Resuming...\u0022 \u2192 \u0022Ready\u0022 on resume. Subscribe to RepoService connection state changes to update status dynamically (e.g., \u0022Syncing (3 peers)\u0022, \u0022Disconnected\u0022, \u0022Reconnecting\u0022)\r\n- [ ] Update \u0060FormattingState.cs\u0060 model if needed, or remove it if \u0060FormattedText\u0060 from TextEdit replaces its functionality\r\n- [ ] Build and run \u0060dotnet test tests/DemoApp.CollaborativeEditor.Tests\u0060 \u2014 expect failures since tests reference old API. Fix compile errors but don\u0027t rewrite tests yet (that\u0027s Sprint 8)",
+      "taskIds": [
+        "sprint-6-task-1",
+        "sprint-6-task-2",
+        "sprint-6-task-3",
+        "sprint-6-task-4",
+        "sprint-6-task-5",
+        "sprint-6-task-6",
+        "sprint-6-task-7"
+      ]
+    },
+    {
+      "id": "sprint-7",
+      "title": "Rich Text Rendering in Avalonia",
+      "description": "- [ ] Create \u0060RichTextEditor\u0060 UserControl in \u0060apps/DemoApp.CollaborativeEditor/src/Controls/\u0060: a Panel with overlaid TextBox (transparent foreground for input) and TextBlock (for formatted display). Name controls: \u0060InputTextBox\u0060, \u0060DisplayTextBlock\u0060. Expose \u0060Text\u0060 (string), \u0060FormattedText\u0060 (FormattedText), \u0060CaretIndex\u0060 (int), \u0060SelectionStart\u0060/\u0060SelectionEnd\u0060 (int) as styled/dependency properties\r\n- [ ] Implement \u0060FormattedTextRenderer\u0060 helper class that converts \u0060FormattedText\u0060 \u2192 Avalonia \u0060InlineCollection\u0060: for each \u0060FormattedSpan\u0060, create a \u0060Run\u0060 with \u0060FontWeight.Bold\u0060 if IsBold, \u0060FontStyle.Italic\u0060 if IsItalic, \u0060TextDecorations.Underline\u0060 if IsUnderline. Call this on FormattedText property change\r\n- [ ] Synchronize caret position between TextBox (input layer) and TextBlock (display layer): when TextBox.CaretIndex changes, position a visible caret indicator in the display layer. Ensure selection highlight is visible\r\n- [ ] Replace \u0060\u003CTextBox Name=\u0022LocalEditor\u0022 .../\u003E\u0060 in \u0060EditorWindow.axaml\u0060 with the new \u0060\u003Ccontrols:RichTextEditor Name=\u0022LocalEditor\u0022 .../\u003E\u0060. Update bindings: \u0060Text=\u0022{Binding DocumentText}\u0022\u0060, \u0060FormattedText=\u0022{Binding FormattedText}\u0022\u0060. Update \u0060EditorWindow.axaml.cs\u0060 to wire caret/selection events from the new control\r\n- [ ] Update toolbar button bindings: Bold/Italic/Underline toggle buttons should trigger \u0060EditorViewModel.ToggleBoldAsync()\u0060 etc., and reflect current formatting state at cursor\r\n- [ ] Build and run the app manually with \u0060dotnet run --project apps/DemoApp.CollaborativeEditor\u0060 to verify the rich text control renders correctly. Test typing, formatting, and caret movement visually",
+      "taskIds": [
+        "sprint-7-task-1",
+        "sprint-7-task-2",
+        "sprint-7-task-3",
+        "sprint-7-task-4",
+        "sprint-7-task-5",
+        "sprint-7-task-6"
+      ]
+    },
+    {
+      "id": "sprint-8",
+      "title": "Rewrite Tests",
+      "description": "- [ ] Rewrite \u0060tests/DemoApp.CollaborativeEditor.Tests/src/EditorViewModelTests.cs\u0060 for the new TextDocument-based EditorViewModel: test initialization, text changes via TextDocument, mark toggling, remote change handling, cursor position tracking, SyncStatus lifecycle\r\n- [ ] Rewrite \u0060tests/DemoApp.CollaborativeEditor.Tests/src/AutomergeServiceTests.cs\u0060 or delete it (AutomergeService is gone). If FormattingState.cs still exists, keep FormattingStateTests; otherwise delete those too\r\n- [ ] Add additional tests for multi-peer scenarios: create TextDocument on repo A, open on repo B (using InMemoryNetworkAdapter), type on A \u2192 verify B receives changes, apply mark on A \u2192 verify B gets formatted spans\r\n- [ ] Run \u0060dotnet test\u0060 from repo root to verify ALL test projects pass (TextEdit, SyncServer, CollaborativeEditor, existing Repo tests, FFI tests)\r\n- [ ] Fix any test failures discovered during the full test run",
+      "taskIds": [
+        "sprint-8-task-1",
+        "sprint-8-task-2",
+        "sprint-8-task-3",
+        "sprint-8-task-4",
+        "sprint-8-task-5"
+      ]
+    },
+    {
+      "id": "sprint-9",
+      "title": "Integration Testing with Aspire",
+      "description": "- [ ] Verify \u0060infra/Infra.AppHost/AppHost.cs\u0060 is correctly configured: Server.Api with SyncServer, CollaborativeEditor with 4 replicas, no Orleans references\r\n- [ ] Start the full stack with \u0060dotnet run --project infra/Infra.AppHost\u0060. Verify Aspire dashboard shows all resources healthy (api \u002B 4 editor replicas)\r\n- [ ] Use \u0060six-avalonia-mcp\u0060 to connect to editor replica 1: create a new document, verify \u0022Ready\u0022 status is shown. Copy the document ID\r\n- [ ] Use \u0060six-avalonia-mcp\u0060 on replicas 2, 3, 4: join the document using the copied ID. Verify all show \u0022Ready\u0022 status and sync with replica 1\r\n- [ ] Test typing on replica 1 (type a paragraph of text with varied content). Verify text appears on replicas 2, 3, 4 within ~500ms. Check Aspire traces for sync message flow\r\n- [ ] Test marks: select text on replica 1, apply bold. Verify bold formatting is visible on all replicas. Repeat for italic and underline\r\n- [ ] Test concurrent editing: type simultaneously on replicas 1 and 2 for 2\u002B minutes. Verify no crashes, no data loss, documents converge. Check Aspire dashboard for errors/warnings in all services\r\n- [ ] Test crash resilience: kill replica 3 process. Verify replicas 1, 2, 4 continue working without issues. Restart replica 3, rejoin document, verify it syncs back to current state",
+      "taskIds": [
+        "sprint-9-task-1",
+        "sprint-9-task-2",
+        "sprint-9-task-3",
+        "sprint-9-task-4",
+        "sprint-9-task-5",
+        "sprint-9-task-6",
+        "sprint-9-task-7",
+        "sprint-9-task-8"
+      ]
+    }
+  ],
+  "currentSprintIndex": 8,
+  "currentTaskId": "sprint-8-task-5",
+  "completedCount": 55,
+  "totalCount": 63,
+  "completionPercent": 87.3,
+  "hasSprints": true
+}

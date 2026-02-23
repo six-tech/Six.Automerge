@@ -1,0 +1,14 @@
+{
+  "id": "20260222165639-104abd3e",
+  "created": "2026-02-22T16:56:39.3478895Z",
+  "runSlug": "document-sync-issues-now-when-i-run-aspire-ho",
+  "contentHash": "A8407989ECD88CC2",
+  "type": "observation",
+  "tags": [
+    "testing",
+    "e2e",
+    "validation",
+    "status",
+    "aspire"
+  ]
+}

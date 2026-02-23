@@ -1,0 +1,14 @@
+{
+  "id": "20260221160735-8d89b8a8",
+  "created": "2026-02-21T16:07:35.7486519Z",
+  "runSlug": "rust-compilation-and-artefacts-currently-we-a",
+  "contentHash": "E09D2FB62AB98853",
+  "type": "observation",
+  "tags": [
+    "build-scripts",
+    "rust-compilation",
+    "cross-platform",
+    "incremental-builds",
+    "artifact-structure"
+  ]
+}

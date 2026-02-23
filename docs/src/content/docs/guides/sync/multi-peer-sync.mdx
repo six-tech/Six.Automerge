@@ -1,0 +1,240 @@
+---
+title: "Multi-Peer Sync"
+description: Synchronize Automerge documents across three or more peers using different network topologies
+---
+
+# Overview
+
+Real-world applications often involve more than two peers. Each peer maintains separate sync states for every other peer it communicates with. The sync protocol ensures all peers converge to the same document state regardless of network topology.
+
+# N-Peer Sync States
+
+When syncing with multiple peers, maintain a separate sync state for each peer pair:
+
+```csharp
+using var alice = AutomergeDocument.Create();
+using var bob = AutomergeDocument.Create();
+using var carol = AutomergeDocument.Create();
+
+// Alice needs sync states for both Bob and Carol
+using var aliceToBob = alice.CreateSyncState();
+using var aliceToCarol = alice.CreateSyncState();
+
+// Bob needs sync states for Alice and Carol
+using var bobToAlice = bob.CreateSyncState();
+using var bobToCarol = bob.CreateSyncState();
+
+// Carol needs sync states for Alice and Bob
+using var carolToAlice = carol.CreateSyncState();
+using var carolToBob = carol.CreateSyncState();
+```
+
+For N peers, each peer needs N-1 sync states — one for every other peer.
+
+# Star Topology
+
+In a star topology, one central peer (hub) syncs with all other peers. Peers do not sync directly with each other.
+
+```
+    Bob
+     |
+Alice — Carol
+     |
+    Dave
+```
+
+Alice acts as the hub:
+
+```csharp
+// Alice is the hub - all peers sync through Alice
+
+// Sync Alice with Bob
+SyncDocuments(alice, bob, aliceToBob, bobToAlice);
+
+// Sync Alice with Carol - Carol now gets Bob's changes via Alice
+SyncDocuments(alice, carol, aliceToCarol, carolToAlice);
+
+// Sync Alice with Dave - Dave now gets everyone's changes
+SyncDocuments(alice, dave, aliceToDave, daveToAlice);
+
+// Sync again with Bob - Bob now gets Carol's and Dave's changes
+SyncDocuments(alice, bob, aliceToBob, bobToAlice);
+
+// Continue until all peers converge
+```
+
+**Advantages:** Simple to implement, fewer connections (N-1 total), easy to reason about.
+
+**Disadvantages:** Hub is a single point of failure, hub carries all network traffic, higher latency for peers that sync later in the cycle.
+
+# Mesh Topology
+
+In a mesh topology, every peer syncs directly with every other peer.
+
+```
+Alice — Bob
+  |  ×  |
+Carol — Dave
+```
+
+```csharp
+// Sync all pairs
+SyncDocuments(alice, bob, aliceToBob, bobToAlice);
+SyncDocuments(alice, carol, aliceToCarol, carolToAlice);
+SyncDocuments(alice, dave, aliceToDave, daveToAlice);
+SyncDocuments(bob, carol, bobToCarol, carolToBob);
+SyncDocuments(bob, dave, bobToDave, daveToBob);
+SyncDocuments(carol, dave, carolToDave, daveToCarol);
+```
+
+**Advantages:** No single point of failure, changes propagate faster, all peers get updates simultaneously.
+
+**Disadvantages:** More connections (N*(N-1)/2), more complex to manage, more network traffic.
+
+# Complete Three-Peer Example
+
+```csharp
+using System;
+using System.Text.Json;
+using Six.Automerge;
+
+// Create three team members' documents
+using var alice = AutomergeDocument.Create();
+using var bob = AutomergeDocument.Create();
+using var carol = AutomergeDocument.Create();
+
+// Alice creates initial project structure
+var aliceRoot = alice.RootId;
+alice.PutString(aliceRoot, "project_name", "Website Redesign");
+alice.PutString(aliceRoot, "owner", "Alice");
+alice.Commit("Alice: Create project");
+
+// Bob works offline and adds tasks
+var bobRoot = bob.RootId;
+bob.PutString(bobRoot, "status", "in-progress");
+var tasks = bob.PutObject(bobRoot, "tasks", AutomergeContainerType.List);
+bob.ListInsertString(tasks, 0, "Design mockups");
+bob.Commit("Bob: Add tasks");
+
+// Carol works offline and adds metadata
+var carolRoot = carol.RootId;
+carol.PutString(carolRoot, "priority", "high");
+carol.Commit("Carol: Add metadata");
+
+// Create sync states for all peer pairs
+using var aliceToBob = alice.CreateSyncState();
+using var bobToAlice = bob.CreateSyncState();
+using var aliceToCarol = alice.CreateSyncState();
+using var carolToAlice = carol.CreateSyncState();
+using var bobToCarol = bob.CreateSyncState();
+using var carolToBob = carol.CreateSyncState();
+
+// Sync Alice with Bob
+SyncDocuments(alice, bob, aliceToBob, bobToAlice);
+
+// Sync Alice with Carol
+SyncDocuments(alice, carol, aliceToCarol, carolToAlice);
+
+// Sync Bob with Carol
+SyncDocuments(bob, carol, bobToCarol, carolToBob);
+
+// All three documents now have all changes
+var aliceJson = alice.HydrateJson();
+var bobJson = bob.HydrateJson();
+var carolJson = carol.HydrateJson();
+// All contain: project_name, owner, status, tasks, priority
+```
+
+# Handling Disconnections
+
+The sync protocol handles disconnections gracefully. Sync state tracks what was sent before the disconnection. On reconnection, only new changes transfer:
+
+```csharp
+using var alice = AutomergeDocument.Create();
+using var bob = AutomergeDocument.Create();
+using var aliceSync = alice.CreateSyncState();
+using var bobSync = bob.CreateSyncState();
+
+// Initial sync
+SyncDocuments(alice, bob, aliceSync, bobSync);
+
+// Alice makes changes while disconnected
+var aliceRoot = alice.RootId;
+alice.PutString(aliceRoot, "field1", "value1");
+alice.Commit("Offline change 1");
+alice.PutString(aliceRoot, "field2", "value2");
+alice.Commit("Offline change 2");
+
+// Bob makes changes while disconnected
+var bobRoot = bob.RootId;
+bob.PutString(bobRoot, "field3", "value3");
+bob.Commit("Offline change 3");
+
+// Reconnect and sync - only new changes transfer
+SyncDocuments(alice, bob, aliceSync, bobSync);
+
+// Both documents now have all fields
+```
+
+# Network Transport
+
+The sync protocol is transport-agnostic. Sync messages are byte arrays that can be sent over any transport.
+
+**WebSockets**
+
+```csharp
+// Pseudo-code for WebSocket transport
+websocket.OnMessage += (sender, e) =>
+{
+    var message = e.Data;
+    doc.ReceiveSyncMessage(syncState, message);
+
+    var response = doc.GenerateSyncMessage(syncState);
+    if(response != null)
+    {
+        websocket.Send(response);
+    }
+};
+```
+
+**HTTP**
+
+```csharp
+// Pseudo-code for HTTP transport
+var message = doc.GenerateSyncMessage(syncState);
+if(message != null)
+{
+    var response = await httpClient.PostAsync("/sync", new ByteArrayContent(message));
+    var responseBytes = await response.Content.ReadAsByteArrayAsync();
+    doc.ReceiveSyncMessage(syncState, responseBytes);
+}
+```
+
+The protocol works with WebSockets, HTTP, gRPC, SignalR, or any binary-capable transport.
+
+# Alternative: Direct Change Application
+
+Besides the sync protocol, you can apply changes directly:
+
+```csharp
+// Get all changes from one document
+var changes = doc1.GetChanges(new string[0]);
+
+// Apply them to another document
+doc2.ApplyChanges(changes);
+```
+
+This sends all changes, not just differences. It works for one-time merges and batch updates, but the sync protocol is more efficient for ongoing synchronization.
+
+# Best Practices
+
+- **Choose topology based on your architecture** — Star for client-server, mesh for peer-to-peer
+- **Persist sync states** — Save sync states between sessions to avoid redundant data transfer on reconnect
+- **Handle partial convergence** — In multi-peer setups, it may take multiple sync rounds for all peers to fully converge
+- **Plan for offline-first** — The sync protocol is designed for intermittent connectivity. Make changes freely offline and sync when connected.
+
+# Next Steps
+
+- [Sync Protocol](/Six.Automerge/guides/sync/sync-protocol/) — Basics of the two-peer sync protocol
+- [Sync State Management](/Six.Automerge/guides/sync/sync-state-management/) — Persist and manage sync state across sessions
+- [Advanced Sync](/Six.Automerge/guides/sync/advanced-sync/) — Bundles, differential changes, and dependency tracking

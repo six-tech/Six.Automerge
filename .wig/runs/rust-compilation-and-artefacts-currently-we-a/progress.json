@@ -1,0 +1,240 @@
+{
+  "tasks": [
+    {
+      "id": "sprint-1-task-1",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Create \u0060scripts/build-native.cs\u0060 \u2014 incremental Rust compilation script. Port the approach from \u0060d:\\Work\\projects\\RayX\\RayX.Avalonia.Controls.WebView\\scripts\\build-native.cs\u0060 but adapted for \u0060six_automerge\u0060 crate. Support \u0060--target-os\u0060, \u0060--target-arch\u0060, \u0060--run-codegen\u0060, \u0060--force\u0060, \u0060--verbose\u0060 flags. Auto-detect host platform when no flags given. Output artifacts to \u0060artefacts-rust/{os}-{arch}/libsix_automerge-{os}-{arch}.{ext}\u0060. Include checksum-based incremental caching with \u0060build-info-ffi.json\u0060. Apply release optimizations (LTO, single codegen unit, symbol stripping, opt-level 3, panic=abort). Handle the codegen step (Interoptopus \u0060cargo run\u0060 on codegen crate) when \u0060--run-codegen\u0060 is passed. Map target os\u002Barch to Rust target triples: \u0060windows-x64\u0060 -\u003E \u0060x86_64-pc-windows-msvc\u0060, \u0060windows-arm64\u0060 -\u003E \u0060aarch64-pc-windows-msvc\u0060, \u0060linux-x64\u0060 -\u003E \u0060x86_64-unknown-linux-gnu\u0060, \u0060linux-arm64\u0060 -\u003E \u0060aarch64-unknown-linux-gnu\u0060, \u0060macos-x64\u0060 -\u003E \u0060x86_64-apple-darwin\u0060, \u0060macos-arm64\u0060 -\u003E \u0060aarch64-apple-darwin\u0060. Use \u0060#:package\u0060 directives for \u0060Spectre.Console\u0060 (consistent with existing scripts). Rename cargo output with platform suffix (e.g., \u0060six_automerge.dll\u0060 -\u003E \u0060libsix_automerge-windows-x64.dll\u0060).",
+      "description": "Create \u0060scripts/build-native.cs\u0060 \u2014 incremental Rust compilation script. Port the approach from \u0060d:\\Work\\projects\\RayX\\RayX.Avalonia.Controls.WebView\\scripts\\build-native.cs\u0060 but adapted for \u0060six_automerge\u0060 crate. Support \u0060--target-os\u0060, \u0060--target-arch\u0060, \u0060--run-codegen\u0060, \u0060--force\u0060, \u0060--verbose\u0060 flags. Auto-detect host platform when no flags given. Output artifacts to \u0060artefacts-rust/{os}-{arch}/libsix_automerge-{os}-{arch}.{ext}\u0060. Include checksum-based incremental caching with \u0060build-info-ffi.json\u0060. Apply release optimizations (LTO, single codegen unit, symbol stripping, opt-level 3, panic=abort). Handle the codegen step (Interoptopus \u0060cargo run\u0060 on codegen crate) when \u0060--run-codegen\u0060 is passed. Map target os\u002Barch to Rust target triples: \u0060windows-x64\u0060 -\u003E \u0060x86_64-pc-windows-msvc\u0060, \u0060windows-arm64\u0060 -\u003E \u0060aarch64-pc-windows-msvc\u0060, \u0060linux-x64\u0060 -\u003E \u0060x86_64-unknown-linux-gnu\u0060, \u0060linux-arm64\u0060 -\u003E \u0060aarch64-unknown-linux-gnu\u0060, \u0060macos-x64\u0060 -\u003E \u0060x86_64-apple-darwin\u0060, \u0060macos-arm64\u0060 -\u003E \u0060aarch64-apple-darwin\u0060. Use \u0060#:package\u0060 directives for \u0060Spectre.Console\u0060 (consistent with existing scripts). Rename cargo output with platform suffix (e.g., \u0060six_automerge.dll\u0060 -\u003E \u0060libsix_automerge-windows-x64.dll\u0060).",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-2",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Create \u0060scripts/copy-native-libs.cs\u0060 \u2014 native lib deployment script. Port from \u0060d:\\Work\\projects\\RayX\\RayX.Avalonia.Controls.WebView\\scripts\\copy-native-libs.cs\u0060. Accept \u0060--target-os\u0060, \u0060--target-arch\u0060, \u0060--output-dir\u0060, \u0060--artefacts-dir\u0060 flags. Copy from \u0060artefacts-rust/{os}-{arch}/\u0060 to output directory, stripping platform suffix from filename (\u0060libsix_automerge-windows-x64.dll\u0060 -\u003E \u0060libsix_automerge.dll\u0060). Also copy to \u0060runtimes/{rid}/native/\u0060 subdirectory. Platform-to-RID mapping: \u0060windows-x64\u0060 -\u003E \u0060win-x64\u0060, \u0060windows-arm64\u0060 -\u003E \u0060win-arm64\u0060, \u0060linux-x64\u0060 -\u003E \u0060linux-x64\u0060, \u0060linux-arm64\u0060 -\u003E \u0060linux-arm64\u0060, \u0060macos-x64\u0060 -\u003E \u0060osx-x64\u0060, \u0060macos-arm64\u0060 -\u003E \u0060osx-arm64\u0060. Auto-detect current platform when no flags provided.",
+      "description": "Create \u0060scripts/copy-native-libs.cs\u0060 \u2014 native lib deployment script. Port from \u0060d:\\Work\\projects\\RayX\\RayX.Avalonia.Controls.WebView\\scripts\\copy-native-libs.cs\u0060. Accept \u0060--target-os\u0060, \u0060--target-arch\u0060, \u0060--output-dir\u0060, \u0060--artefacts-dir\u0060 flags. Copy from \u0060artefacts-rust/{os}-{arch}/\u0060 to output directory, stripping platform suffix from filename (\u0060libsix_automerge-windows-x64.dll\u0060 -\u003E \u0060libsix_automerge.dll\u0060). Also copy to \u0060runtimes/{rid}/native/\u0060 subdirectory. Platform-to-RID mapping: \u0060windows-x64\u0060 -\u003E \u0060win-x64\u0060, \u0060windows-arm64\u0060 -\u003E \u0060win-arm64\u0060, \u0060linux-x64\u0060 -\u003E \u0060linux-x64\u0060, \u0060linux-arm64\u0060 -\u003E \u0060linux-arm64\u0060, \u0060macos-x64\u0060 -\u003E \u0060osx-x64\u0060, \u0060macos-arm64\u0060 -\u003E \u0060osx-arm64\u0060. Auto-detect current platform when no flags provided.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-3",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Create \u0060libs/Six.Automerge.FFI/native/rust-toolchain.toml\u0060 with \u0060channel = \u0022stable\u0022\u0060 and all 6 target triples. Create \u0060libs/Six.Automerge.FFI/native/.cargo/config.toml\u0060 with linker config for cross-compilation targets (at minimum: \u0060[target.aarch64-unknown-linux-gnu] linker = \u0022aarch64-linux-gnu-gcc\u0022\u0060).",
+      "description": "Create \u0060libs/Six.Automerge.FFI/native/rust-toolchain.toml\u0060 with \u0060channel = \u0022stable\u0022\u0060 and all 6 target triples. Create \u0060libs/Six.Automerge.FFI/native/.cargo/config.toml\u0060 with linker config for cross-compilation targets (at minimum: \u0060[target.aarch64-unknown-linux-gnu] linker = \u0022aarch64-linux-gnu-gcc\u0022\u0060).",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-4",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Set up \u0060artefacts-rust/\u0060 directory at repo root. Create \u0060artefacts-rust/.gitignore\u0060 that ignores all files except itself (\u0060*\u0060 then \u0060!.gitignore\u0060). Update root \u0060.gitignore\u0060 to ensure \u0060artefacts-rust/\u0060 subdirectories with artifacts are ignored (add \u0060artefacts-rust/*/\u0060 pattern if not already covered).",
+      "description": "Set up \u0060artefacts-rust/\u0060 directory at repo root. Create \u0060artefacts-rust/.gitignore\u0060 that ignores all files except itself (\u0060*\u0060 then \u0060!.gitignore\u0060). Update root \u0060.gitignore\u0060 to ensure \u0060artefacts-rust/\u0060 subdirectories with artifacts are ignored (add \u0060artefacts-rust/*/\u0060 pattern if not already covered).",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-1-task-5",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Test \u0060build-native.cs\u0060 locally: run for current platform (no flags), verify artifacts appear in \u0060artefacts-rust/{os}-{arch}/\u0060 with correct naming. Run a second time with no changes and verify it skips compilation (incremental check). Run with \u0060--force\u0060 and verify it recompiles. Run with \u0060--run-codegen\u0060 and verify \u0060generated/Interop.g.cs\u0060 is regenerated.",
+      "description": "Test \u0060build-native.cs\u0060 locally: run for current platform (no flags), verify artifacts appear in \u0060artefacts-rust/{os}-{arch}/\u0060 with correct naming. Run a second time with no changes and verify it skips compilation (incremental check). Run with \u0060--force\u0060 and verify it recompiles. Run with \u0060--run-codegen\u0060 and verify \u0060generated/Interop.g.cs\u0060 is regenerated.",
+      "status": "done",
+      "completedAtIteration": 1,
+      "sprintId": "sprint-1"
+    },
+    {
+      "id": "sprint-2-task-1",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Refactor \u0060libs/Six.Automerge.FFI/Six.Automerge.FFI.csproj\u0060: Replace the existing \u0060RunRustBuild\u0060 and \u0060ExposeNativeLibraries\u0060 targets with new \u0060BuildRustNative\u0060 (calls \u0060build-native.cs\u0060 with \u0060--run-codegen\u0060, skipped when \u0060SkipRustBuild=true\u0060 or during design-time builds) and \u0060CopyNativeToOutput\u0060 (calls \u0060copy-native-libs.cs\u0060 to copy from \u0060artefacts-rust/\u0060 to \u0060$(TargetDir)\u0060). Add MSBuild properties: \u0060ArtefactsRustRoot\u0060, \u0060NativeLibBaseName\u0060, \u0060BuildNativeScript\u0060, \u0060CopyNativeScript\u0060. Remove the static \u0060\u003CNone Include=\u0022$(TargetDir)libsix_automerge.*\u0022\u003E\u0060 ItemGroup. Add conditional NuGet packaging ItemGroups for all 6 platforms using \u0060Condition=\u0022Exists(...)\u0022\u0060 and \u0060Pack=\u0022true\u0022 PackagePath=\u0022runtimes/{rid}/native/\u0022\u0060 pattern from the design doc.",
+      "description": "Refactor \u0060libs/Six.Automerge.FFI/Six.Automerge.FFI.csproj\u0060: Replace the existing \u0060RunRustBuild\u0060 and \u0060ExposeNativeLibraries\u0060 targets with new \u0060BuildRustNative\u0060 (calls \u0060build-native.cs\u0060 with \u0060--run-codegen\u0060, skipped when \u0060SkipRustBuild=true\u0060 or during design-time builds) and \u0060CopyNativeToOutput\u0060 (calls \u0060copy-native-libs.cs\u0060 to copy from \u0060artefacts-rust/\u0060 to \u0060$(TargetDir)\u0060). Add MSBuild properties: \u0060ArtefactsRustRoot\u0060, \u0060NativeLibBaseName\u0060, \u0060BuildNativeScript\u0060, \u0060CopyNativeScript\u0060. Remove the static \u0060\u003CNone Include=\u0022$(TargetDir)libsix_automerge.*\u0022\u003E\u0060 ItemGroup. Add conditional NuGet packaging ItemGroups for all 6 platforms using \u0060Condition=\u0022Exists(...)\u0022\u0060 and \u0060Pack=\u0022true\u0022 PackagePath=\u0022runtimes/{rid}/native/\u0022\u0060 pattern from the design doc.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-2",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Remove the \u0060CopyNativeDependencies\u0060 MSBuild target from all 14 consuming \u0060.csproj\u0060 files. These are: \u0060tests/Six.Automerge.FFI.Tests.Unit\u0060, \u0060tests/Six.Automerge.Repo.Tests.Unit\u0060, \u0060tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060, \u0060tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Integration\u0060, \u0060tests/Six.Automerge.Repo.Network.SignalR.Tests.Integration\u0060, \u0060tests/DemoApp.CollaborativeTextEditor.Tests\u0060, \u0060tests/DemoApp.CollaborativeEditor.Tests\u0060, \u0060tests/DemoApp.CollaborativeDrawing.Tests\u0060, \u0060tests/DemoApp.CollaborativeTaskBoard.Tests\u0060, \u0060apps/DemoApp.Basic\u0060, \u0060apps/DemoApp.CollaborativeTextEditor\u0060, \u0060apps/DemoApp.CollaborativeEditor\u0060, \u0060apps/DemoApp.CollaborativeDrawing\u0060, \u0060apps/DemoApp.CollaborativeTaskBoard\u0060. Each has an identical \u0060\u003CTarget Name=\u0022CopyNativeDependencies\u0022 AfterTargets=\u0022Build\u0022\u003E\u0060 block with \u0060_NativeArtifacts\u0060 ItemGroup \u2014 remove the entire Target element.",
+      "description": "Remove the \u0060CopyNativeDependencies\u0060 MSBuild target from all 14 consuming \u0060.csproj\u0060 files. These are: \u0060tests/Six.Automerge.FFI.Tests.Unit\u0060, \u0060tests/Six.Automerge.Repo.Tests.Unit\u0060, \u0060tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060, \u0060tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Integration\u0060, \u0060tests/Six.Automerge.Repo.Network.SignalR.Tests.Integration\u0060, \u0060tests/DemoApp.CollaborativeTextEditor.Tests\u0060, \u0060tests/DemoApp.CollaborativeEditor.Tests\u0060, \u0060tests/DemoApp.CollaborativeDrawing.Tests\u0060, \u0060tests/DemoApp.CollaborativeTaskBoard.Tests\u0060, \u0060apps/DemoApp.Basic\u0060, \u0060apps/DemoApp.CollaborativeTextEditor\u0060, \u0060apps/DemoApp.CollaborativeEditor\u0060, \u0060apps/DemoApp.CollaborativeDrawing\u0060, \u0060apps/DemoApp.CollaborativeTaskBoard\u0060. Each has an identical \u0060\u003CTarget Name=\u0022CopyNativeDependencies\u0022 AfterTargets=\u0022Build\u0022\u003E\u0060 block with \u0060_NativeArtifacts\u0060 ItemGroup \u2014 remove the entire Target element.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-3",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Delete \u0060scripts/build-six-automerge-ffi.cs\u0060 (replaced by \u0060build-native.cs\u0060). Delete \u0060libs/Six.Automerge.FFI/build-info.json\u0060 if it exists (replaced by \u0060build-info-ffi.json\u0060 inside \u0060native/\u0060 directory).",
+      "description": "Delete \u0060scripts/build-six-automerge-ffi.cs\u0060 (replaced by \u0060build-native.cs\u0060). Delete \u0060libs/Six.Automerge.FFI/build-info.json\u0060 if it exists (replaced by \u0060build-info-ffi.json\u0060 inside \u0060native/\u0060 directory).",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-4",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Verify the full build pipeline: run \u0060dotnet build\u0060 from repo root and confirm it completes successfully. Check that native library appears in \u0060artefacts-rust/{os}-{arch}/\u0060 and in \u0060libs/Six.Automerge.FFI/bin/Release/net10.0/\u0060. Verify a consuming project (e.g., \u0060apps/DemoApp.Basic\u0060) also has the native lib in its output directory.",
+      "description": "Verify the full build pipeline: run \u0060dotnet build\u0060 from repo root and confirm it completes successfully. Check that native library appears in \u0060artefacts-rust/{os}-{arch}/\u0060 and in \u0060libs/Six.Automerge.FFI/bin/Release/net10.0/\u0060. Verify a consuming project (e.g., \u0060apps/DemoApp.Basic\u0060) also has the native lib in its output directory.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-2-task-5",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Run the full test suite and verify all 1,028 tests pass: \u0060dotnet tests-run.cs\u0060 from repo root (or from \u0060scripts/\u0060 directory). Fix any test failures caused by the refactoring.",
+      "description": "Run the full test suite and verify all 1,028 tests pass: \u0060dotnet tests-run.cs\u0060 from repo root (or from \u0060scripts/\u0060 directory). Fix any test failures caused by the refactoring.",
+      "status": "done",
+      "completedAtIteration": 2,
+      "sprintId": "sprint-2"
+    },
+    {
+      "id": "sprint-3-task-1",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Create \u0060scripts/publish.cs\u0060 \u2014 full release orchestrator. Use \u0060CliWrap\u0060 and \u0060Spectre.Console\u0060 (same as existing scripts). CLI args: \u0060--version \u003Csemver\u003E\u0060 (required), \u0060--feed \u003Cpack-only|local|dev|staging|prod\u003E\u0060 (default: pack-only), \u0060--skip-tests\u0060, \u0060--skip-native-build\u0060, \u0060--create-release\u0060, \u0060--dry-run\u0060. Pipeline: (1) optionally run \u0060build-native.cs\u0060 for current platform, (2) \u0060dotnet build --configuration Release -p:SkipRustBuild=true\u0060, (3) optionally run tests via \u0060dotnet tests-run.cs\u0060, (4) \u0060dotnet pack --configuration Release -o packages/ -p:SkipRustBuild=true -p:Version={version}\u0060, (5) \u0060git tag v{version}\u0060, (6) if \u0060--create-release\u0060: \u0060gh release create v{version} --title \u0022v{version}\u0022 --generate-notes\u0060 then attach all files from \u0060artefacts-rust/*\u0060 as release assets via \u0060gh release upload\u0060, (7) if feed != pack-only: push \u0060.nupkg\u0060 files from \u0060packages/\u0060 to target feed using \u0060dotnet nuget push\u0060, (8) cleanup \u0060packages/\u0060 directory. Environment variables for NuGet feeds follow existing convention from \u0060pack.cs\u0060. Use \u0060gh\u0060 CLI for GitHub release (available in CI and installable locally). Show clear Spectre.Console status output at each step. \u0060--dry-run\u0060 prints what would happen without executing.",
+      "description": "Create \u0060scripts/publish.cs\u0060 \u2014 full release orchestrator. Use \u0060CliWrap\u0060 and \u0060Spectre.Console\u0060 (same as existing scripts). CLI args: \u0060--version \u003Csemver\u003E\u0060 (required), \u0060--feed \u003Cpack-only|local|dev|staging|prod\u003E\u0060 (default: pack-only), \u0060--skip-tests\u0060, \u0060--skip-native-build\u0060, \u0060--create-release\u0060, \u0060--dry-run\u0060. Pipeline: (1) optionally run \u0060build-native.cs\u0060 for current platform, (2) \u0060dotnet build --configuration Release -p:SkipRustBuild=true\u0060, (3) optionally run tests via \u0060dotnet tests-run.cs\u0060, (4) \u0060dotnet pack --configuration Release -o packages/ -p:SkipRustBuild=true -p:Version={version}\u0060, (5) \u0060git tag v{version}\u0060, (6) if \u0060--create-release\u0060: \u0060gh release create v{version} --title \u0022v{version}\u0022 --generate-notes\u0060 then attach all files from \u0060artefacts-rust/*\u0060 as release assets via \u0060gh release upload\u0060, (7) if feed != pack-only: push \u0060.nupkg\u0060 files from \u0060packages/\u0060 to target feed using \u0060dotnet nuget push\u0060, (8) cleanup \u0060packages/\u0060 directory. Environment variables for NuGet feeds follow existing convention from \u0060pack.cs\u0060. Use \u0060gh\u0060 CLI for GitHub release (available in CI and installable locally). Show clear Spectre.Console status output at each step. \u0060--dry-run\u0060 prints what would happen without executing.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-2",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Update \u0060scripts/pack.cs\u0060 if needed \u2014 ensure it works with the new artifact structure. The main change: pack.cs currently builds each project individually. It should pass \u0060-p:SkipRustBuild=true\u0060 during build/pack since the Rust artifacts are expected to already be in \u0060artefacts-rust/\u0060. Also add a \u0060--pack-only\u0060 mode that skips publishing entirely (only builds and creates \u0060.nupkg\u0060 files). Verify \u0060dotnet scripts/pack.cs -- --local\u0060 works end-to-end with the new pipeline.",
+      "description": "Update \u0060scripts/pack.cs\u0060 if needed \u2014 ensure it works with the new artifact structure. The main change: pack.cs currently builds each project individually. It should pass \u0060-p:SkipRustBuild=true\u0060 during build/pack since the Rust artifacts are expected to already be in \u0060artefacts-rust/\u0060. Also add a \u0060--pack-only\u0060 mode that skips publishing entirely (only builds and creates \u0060.nupkg\u0060 files). Verify \u0060dotnet scripts/pack.cs -- --local\u0060 works end-to-end with the new pipeline.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-3",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Update \u0060scripts/runner.cs\u0060 interactive menu: add entries for \u0060build-native.cs\u0060 (\u0022Build native Rust library\u0022) and \u0060publish.cs\u0060 (\u0022Publish release\u0022). Keep existing entries. Maintain alphabetical or logical ordering.",
+      "description": "Update \u0060scripts/runner.cs\u0060 interactive menu: add entries for \u0060build-native.cs\u0060 (\u0022Build native Rust library\u0022) and \u0060publish.cs\u0060 (\u0022Publish release\u0022). Keep existing entries. Maintain alphabetical or logical ordering.",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-3-task-4",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Test the pack workflow locally: run \u0060dotnet scripts/pack.cs -- --local\u0060 and verify \u0060.nupkg\u0060 files are created with native libs in \u0060runtimes/{rid}/native/\u0060 paths. Inspect the package contents to confirm the RID structure. If only the current platform\u0027s artifact exists, verify the package contains only that platform\u0027s native lib (expected behavior for local dev).",
+      "description": "Test the pack workflow locally: run \u0060dotnet scripts/pack.cs -- --local\u0060 and verify \u0060.nupkg\u0060 files are created with native libs in \u0060runtimes/{rid}/native/\u0060 paths. Inspect the package contents to confirm the RID structure. If only the current platform\u0027s artifact exists, verify the package contains only that platform\u0027s native lib (expected behavior for local dev).",
+      "status": "done",
+      "completedAtIteration": 3,
+      "sprintId": "sprint-3"
+    },
+    {
+      "id": "sprint-4-task-1",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Delete \u0060.github/workflows/pr-test.yml\u0060.",
+      "description": "Delete \u0060.github/workflows/pr-test.yml\u0060.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-2",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Create \u0060.github/workflows/build-test-publish.yml\u0060 with \u0060workflow_dispatch\u0060 trigger. Inputs: \u0060version\u0060 (string, required), \u0060feed\u0060 (choice: pack-only/local/dev/staging/prod, default: pack-only), \u0060create_release\u0060 (boolean, default: true). Set \u0060DOTNET_VERSION: 10.0.100-preview.6\u0060 as env var. Permissions: \u0060contents: write\u0060 (for creating releases/tags), \u0060packages: read\u0060.",
+      "description": "Create \u0060.github/workflows/build-test-publish.yml\u0060 with \u0060workflow_dispatch\u0060 trigger. Inputs: \u0060version\u0060 (string, required), \u0060feed\u0060 (choice: pack-only/local/dev/staging/prod, default: pack-only), \u0060create_release\u0060 (boolean, default: true). Set \u0060DOTNET_VERSION: 10.0.100-preview.6\u0060 as env var. Permissions: \u0060contents: write\u0060 (for creating releases/tags), \u0060packages: read\u0060.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-3",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Add \u0060build-native\u0060 job with matrix strategy for 6 platform targets. Matrix: \u0060[{target_os: windows, target_arch: x64, runner: windows-latest}, {target_os: windows, target_arch: arm64, runner: windows-latest}, {target_os: linux, target_arch: x64, runner: ubuntu-latest}, {target_os: linux, target_arch: arm64, runner: ubuntu-latest}, {target_os: macos, target_arch: x64, runner: macos-13}, {target_os: macos, target_arch: arm64, runner: macos-14}]\u0060. Steps: checkout, setup .NET SDK, setup Rust toolchain (use \u0060dtolnay/rust-toolchain@stable\u0060), install cross-compilation tools (linux-arm64: \u0060sudo apt-get install gcc-aarch64-linux-gnu\u0060), run \u0060dotnet scripts/build-native.cs -- --target-os ${{ matrix.target_os }} --target-arch ${{ matrix.target_arch }} --force --verbose\u0060, upload \u0060artefacts-rust/${{ matrix.target_os }}-${{ matrix.target_arch }}/\u0060 as artifact named \u0060native-${{ matrix.target_os }}-${{ matrix.target_arch }}\u0060.",
+      "description": "Add \u0060build-native\u0060 job with matrix strategy for 6 platform targets. Matrix: \u0060[{target_os: windows, target_arch: x64, runner: windows-latest}, {target_os: windows, target_arch: arm64, runner: windows-latest}, {target_os: linux, target_arch: x64, runner: ubuntu-latest}, {target_os: linux, target_arch: arm64, runner: ubuntu-latest}, {target_os: macos, target_arch: x64, runner: macos-13}, {target_os: macos, target_arch: arm64, runner: macos-14}]\u0060. Steps: checkout, setup .NET SDK, setup Rust toolchain (use \u0060dtolnay/rust-toolchain@stable\u0060), install cross-compilation tools (linux-arm64: \u0060sudo apt-get install gcc-aarch64-linux-gnu\u0060), run \u0060dotnet scripts/build-native.cs -- --target-os ${{ matrix.target_os }} --target-arch ${{ matrix.target_arch }} --force --verbose\u0060, upload \u0060artefacts-rust/${{ matrix.target_os }}-${{ matrix.target_arch }}/\u0060 as artifact named \u0060native-${{ matrix.target_os }}-${{ matrix.target_arch }}\u0060.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-4",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Add \u0060verify-codegen\u0060 job (runs in parallel with \u0060build-native\u0060, on \u0060ubuntu-latest\u0060). Steps: checkout, setup .NET \u002B Rust, run \u0060dotnet scripts/build-native.cs -- --run-codegen --force --verbose\u0060, verify no diff: \u0060git diff --exit-code libs/Six.Automerge.FFI/generated/Interop.g.cs\u0060. If diff exists, fail with message telling developer to run codegen locally and commit the result.",
+      "description": "Add \u0060verify-codegen\u0060 job (runs in parallel with \u0060build-native\u0060, on \u0060ubuntu-latest\u0060). Steps: checkout, setup .NET \u002B Rust, run \u0060dotnet scripts/build-native.cs -- --run-codegen --force --verbose\u0060, verify no diff: \u0060git diff --exit-code libs/Six.Automerge.FFI/generated/Interop.g.cs\u0060. If diff exists, fail with message telling developer to run codegen locally and commit the result.",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-5",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Add \u0060test\u0060 job (needs: \u0060build-native\u0060). Runs on \u0060ubuntu-latest\u0060. Steps: checkout, setup .NET, verify Docker, restore dependencies, download \u0060native-linux-x64\u0060 artifact into \u0060artefacts-rust/linux-x64/\u0060, build with \u0060dotnet build --configuration Release -p:SkipRustBuild=true\u0060, run tests with \u0060dotnet tests-run.cs\u0060 (from \u0060scripts/\u0060 working directory).",
+      "description": "Add \u0060test\u0060 job (needs: \u0060build-native\u0060). Runs on \u0060ubuntu-latest\u0060. Steps: checkout, setup .NET, verify Docker, restore dependencies, download \u0060native-linux-x64\u0060 artifact into \u0060artefacts-rust/linux-x64/\u0060, build with \u0060dotnet build --configuration Release -p:SkipRustBuild=true\u0060, run tests with \u0060dotnet tests-run.cs\u0060 (from \u0060scripts/\u0060 working directory).",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    },
+    {
+      "id": "sprint-4-task-6",
+      "specFile": ".wig/specs/rust-compilation-and-artefacts-currently-we-a/implementation-plan.md",
+      "title": "Add \u0060release\u0060 job (needs: \u0060[build-native, verify-codegen, test]\u0060). Runs on \u0060ubuntu-latest\u0060. Steps: checkout, setup .NET, download all 6 \u0060native-*\u0060 artifacts \u2014 use \u0060actions/download-artifact@v4\u0060 with pattern \u0060native-*\u0060 and merge-multiple, then restructure downloaded directories so each platform\u0027s files are under \u0060artefacts-rust/{os}-{arch}/\u0060. Run \u0060dotnet scripts/publish.cs -- --version ${{ inputs.version }} --feed ${{ inputs.feed }} --skip-native-build --skip-tests ${{ inputs.create_release \u0026\u0026 \u0027--create-release\u0027 || \u0027\u0027 }}\u0060. Set env vars: \u0060GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}\u0060 plus NuGet feed secrets (\u0060NUGET_FEED_*\u0060 vars from repository secrets, conditionally used based on feed input).",
+      "description": "Add \u0060release\u0060 job (needs: \u0060[build-native, verify-codegen, test]\u0060). Runs on \u0060ubuntu-latest\u0060. Steps: checkout, setup .NET, download all 6 \u0060native-*\u0060 artifacts \u2014 use \u0060actions/download-artifact@v4\u0060 with pattern \u0060native-*\u0060 and merge-multiple, then restructure downloaded directories so each platform\u0027s files are under \u0060artefacts-rust/{os}-{arch}/\u0060. Run \u0060dotnet scripts/publish.cs -- --version ${{ inputs.version }} --feed ${{ inputs.feed }} --skip-native-build --skip-tests ${{ inputs.create_release \u0026\u0026 \u0027--create-release\u0027 || \u0027\u0027 }}\u0060. Set env vars: \u0060GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}\u0060 plus NuGet feed secrets (\u0060NUGET_FEED_*\u0060 vars from repository secrets, conditionally used based on feed input).",
+      "status": "done",
+      "completedAtIteration": 4,
+      "sprintId": "sprint-4"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "sprint-1",
+      "title": "Core Build Scripts \u0026 Rust Configuration",
+      "description": "Create the foundation scripts and Rust toolchain configuration, modeled on the WebView project pattern.\r\n\r\n- [ ] Create \u0060scripts/build-native.cs\u0060 \u2014 incremental Rust compilation script. Port the approach from \u0060d:\\Work\\projects\\RayX\\RayX.Avalonia.Controls.WebView\\scripts\\build-native.cs\u0060 but adapted for \u0060six_automerge\u0060 crate. Support \u0060--target-os\u0060, \u0060--target-arch\u0060, \u0060--run-codegen\u0060, \u0060--force\u0060, \u0060--verbose\u0060 flags. Auto-detect host platform when no flags given. Output artifacts to \u0060artefacts-rust/{os}-{arch}/libsix_automerge-{os}-{arch}.{ext}\u0060. Include checksum-based incremental caching with \u0060build-info-ffi.json\u0060. Apply release optimizations (LTO, single codegen unit, symbol stripping, opt-level 3, panic=abort). Handle the codegen step (Interoptopus \u0060cargo run\u0060 on codegen crate) when \u0060--run-codegen\u0060 is passed. Map target os\u002Barch to Rust target triples: \u0060windows-x64\u0060 -\u003E \u0060x86_64-pc-windows-msvc\u0060, \u0060windows-arm64\u0060 -\u003E \u0060aarch64-pc-windows-msvc\u0060, \u0060linux-x64\u0060 -\u003E \u0060x86_64-unknown-linux-gnu\u0060, \u0060linux-arm64\u0060 -\u003E \u0060aarch64-unknown-linux-gnu\u0060, \u0060macos-x64\u0060 -\u003E \u0060x86_64-apple-darwin\u0060, \u0060macos-arm64\u0060 -\u003E \u0060aarch64-apple-darwin\u0060. Use \u0060#:package\u0060 directives for \u0060Spectre.Console\u0060 (consistent with existing scripts). Rename cargo output with platform suffix (e.g., \u0060six_automerge.dll\u0060 -\u003E \u0060libsix_automerge-windows-x64.dll\u0060).\r\n- [ ] Create \u0060scripts/copy-native-libs.cs\u0060 \u2014 native lib deployment script. Port from \u0060d:\\Work\\projects\\RayX\\RayX.Avalonia.Controls.WebView\\scripts\\copy-native-libs.cs\u0060. Accept \u0060--target-os\u0060, \u0060--target-arch\u0060, \u0060--output-dir\u0060, \u0060--artefacts-dir\u0060 flags. Copy from \u0060artefacts-rust/{os}-{arch}/\u0060 to output directory, stripping platform suffix from filename (\u0060libsix_automerge-windows-x64.dll\u0060 -\u003E \u0060libsix_automerge.dll\u0060). Also copy to \u0060runtimes/{rid}/native/\u0060 subdirectory. Platform-to-RID mapping: \u0060windows-x64\u0060 -\u003E \u0060win-x64\u0060, \u0060windows-arm64\u0060 -\u003E \u0060win-arm64\u0060, \u0060linux-x64\u0060 -\u003E \u0060linux-x64\u0060, \u0060linux-arm64\u0060 -\u003E \u0060linux-arm64\u0060, \u0060macos-x64\u0060 -\u003E \u0060osx-x64\u0060, \u0060macos-arm64\u0060 -\u003E \u0060osx-arm64\u0060. Auto-detect current platform when no flags provided.\r\n- [ ] Create \u0060libs/Six.Automerge.FFI/native/rust-toolchain.toml\u0060 with \u0060channel = \u0022stable\u0022\u0060 and all 6 target triples. Create \u0060libs/Six.Automerge.FFI/native/.cargo/config.toml\u0060 with linker config for cross-compilation targets (at minimum: \u0060[target.aarch64-unknown-linux-gnu] linker = \u0022aarch64-linux-gnu-gcc\u0022\u0060).\r\n- [ ] Set up \u0060artefacts-rust/\u0060 directory at repo root. Create \u0060artefacts-rust/.gitignore\u0060 that ignores all files except itself (\u0060*\u0060 then \u0060!.gitignore\u0060). Update root \u0060.gitignore\u0060 to ensure \u0060artefacts-rust/\u0060 subdirectories with artifacts are ignored (add \u0060artefacts-rust/*/\u0060 pattern if not already covered).\r\n- [ ] Test \u0060build-native.cs\u0060 locally: run for current platform (no flags), verify artifacts appear in \u0060artefacts-rust/{os}-{arch}/\u0060 with correct naming. Run a second time with no changes and verify it skips compilation (incremental check). Run with \u0060--force\u0060 and verify it recompiles. Run with \u0060--run-codegen\u0060 and verify \u0060generated/Interop.g.cs\u0060 is regenerated.",
+      "taskIds": [
+        "sprint-1-task-1",
+        "sprint-1-task-2",
+        "sprint-1-task-3",
+        "sprint-1-task-4",
+        "sprint-1-task-5"
+      ]
+    },
+    {
+      "id": "sprint-2",
+      "title": "MSBuild Integration \u0026 Project Cleanup",
+      "description": "Wire the new scripts into the MSBuild pipeline and remove legacy artifact-copying logic from all consuming projects.\r\n\r\n- [ ] Refactor \u0060libs/Six.Automerge.FFI/Six.Automerge.FFI.csproj\u0060: Replace the existing \u0060RunRustBuild\u0060 and \u0060ExposeNativeLibraries\u0060 targets with new \u0060BuildRustNative\u0060 (calls \u0060build-native.cs\u0060 with \u0060--run-codegen\u0060, skipped when \u0060SkipRustBuild=true\u0060 or during design-time builds) and \u0060CopyNativeToOutput\u0060 (calls \u0060copy-native-libs.cs\u0060 to copy from \u0060artefacts-rust/\u0060 to \u0060$(TargetDir)\u0060). Add MSBuild properties: \u0060ArtefactsRustRoot\u0060, \u0060NativeLibBaseName\u0060, \u0060BuildNativeScript\u0060, \u0060CopyNativeScript\u0060. Remove the static \u0060\u003CNone Include=\u0022$(TargetDir)libsix_automerge.*\u0022\u003E\u0060 ItemGroup. Add conditional NuGet packaging ItemGroups for all 6 platforms using \u0060Condition=\u0022Exists(...)\u0022\u0060 and \u0060Pack=\u0022true\u0022 PackagePath=\u0022runtimes/{rid}/native/\u0022\u0060 pattern from the design doc.\r\n- [ ] Remove the \u0060CopyNativeDependencies\u0060 MSBuild target from all 14 consuming \u0060.csproj\u0060 files. These are: \u0060tests/Six.Automerge.FFI.Tests.Unit\u0060, \u0060tests/Six.Automerge.Repo.Tests.Unit\u0060, \u0060tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit\u0060, \u0060tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Integration\u0060, \u0060tests/Six.Automerge.Repo.Network.SignalR.Tests.Integration\u0060, \u0060tests/DemoApp.CollaborativeTextEditor.Tests\u0060, \u0060tests/DemoApp.CollaborativeEditor.Tests\u0060, \u0060tests/DemoApp.CollaborativeDrawing.Tests\u0060, \u0060tests/DemoApp.CollaborativeTaskBoard.Tests\u0060, \u0060apps/DemoApp.Basic\u0060, \u0060apps/DemoApp.CollaborativeTextEditor\u0060, \u0060apps/DemoApp.CollaborativeEditor\u0060, \u0060apps/DemoApp.CollaborativeDrawing\u0060, \u0060apps/DemoApp.CollaborativeTaskBoard\u0060. Each has an identical \u0060\u003CTarget Name=\u0022CopyNativeDependencies\u0022 AfterTargets=\u0022Build\u0022\u003E\u0060 block with \u0060_NativeArtifacts\u0060 ItemGroup \u2014 remove the entire Target element.\r\n- [ ] Delete \u0060scripts/build-six-automerge-ffi.cs\u0060 (replaced by \u0060build-native.cs\u0060). Delete \u0060libs/Six.Automerge.FFI/build-info.json\u0060 if it exists (replaced by \u0060build-info-ffi.json\u0060 inside \u0060native/\u0060 directory).\r\n- [ ] Verify the full build pipeline: run \u0060dotnet build\u0060 from repo root and confirm it completes successfully. Check that native library appears in \u0060artefacts-rust/{os}-{arch}/\u0060 and in \u0060libs/Six.Automerge.FFI/bin/Release/net10.0/\u0060. Verify a consuming project (e.g., \u0060apps/DemoApp.Basic\u0060) also has the native lib in its output directory.\r\n- [ ] Run the full test suite and verify all 1,028 tests pass: \u0060dotnet tests-run.cs\u0060 from repo root (or from \u0060scripts/\u0060 directory). Fix any test failures caused by the refactoring.",
+      "taskIds": [
+        "sprint-2-task-1",
+        "sprint-2-task-2",
+        "sprint-2-task-3",
+        "sprint-2-task-4",
+        "sprint-2-task-5"
+      ]
+    },
+    {
+      "id": "sprint-3",
+      "title": "Publish Script \u0026 Pack Updates",
+      "description": "Create the release orchestrator script, update pack.cs, and add new menu entries to runner.cs.\r\n\r\n- [ ] Create \u0060scripts/publish.cs\u0060 \u2014 full release orchestrator. Use \u0060CliWrap\u0060 and \u0060Spectre.Console\u0060 (same as existing scripts). CLI args: \u0060--version \u003Csemver\u003E\u0060 (required), \u0060--feed \u003Cpack-only|local|dev|staging|prod\u003E\u0060 (default: pack-only), \u0060--skip-tests\u0060, \u0060--skip-native-build\u0060, \u0060--create-release\u0060, \u0060--dry-run\u0060. Pipeline: (1) optionally run \u0060build-native.cs\u0060 for current platform, (2) \u0060dotnet build --configuration Release -p:SkipRustBuild=true\u0060, (3) optionally run tests via \u0060dotnet tests-run.cs\u0060, (4) \u0060dotnet pack --configuration Release -o packages/ -p:SkipRustBuild=true -p:Version={version}\u0060, (5) \u0060git tag v{version}\u0060, (6) if \u0060--create-release\u0060: \u0060gh release create v{version} --title \u0022v{version}\u0022 --generate-notes\u0060 then attach all files from \u0060artefacts-rust/*\u0060 as release assets via \u0060gh release upload\u0060, (7) if feed != pack-only: push \u0060.nupkg\u0060 files from \u0060packages/\u0060 to target feed using \u0060dotnet nuget push\u0060, (8) cleanup \u0060packages/\u0060 directory. Environment variables for NuGet feeds follow existing convention from \u0060pack.cs\u0060. Use \u0060gh\u0060 CLI for GitHub release (available in CI and installable locally). Show clear Spectre.Console status output at each step. \u0060--dry-run\u0060 prints what would happen without executing.\r\n- [ ] Update \u0060scripts/pack.cs\u0060 if needed \u2014 ensure it works with the new artifact structure. The main change: pack.cs currently builds each project individually. It should pass \u0060-p:SkipRustBuild=true\u0060 during build/pack since the Rust artifacts are expected to already be in \u0060artefacts-rust/\u0060. Also add a \u0060--pack-only\u0060 mode that skips publishing entirely (only builds and creates \u0060.nupkg\u0060 files). Verify \u0060dotnet scripts/pack.cs -- --local\u0060 works end-to-end with the new pipeline.\r\n- [ ] Update \u0060scripts/runner.cs\u0060 interactive menu: add entries for \u0060build-native.cs\u0060 (\u0022Build native Rust library\u0022) and \u0060publish.cs\u0060 (\u0022Publish release\u0022). Keep existing entries. Maintain alphabetical or logical ordering.\r\n- [ ] Test the pack workflow locally: run \u0060dotnet scripts/pack.cs -- --local\u0060 and verify \u0060.nupkg\u0060 files are created with native libs in \u0060runtimes/{rid}/native/\u0060 paths. Inspect the package contents to confirm the RID structure. If only the current platform\u0027s artifact exists, verify the package contains only that platform\u0027s native lib (expected behavior for local dev).",
+      "taskIds": [
+        "sprint-3-task-1",
+        "sprint-3-task-2",
+        "sprint-3-task-3",
+        "sprint-3-task-4"
+      ]
+    },
+    {
+      "id": "sprint-4",
+      "title": "GitHub Actions Workflow",
+      "description": "Create the comprehensive CI/CD workflow and delete the legacy workflow.\r\n\r\n- [ ] Delete \u0060.github/workflows/pr-test.yml\u0060.\r\n- [ ] Create \u0060.github/workflows/build-test-publish.yml\u0060 with \u0060workflow_dispatch\u0060 trigger. Inputs: \u0060version\u0060 (string, required), \u0060feed\u0060 (choice: pack-only/local/dev/staging/prod, default: pack-only), \u0060create_release\u0060 (boolean, default: true). Set \u0060DOTNET_VERSION: 10.0.100-preview.6\u0060 as env var. Permissions: \u0060contents: write\u0060 (for creating releases/tags), \u0060packages: read\u0060.\r\n- [ ] Add \u0060build-native\u0060 job with matrix strategy for 6 platform targets. Matrix: \u0060[{target_os: windows, target_arch: x64, runner: windows-latest}, {target_os: windows, target_arch: arm64, runner: windows-latest}, {target_os: linux, target_arch: x64, runner: ubuntu-latest}, {target_os: linux, target_arch: arm64, runner: ubuntu-latest}, {target_os: macos, target_arch: x64, runner: macos-13}, {target_os: macos, target_arch: arm64, runner: macos-14}]\u0060. Steps: checkout, setup .NET SDK, setup Rust toolchain (use \u0060dtolnay/rust-toolchain@stable\u0060), install cross-compilation tools (linux-arm64: \u0060sudo apt-get install gcc-aarch64-linux-gnu\u0060), run \u0060dotnet scripts/build-native.cs -- --target-os ${{ matrix.target_os }} --target-arch ${{ matrix.target_arch }} --force --verbose\u0060, upload \u0060artefacts-rust/${{ matrix.target_os }}-${{ matrix.target_arch }}/\u0060 as artifact named \u0060native-${{ matrix.target_os }}-${{ matrix.target_arch }}\u0060.\r\n- [ ] Add \u0060verify-codegen\u0060 job (runs in parallel with \u0060build-native\u0060, on \u0060ubuntu-latest\u0060). Steps: checkout, setup .NET \u002B Rust, run \u0060dotnet scripts/build-native.cs -- --run-codegen --force --verbose\u0060, verify no diff: \u0060git diff --exit-code libs/Six.Automerge.FFI/generated/Interop.g.cs\u0060. If diff exists, fail with message telling developer to run codegen locally and commit the result.\r\n- [ ] Add \u0060test\u0060 job (needs: \u0060build-native\u0060). Runs on \u0060ubuntu-latest\u0060. Steps: checkout, setup .NET, verify Docker, restore dependencies, download \u0060native-linux-x64\u0060 artifact into \u0060artefacts-rust/linux-x64/\u0060, build with \u0060dotnet build --configuration Release -p:SkipRustBuild=true\u0060, run tests with \u0060dotnet tests-run.cs\u0060 (from \u0060scripts/\u0060 working directory).\r\n- [ ] Add \u0060release\u0060 job (needs: \u0060[build-native, verify-codegen, test]\u0060). Runs on \u0060ubuntu-latest\u0060. Steps: checkout, setup .NET, download all 6 \u0060native-*\u0060 artifacts \u2014 use \u0060actions/download-artifact@v4\u0060 with pattern \u0060native-*\u0060 and merge-multiple, then restructure downloaded directories so each platform\u0027s files are under \u0060artefacts-rust/{os}-{arch}/\u0060. Run \u0060dotnet scripts/publish.cs -- --version ${{ inputs.version }} --feed ${{ inputs.feed }} --skip-native-build --skip-tests ${{ inputs.create_release \u0026\u0026 \u0027--create-release\u0027 || \u0027\u0027 }}\u0060. Set env vars: \u0060GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}\u0060 plus NuGet feed secrets (\u0060NUGET_FEED_*\u0060 vars from repository secrets, conditionally used based on feed input).",
+      "taskIds": [
+        "sprint-4-task-1",
+        "sprint-4-task-2",
+        "sprint-4-task-3",
+        "sprint-4-task-4",
+        "sprint-4-task-5",
+        "sprint-4-task-6"
+      ]
+    }
+  ],
+  "currentSprintIndex": 4,
+  "currentTaskId": "sprint-4-task-6",
+  "completedCount": 20,
+  "totalCount": 20,
+  "completionPercent": 100,
+  "hasSprints": true
+}

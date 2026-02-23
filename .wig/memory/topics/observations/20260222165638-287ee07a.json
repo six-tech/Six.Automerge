@@ -1,0 +1,15 @@
+{
+  "id": "20260222165638-287ee07a",
+  "created": "2026-02-22T16:56:38.8341804Z",
+  "runSlug": "document-sync-issues-now-when-i-run-aspire-ho",
+  "contentHash": "027321EA1413969B",
+  "type": "observation",
+  "tags": [
+    "textedit",
+    "threading",
+    "channels",
+    "operation-queue",
+    "local-vs-remote",
+    "critical-fix"
+  ]
+}

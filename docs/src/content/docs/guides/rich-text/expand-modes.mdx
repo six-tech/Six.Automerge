@@ -1,0 +1,172 @@
+---
+title: "Rich Text: Expand Modes"
+description: Control how marks behave when text is inserted at mark boundaries — Before, After, Both, and None
+---
+
+# Overview
+
+When a user types at the edge of a formatted range, should the new character inherit the formatting? The answer depends on the context:
+
+- Typing at the end of a **bold** word should probably continue bold.
+- Typing at the end of a **link** should probably *not* extend the link.
+
+`ExpandMode` controls this boundary behavior. It determines whether a mark "expands" to cover newly inserted characters at its start or end.
+
+# The ExpandMode Enum
+
+```csharp
+public enum ExpandMode
+{
+    Before,  // Expands when text is inserted before the start
+    After,   // Expands when text is inserted after the end (default)
+    Both,    // Expands at both boundaries
+    None     // Never expands
+}
+```
+
+# Specifying an Expand Mode
+
+Pass an `ExpandMode` as the last parameter to `Mark`:
+
+```csharp
+// Bold expands at both ends (typing continues the bold)
+doc.Mark(textId, 0, 5, "bold", true, ExpandMode.Both);
+
+// Link never expands (typing at edges is not part of the link)
+doc.Mark(textId, 0, 10, "link", "https://example.com", ExpandMode.None);
+```
+
+If you omit the expand mode, Automerge uses `ExpandMode.After` as the default.
+
+# Boundary Behavior
+
+## ExpandMode.None
+
+The mark never expands. Characters inserted at either boundary are **not** covered by the mark.
+
+```
+Before insert:  [bold: "Hello"] World
+                 ▲0          ▲5
+
+Insert "X" at index 5 (end boundary):
+
+After insert:   [bold: "Hello"]X World
+                 ▲0          ▲5▲6
+
+"X" is NOT bold — the mark stayed at [0..5]
+```
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Mark(textId, 0, 5, "bold", true, ExpandMode.None);
+doc.Commit("mark bold none");
+
+// Insert at the end boundary
+doc.SpliceText(textId, 5, 0, "X");
+doc.Commit("insert at boundary");
+// "X" is not bold
+```
+
+**Use for**: Links, comments, annotations — anything that shouldn't grow when users type adjacent to it.
+
+## ExpandMode.After
+
+The mark expands when text is inserted **after** the end boundary. Characters inserted at the start boundary are not covered.
+
+```
+Before insert:  [bold: "Hello"] World
+                 ▲0          ▲5
+
+Insert "X" at index 5 (end boundary):
+
+After insert:   [bold: "HelloX"] World
+                 ▲0           ▲6
+
+"X" IS bold — the mark expanded to [0..6]
+```
+
+**Use for**: Inline formatting (bold, italic) where continuing to type should maintain the format. This is the default behavior.
+
+## ExpandMode.Before
+
+The mark expands when text is inserted **before** the start boundary. Characters inserted at the end boundary are not covered.
+
+```
+Before insert:  Hello [italic: "World"]
+                       ▲6          ▲11
+
+Insert "X" at index 6 (start boundary):
+
+After insert:   Hello [italic: "XWorld"]
+                       ▲6           ▲12
+
+"X" IS italic — the mark expanded backward
+```
+
+**Use for**: Rare cases where prepending should inherit formatting but appending should not.
+
+## ExpandMode.Both
+
+The mark expands at both boundaries. Any character inserted at either edge is covered.
+
+```
+Before insert:  [bold: "Hello"] World
+                 ▲0          ▲5
+
+Insert "X" at index 5 (end boundary):
+
+After insert:   [bold: "HelloX"] World
+                 ▲0           ▲6
+
+Insert "Y" at index 0 (start boundary):
+
+After insert:   [bold: "YHelloX"] World
+                 ▲0            ▲7
+
+Both "X" and "Y" are bold
+```
+
+```csharp
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Mark(textId, 0, 5, "bold", true, ExpandMode.Both);
+doc.Commit("mark bold both");
+
+// Insert at the end boundary
+doc.SpliceText(textId, 5, 0, "X");
+doc.Commit("insert at boundary");
+// "X" is bold
+```
+
+**Use for**: Block-level formatting or cases where the mark should aggressively include adjacent text.
+
+# Choosing the Right Mode
+
+| Formatting Type | Recommended Mode | Reasoning |
+|----------------|-----------------|-----------|
+| Bold, Italic, Underline | `After` or `Both` | Continuing to type should maintain the format |
+| Links | `None` | Typing next to a link shouldn't extend it |
+| Comments / Annotations | `None` | Annotations have fixed boundaries |
+| Highlight | `Both` | Highlighted region grows with adjacent edits |
+| Font Size | `After` | Typing continues at the same size |
+| Code spans | `None` | Code boundaries are explicit |
+| Block quotes | `Both` | Content added at edges belongs to the block |
+
+# Expand Mode with Unmark
+
+`Unmark` also accepts an expand mode to control how the unmarked region behaves:
+
+```csharp
+doc.Unmark(textId, "bold", 0, 11, ExpandMode.None);
+```
+
+# Concurrent Edits and Expand Modes
+
+Expand modes work correctly with concurrent edits from multiple peers. If Peer A marks a range with `ExpandMode.None` and Peer B inserts text at the boundary, the inserted text won't receive the mark — even after merging.
+
+This is a key part of the [Peritext](https://www.inkandswitch.com/peritext/) model: expand modes encode the user's intent about boundary behavior, and that intent is preserved through merges.
+
+# Next Steps
+
+- [Reading Marks](/Six.Automerge/guides/rich-text/reading-marks/) — Query marks and spans to render formatted text.
+- [Marks](/Six.Automerge/guides/rich-text/marks/) — Review how to apply and remove marks.
+- [Rich Text — Overview](/Six.Automerge/guides/rich-text/) — Return to the rich text overview.

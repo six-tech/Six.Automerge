@@ -1,0 +1,12 @@
+{
+  "id": "20260220013849-23b52418",
+  "created": "2026-02-20T01:38:49.2099988Z",
+  "runSlug": "introduction-we-are-implementing-a-c-wrapper",
+  "tags": [
+    "FFI",
+    "AutomergeScalarValue",
+    "marks",
+    "parameter-naming",
+    "type-construction"
+  ]
+}

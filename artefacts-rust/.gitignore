@@ -1,0 +1,4 @@
+# Ignore all artifacts (native library builds per platform)
+*
+# But keep this .gitignore
+!.gitignore

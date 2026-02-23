@@ -1,0 +1,313 @@
+---
+title: Nested Maps
+description: Working with nested containers, object IDs, and deep hierarchies in Automerge documents
+---
+
+# Overview
+
+Automerge maps can contain other containers — maps, lists, and text — allowing you to build arbitrarily deep data hierarchies.
+
+Each nested container gets its own Object ID, which you use for all subsequent operations on that container.
+
+# Creating Nested Maps
+
+Create nested maps using `PutObject` with `AutomergeContainerType.Map`:
+
+```csharp
+var root = doc.RootId;
+
+// Create a nested map for user preferences
+var preferences = doc.PutObject(root, "preferences", AutomergeContainerType.Map);
+doc.PutString(preferences, "theme", "dark");
+doc.PutBoolean(preferences, "notifications", true);
+
+doc.Commit("Add preferences");
+```
+
+This creates a structure like:
+
+```json
+{
+  "preferences": {
+    "theme": "dark",
+    "notifications": true
+  }
+}
+```
+
+The `PutObject` call returns an Object ID for the new map. You use this ID for all operations on that map — `PutString`, `PutInt64`, `PutBoolean`, and so on.
+
+# Nested Maps in Maps
+
+You can nest maps within maps to build hierarchies:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var user = doc.PutObject(root, "user", AutomergeContainerType.Map);
+doc.PutString(user, "name", "Alice");
+
+var address = doc.PutObject(user, "address", AutomergeContainerType.Map);
+doc.PutString(address, "city", "Seattle");
+doc.PutString(address, "country", "USA");
+
+doc.Commit("nested map");
+
+var json = doc.HydrateJson();
+```
+
+Result:
+
+```json
+{
+  "user": {
+    "name": "Alice",
+    "address": {
+      "city": "Seattle",
+      "country": "USA"
+    }
+  }
+}
+```
+
+# Nested Lists in Maps
+
+Store ordered collections inside maps:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var tags = doc.PutObject(root, "tags", AutomergeContainerType.List);
+doc.ListInsertString(tags, 0, "csharp");
+doc.ListInsertString(tags, 1, "automerge");
+doc.Commit("list in map");
+```
+
+Result:
+
+```json
+{
+  "tags": ["csharp", "automerge"]
+}
+```
+
+# Nested Text in Maps
+
+Store collaborative text inside maps:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var description = doc.PutObject(root, "description", AutomergeContainerType.Text);
+doc.SpliceText(description, 0, 0, "A collaborative document");
+doc.Commit("text in map");
+```
+
+Result:
+
+```json
+{
+  "description": "A collaborative document"
+}
+```
+
+Text containers support character-level collaborative editing. See the [Text guides](/Six.Automerge/guides/text/basic-operations/) for details.
+
+# Maps in Lists
+
+You can also nest maps inside lists, creating arrays of structured objects:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var users = doc.PutObject(root, "users", AutomergeContainerType.List);
+
+var user1 = doc.ListInsertObject(users, 0, AutomergeContainerType.Map);
+doc.PutString(user1, "name", "Alice");
+doc.PutInt64(user1, "age", 30);
+
+var user2 = doc.ListInsertObject(users, 1, AutomergeContainerType.Map);
+doc.PutString(user2, "name", "Bob");
+doc.PutInt64(user2, "age", 25);
+
+doc.Commit("maps in list");
+```
+
+Result:
+
+```json
+{
+  "users": [
+    { "name": "Alice", "age": 30 },
+    { "name": "Bob", "age": 25 }
+  ]
+}
+```
+
+# Object IDs
+
+Every container in an Automerge document has a unique Object ID.
+
+## Getting Object IDs
+
+When you create a container, you receive its Object ID:
+
+```csharp
+var root = doc.RootId;                                                    // root map ID
+var listId = doc.PutObject(root, "items", AutomergeContainerType.List);   // new list ID
+var mapId = doc.PutObject(root, "config", AutomergeContainerType.Map);    // new map ID
+```
+
+You use these IDs to reference containers in subsequent operations:
+
+```csharp
+doc.ListInsertString(listId, 0, "first item");
+doc.PutString(mapId, "key", "value");
+```
+
+## Object ID Lifetime
+
+Object IDs remain valid for the lifetime of the document. You can store them and use them later:
+
+```csharp
+var preferences = doc.PutObject(root, "preferences", AutomergeContainerType.Map);
+doc.PutString(preferences, "theme", "dark");
+doc.Commit("Add preferences");
+
+// Later, still valid:
+doc.PutBoolean(preferences, "notifications", false);
+doc.Commit("Update preferences");
+```
+
+Object IDs don't serialize to JSON. When you call `HydrateJson()`, you get the data values, not the internal Object IDs.
+
+# Deep Nesting
+
+You can nest containers to arbitrary depth:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var level1 = doc.PutObject(root, "level1", AutomergeContainerType.Map);
+var level2 = doc.PutObject(level1, "level2", AutomergeContainerType.Map);
+var level3 = doc.PutObject(level2, "level3", AutomergeContainerType.Map);
+doc.PutString(level3, "deep", "value");
+
+doc.Commit("deep nesting");
+
+var json = doc.HydrateJson();
+```
+
+Result:
+
+```json
+{
+  "level1": {
+    "level2": {
+      "level3": {
+        "deep": "value"
+      }
+    }
+  }
+}
+```
+
+Each level returns a new Object ID that you use for operations at that level.
+
+# Complete Example
+
+Here's a realistic user profile with multiple nesting levels:
+
+```csharp
+using System;
+using System.Text.Json;
+using Six.Automerge;
+
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Basic user information
+doc.PutString(root, "user_id", "usr_12345");
+doc.PutString(root, "username", "alice");
+
+// User preferences as nested map
+var preferences = doc.PutObject(root, "preferences", AutomergeContainerType.Map);
+doc.PutString(preferences, "language", "en");
+doc.PutString(preferences, "timezone", "America/Los_Angeles");
+doc.PutBoolean(preferences, "dark_mode", true);
+doc.PutBoolean(preferences, "email_notifications", true);
+
+// Subscription details as nested map
+var subscription = doc.PutObject(root, "subscription", AutomergeContainerType.Map);
+doc.PutString(subscription, "plan", "pro");
+doc.PutString(subscription, "status", "active");
+doc.PutTimestamp(subscription, "started_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+var expiresAt = DateTimeOffset.UtcNow.AddYears(1).ToUnixTimeMilliseconds();
+doc.PutTimestamp(subscription, "expires_at", expiresAt);
+
+// Tags as nested list
+var tags = doc.PutObject(root, "tags", AutomergeContainerType.List);
+doc.ListInsertString(tags, 0, "developer");
+doc.ListInsertString(tags, 1, "rust");
+doc.ListInsertString(tags, 2, "csharp");
+
+// Bio as nested text
+var bio = doc.PutObject(root, "bio", AutomergeContainerType.Text);
+doc.SpliceText(bio, 0, 0, "Software engineer interested in distributed systems");
+
+doc.Commit("Create user profile");
+
+// Display the structure
+var json = doc.HydrateJson();
+using var parsed = JsonDocument.Parse(json);
+Console.WriteLine(JsonSerializer.Serialize(parsed.RootElement, new JsonSerializerOptions
+{
+    WriteIndented = true
+}));
+```
+
+# Best Practices
+
+## Group Related Data
+
+Use nested maps to group related fields:
+
+```csharp
+// Good: Grouped by concept
+var address = doc.PutObject(root, "address", AutomergeContainerType.Map);
+doc.PutString(address, "street", "123 Main St");
+doc.PutString(address, "city", "San Francisco");
+doc.PutString(address, "zip", "94102");
+
+// Less organized: Flat structure
+doc.PutString(root, "address_street", "123 Main St");
+doc.PutString(root, "address_city", "San Francisco");
+doc.PutString(root, "address_zip", "94102");
+```
+
+## Keep a Reference to Object IDs
+
+Store the Object ID when you create a container so you can modify it later:
+
+```csharp
+var preferences = doc.PutObject(root, "preferences", AutomergeContainerType.Map);
+// Keep 'preferences' around for future operations
+doc.PutString(preferences, "theme", "dark");
+```
+
+## Choose the Right Container Type
+
+- **Map** for named fields and configuration-like data
+- **List** for ordered collections and arrays
+- **Text** for collaboratively-edited content
+
+# Next Steps
+
+- [Maps — Basic Operations](/Six.Automerge/guides/maps/basic-operations/) — Review basic map operations for adding, reading, and deleting keys.
+- [Lists — Basic Operations](/Six.Automerge/guides/lists/basic-operations/) — Learn how to work with ordered sequences.
+- [Text — Basic Operations](/Six.Automerge/guides/text/basic-operations/) — Explore collaborative text editing.

@@ -1,0 +1,279 @@
+---
+title: "Text: Cursors"
+description: Stable position references that track logical positions through concurrent edits, save/load cycles, and cross-peer synchronization
+---
+
+# Overview
+
+Indices shift when elements are inserted or deleted. If you save "position 5" and someone inserts three elements before it, your saved index now points to the wrong place.
+
+**Cursors** solve this. A cursor is a stable reference to a logical position in a list or text container. It tracks the element it was created at, regardless of concurrent insertions, deletions, or merges from other peers.
+
+# Creating a Cursor
+
+Use `GetCursor` to create a cursor at a specific index:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "a");
+doc.ListInsertString(list, 1, "b");
+doc.ListInsertString(list, 2, "c");
+doc.Commit("init");
+
+// Create a cursor pointing at "b" (index 1)
+var cursor = doc.GetCursor(list, 1);
+```
+
+Cursors work on both list and text containers:
+
+```csharp
+var text = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(text, 0, 0, "Hello World");
+doc.Commit("init");
+
+// Create a cursor at position 5 (the space between "Hello" and "World")
+var cursor = doc.GetCursor(text, 5);
+```
+
+# Resolving a Cursor
+
+Use `GetCursorPosition` to resolve a cursor back to its current index:
+
+```csharp
+var cursor = doc.GetCursor(list, 1);
+
+var position = doc.GetCursorPosition(list, cursor);
+// position == 1
+```
+
+The returned index reflects the cursor's current position after all edits.
+
+# Cursor Stability with Concurrent Edits
+
+## Insert Before the Cursor
+
+When elements are inserted **before** the cursor position, the cursor's resolved index shifts forward — but it still points to the same element:
+
+```csharp
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "a");
+doc.ListInsertString(list, 1, "b");
+doc.ListInsertString(list, 2, "c");
+doc.Commit("init");
+
+// Cursor points at "b" (index 1)
+var cursor = doc.GetCursor(list, 1);
+
+// Insert "z" at index 0 — before the cursor
+doc.ListInsertString(list, 0, "z");
+doc.Commit("insert before");
+
+// List is now: ["z", "a", "b", "c"]
+var position = doc.GetCursorPosition(list, cursor);
+// position == 2 (cursor tracked "b" to its new index)
+Assert.Equal("b", doc.ListGetString(list, position));
+```
+
+## Insert After the Cursor
+
+When elements are inserted **after** the cursor position, the cursor stays at the same index:
+
+```csharp
+// Cursor points at "b" (index 1)
+var cursor = doc.GetCursor(list, 1);
+
+// Insert "z" after the cursor position
+doc.ListInsertString(list, 2, "z");
+doc.Commit("insert after");
+
+// List is now: ["a", "b", "z", "c"]
+var position = doc.GetCursorPosition(list, cursor);
+// position == 1 (unchanged)
+Assert.Equal("b", doc.ListGetString(list, position));
+```
+
+## Multi-Peer Concurrent Edits
+
+Cursors track correctly even when merging changes from multiple peers:
+
+```csharp
+using var doc1 = AutomergeDocument.Create("aa");
+var root1 = doc1.RootId;
+
+var list = doc1.PutObject(root1, "items", AutomergeContainerType.List);
+doc1.ListInsertString(list, 0, "a");
+doc1.ListInsertString(list, 1, "b");
+doc1.ListInsertString(list, 2, "c");
+doc1.Commit("init");
+
+// Fork to create a second peer
+using var doc2 = doc1.Fork();
+
+// Create cursor in doc1 pointing at "b" (index 1)
+var cursor = doc1.GetCursor(list, 1);
+
+// Doc2 inserts before "b"
+doc2.ListInsertString(list, 0, "z");
+doc2.Commit("peer insert");
+
+// Merge changes
+doc1.Merge(doc2);
+
+// Cursor still tracks "b"
+var position = doc1.GetCursorPosition(list, cursor);
+Assert.Equal("b", doc1.ListGetString(list, position));
+```
+
+# Cursor Serialization
+
+Cursors can be serialized to bytes for storage or transmission, then restored later.
+
+## ToBytes / FromBytes
+
+```csharp
+var cursor = doc.GetCursor(list, 1);
+
+// Serialize to bytes
+byte[] bytes = cursor.ToBytes();
+
+// Deserialize from bytes
+var restored = AutomergeCursor.FromBytes(bytes);
+
+// Resolves to the same position
+var position = doc.GetCursorPosition(list, restored);
+// position == 1
+```
+
+## Bytes Are Idempotent
+
+Serializing and deserializing multiple times produces identical bytes:
+
+```csharp
+byte[] bytes1 = cursor.ToBytes();
+var cursor2 = AutomergeCursor.FromBytes(bytes1);
+byte[] bytes2 = cursor2.ToBytes();
+
+// Bytes are identical
+Assert.Equal(bytes1, bytes2);
+```
+
+# Cursor Persistence Across Save/Load
+
+Cursors survive document save/load cycles. Serialize the cursor to bytes, save the document, then load both and resolve:
+
+```csharp
+// Create document and cursor
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertString(list, 0, "alpha");
+doc.ListInsertString(list, 1, "beta");
+doc.ListInsertString(list, 2, "gamma");
+doc.Commit("init");
+
+var cursor = doc.GetCursor(list, 1);
+byte[] cursorBytes = cursor.ToBytes();
+
+// Save the document
+byte[] saved = doc.Save();
+
+// Load in a new document
+using var loaded = AutomergeDocument.Load(saved);
+var restoredCursor = AutomergeCursor.FromBytes(cursorBytes);
+
+var position = loaded.GetCursorPosition(list, restoredCursor);
+// position == 1, still pointing at "beta"
+Assert.Equal("beta", loaded.ListGetString(list, position));
+```
+
+## Persistence with Concurrent Edits
+
+The cursor tracks correctly even when a third party modifies the document between save and load:
+
+```csharp
+// Create document with text
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Commit("init");
+
+// Cursor at position 6 (the "W" in "World")
+var cursor = doc.GetCursor(textId, 6);
+byte[] cursorBytes = cursor.ToBytes();
+byte[] saved = doc.Save();
+
+// Third party loads and inserts before the cursor
+using var peer = AutomergeDocument.Load(saved);
+peer.SpliceText(textId, 0, 0, "Hey! ");
+peer.Commit("peer insert");
+
+// Load original and merge
+using var loaded = AutomergeDocument.Load(saved);
+loaded.Merge(peer);
+
+// Cursor tracked through the merge
+var restoredCursor = AutomergeCursor.FromBytes(cursorBytes);
+var position = loaded.GetCursorPosition(textId, restoredCursor);
+
+var text = loaded.GetText(textId);
+// text == "Hey! Hello World"
+// position == 11 (6 + 5 chars from "Hey! ")
+Assert.Equal('W', text[(int)position]);
+```
+
+# Text Cursors
+
+Cursors on text containers work identically to list cursors — they track a character position through concurrent edits:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "The quick brown fox");
+doc.Commit("init");
+
+// Cursor at 'b' in "brown" (position 10)
+var cursor = doc.GetCursor(textId, 10);
+byte[] cursorBytes = cursor.ToBytes();
+byte[] saved = doc.Save();
+
+// Peer inserts "very " before "quick"
+using var peer = AutomergeDocument.Load(saved);
+peer.SpliceText(textId, 4, 0, "very ");
+peer.Commit("peer insert");
+
+// Merge
+using var merged = AutomergeDocument.Load(saved);
+merged.Merge(peer);
+
+var restoredCursor = AutomergeCursor.FromBytes(cursorBytes);
+var position = merged.GetCursorPosition(textId, restoredCursor);
+
+var text = merged.GetText(textId);
+// text == "The very quick brown fox"
+// position == 15 ('b' shifted right by 5)
+Assert.Equal('b', text[(int)position]);
+```
+
+# Use Cases
+
+**Collaborative text editors** — Track each user's caret position. When remote edits arrive, resolve cursors to update caret positions without manual index arithmetic.
+
+**Bookmarks** — Save a cursor to bytes alongside a document. When the document is loaded later (possibly with changes from other peers), the bookmark still points to the right location.
+
+**Selection ranges** — Store two cursors (start and end) to represent a selection that survives concurrent edits.
+
+**Annotation anchors** — Attach comments or notes to specific positions that remain stable across edits.
+
+# API Reference
+
+| Method | Description |
+|--------|-------------|
+| `doc.GetCursor(objId, index)` | Create a cursor at the given index in a list or text |
+| `doc.GetCursorPosition(objId, cursor)` | Resolve a cursor to its current index |
+| `AutomergeCursor.FromBytes(bytes)` | Deserialize a cursor from bytes |
+| `cursor.ToBytes()` | Serialize a cursor to bytes |
+
+# Next Steps
+
+- [Text — Basic Operations](/Six.Automerge/guides/text/basic-operations/) — SpliceText and other text operations.
+- [Text — Collaborative Editing](/Six.Automerge/guides/text/collaborative-editing/) — How concurrent text edits merge between peers.
+- [Rich Text — Overview](/Six.Automerge/guides/rich-text/) — Add formatting marks to text for rich text editing.

@@ -1,0 +1,127 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DemoApp.CollaborativeTaskBoard.ViewModels"
+        xmlns:shared="using:DemoApp.Shared.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+        x:Class="DemoApp.CollaborativeTaskBoard.Views.MainWindow"
+        x:DataType="vm:BoardViewModel"
+        Title="Task Board — Automerge Demo"
+        Width="1200" Height="700">
+
+    <Design.DataContext>
+        <vm:BoardViewModel/>
+    </Design.DataContext>
+
+    <Panel>
+        <!-- Document Session Dialog (shown on startup) -->
+        <Border Name="SessionPanel" VerticalAlignment="Center" HorizontalAlignment="Center"
+                MaxWidth="500" MaxHeight="600">
+            <shared:DocumentSessionDialog Name="SessionDialog" DataContext="{x:Null}"/>
+        </Border>
+
+        <!-- Editor Panel (hidden until document is loaded) -->
+        <DockPanel Name="EditorPanel" IsVisible="False">
+            <!-- Connection status bar at bottom -->
+            <Border DockPanel.Dock="Bottom">
+                <shared:ConnectionStatusBar Name="StatusBar" DataContext="{x:Null}"/>
+            </Border>
+
+            <!-- Toolbar -->
+            <Border DockPanel.Dock="Top" Padding="8" >
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Task Board" FontWeight="Bold" FontSize="16"
+                               VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <Button Content="Add Column" Command="{Binding AddColumnCommand}" Name="AddColumnButton"/>
+                    <Button Content="Save" Command="{Binding SaveCommand}" Name="SaveButton"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Board: horizontal scrolling column layout -->
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding Columns}" Name="ColumnsPanel">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="8"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ColumnViewModel">
+                            <Border CornerRadius="8" Width="300" Padding="8"  BorderThickness="1">
+                                <DockPanel>
+                                    <!-- Column header -->
+                                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                                        <Button DockPanel.Dock="Right" Content="X" FontSize="10"
+                                                Padding="4,2"
+                                                Click="OnRemoveColumnClick"
+                                                Tag="{Binding}"/>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                   FontSize="14" VerticalAlignment="Center"/>
+                                    </DockPanel>
+
+                                    <!-- Add task button at bottom -->
+                                    <Button DockPanel.Dock="Bottom" Content="+ Add Task"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center"
+                                            Margin="0,8,0,0"
+                                            Click="OnAddTaskClick"
+                                            Tag="{Binding}"/>
+
+                                    <!-- Task list -->
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl ItemsSource="{Binding Tasks}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:TaskItemViewModel">
+                                                    <Border CornerRadius="4"
+                                                            Padding="8" Margin="0,0,0,4">
+                                                        <DockPanel>
+                                                            <!-- Vote button and count on the right -->
+                                                            <StackPanel DockPanel.Dock="Right"
+                                                                        Orientation="Vertical"
+                                                                        VerticalAlignment="Center"
+                                                                        Margin="8,0,0,0">
+                                                                <Button Content="▲" FontSize="10"
+                                                                        Padding="4,2"
+                                                                        HorizontalAlignment="Center"
+                                                                        Click="OnUpvoteClick"
+                                                                        Tag="{Binding}"/>
+                                                                <TextBlock Text="{Binding Votes}"
+                                                                           HorizontalAlignment="Center"
+                                                                           FontWeight="Bold"/>
+                                                            </StackPanel>
+
+                                                            <!-- Delete button -->
+                                                            <Button DockPanel.Dock="Right"
+                                                                    Content="X" FontSize="10"
+                                                                    Padding="4,2"
+                                                                    VerticalAlignment="Top"
+                                                                    Click="OnRemoveTaskClick"
+                                                                    Tag="{Binding}"/>
+
+                                                            <!-- Task content -->
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding Title}"
+                                                                           FontWeight="Medium"
+                                                                           TextWrapping="Wrap"/>
+                                                                <TextBlock Text="{Binding Status}"
+                                                                           FontSize="11"
+                                                                           Foreground="#888"
+                                                                           Margin="0,2,0,0"/>
+                                                            </StackPanel>
+                                                        </DockPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+    </Panel>
+
+</Window>

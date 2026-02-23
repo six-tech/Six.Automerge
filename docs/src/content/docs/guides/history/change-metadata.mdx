@@ -1,0 +1,178 @@
+---
+title: "Change Metadata"
+description: Inspect detailed commit metadata including actor, sequence, timestamp, message, and dependencies
+---
+
+# Overview
+
+Every commit in an Automerge document carries metadata: who made it, when, a sequence number, an optional message, and which previous commits it depends on. Use `GetChangeMetadata` to inspect this information for any commit by its hash.
+
+# The DecodedChange Model
+
+`GetChangeMetadata` returns a `DecodedChange` with these fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Hash` | `string` | Hex hash uniquely identifying this commit |
+| `Actor` | `string` | The actor ID of the peer that created this change |
+| `Sequence` | `ulong` | Monotonically increasing sequence number per actor |
+| `TimestampMillis` | `long` | Unix timestamp in milliseconds when the change was created |
+| `Message` | `string?` | Optional commit message (null if none was provided) |
+| `Dependencies` | `IReadOnlyList<string>` | Hashes of commits this change depends on |
+
+# Reading Metadata
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "title", "Hello World");
+var hash = doc.Commit("Initial commit", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+var metadata = doc.GetChangeMetadata(hash!);
+// metadata.Hash == hash
+// metadata.Actor — the actor ID of this document
+// metadata.Sequence == 1 (first change by this actor)
+// metadata.TimestampMillis > 0
+// metadata.Message == "Initial commit"
+// metadata.Dependencies — commits this change depends on
+```
+
+# Sequence Numbers
+
+Each actor has its own sequence counter. Successive commits by the same actor have increasing sequence numbers:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+
+doc.PutString(doc.RootId, "key1", "value1");
+var hash1 = doc.Commit("First commit");
+
+doc.PutString(doc.RootId, "key2", "value2");
+var hash2 = doc.Commit("Second commit");
+
+doc.PutString(doc.RootId, "key3", "value3");
+var hash3 = doc.Commit("Third commit");
+
+var meta1 = doc.GetChangeMetadata(hash1!);
+var meta2 = doc.GetChangeMetadata(hash2!);
+var meta3 = doc.GetChangeMetadata(hash3!);
+
+// Sequence numbers increase: 1, 2, 3
+// All have the same Actor (same document)
+// Messages match what was provided
+```
+
+# Dependencies
+
+Dependencies link commits into a directed acyclic graph (DAG). A commit's dependencies are the heads at the time it was created:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+doc1.PutString(doc1.RootId, "key1", "value1");
+var hash1 = doc1.Commit("First change");
+
+using var doc2 = AutomergeDocument.Create();
+doc2.PutString(doc2.RootId, "key2", "value2");
+var hash2 = doc2.Commit("Second change");
+
+// Root changes (first commit by each actor) have empty dependencies
+var meta1 = doc1.GetChangeMetadata(hash1!);
+var meta2 = doc1.GetChangeMetadata(hash2!);
+// meta1.Dependencies is empty
+// meta2.Dependencies is empty
+
+// After merge, new commits will depend on both actors' latest changes
+doc1.Merge(doc2);
+```
+
+# Commits Without Messages
+
+If you commit without a message, the `Message` field is null:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "key", "value");
+var hash = doc.Commit(); // No message
+
+var metadata = doc.GetChangeMetadata(hash!);
+// metadata.Message is null
+```
+
+# Invalid Hashes
+
+`GetChangeMetadata` returns `null` for hashes that don't exist in the document. It throws `ArgumentException` for null or empty strings:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "key", "value");
+doc.Commit();
+
+// Non-existent hash returns null
+var result = doc.GetChangeMetadata(
+    "0000000000000000000000000000000000000000000000000000000000000000");
+// result is null
+
+// Null or empty throws ArgumentException
+// doc.GetChangeMetadata(null!)   — throws
+// doc.GetChangeMetadata("")      — throws
+```
+
+# Topological History Traversal
+
+Use `TopoHistoryTraversal` to get all commit hashes in topological order. This gives you the full linear history of the document:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+doc.PutString(root, "value", "one");
+doc.Commit("change 1");
+doc.PutString(root, "value", "two");
+doc.Commit("change 2");
+
+var history = doc.TopoHistoryTraversal();
+// At least 2 hashes, in topological order
+
+// You can inspect each change
+foreach(var hash in history)
+{
+    var meta = doc.GetChangeMetadata(hash);
+    // meta.Actor, meta.Sequence, meta.Message, etc.
+}
+```
+
+# Complete Example
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Build up a history
+doc.PutString(root, "title", "Draft");
+var h1 = doc.Commit("Create draft", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+doc.PutString(root, "title", "In Review");
+var h2 = doc.Commit("Submit for review", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+doc.PutString(root, "title", "Published");
+var h3 = doc.Commit("Publish");
+
+// Walk the full history
+var history = doc.TopoHistoryTraversal();
+
+foreach(var hash in history)
+{
+    var meta = doc.GetChangeMetadata(hash);
+    if(meta is not null)
+    {
+        // meta.ToString() produces a readable summary like:
+        // "Change abcd1234 by actor123 seq=1 "Create draft""
+        Console.WriteLine(meta);
+    }
+}
+```
+
+# Next Steps
+
+- [Commits and Heads](/Six.Automerge/guides/history/commits-and-heads/) — Understand the commit model and heads
+- [Diffing](/Six.Automerge/guides/history/diffing/) — Compare two points in history
+- [Isolate and Integrate](/Six.Automerge/guides/history/isolate-integrate/) — Switch document view to a historical point

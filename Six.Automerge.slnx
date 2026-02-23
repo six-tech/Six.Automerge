@@ -1,0 +1,58 @@
+﻿<Solution>
+  <Folder Name="/Apps/">
+    <Project Path="apps/DemoApp.CollaborativeDrawing/DemoApp.CollaborativeDrawing.csproj" />
+    <Project Path="apps/DemoApp.CollaborativeEditor/DemoApp.CollaborativeEditor.csproj" />
+    <Project Path="apps/DemoApp.CollaborativeTaskBoard/DemoApp.CollaborativeTaskBoard.csproj" />
+    <Project Path="apps/DemoApp.PlainEditor/DemoApp.PlainEditor.csproj" />
+    <Project Path="apps/DemoApp.Shared/DemoApp.Shared.csproj" />
+    <Project Path="apps\DemoApp.Basic\DemoApp.Basic.csproj" />
+    <Project Path="apps\Server.Api\Server.Api.csproj" />
+    <File Path="apps\Directory.Build.props" />
+  </Folder>
+  <Folder Name="/Infra/">
+    <File Path="infra/Directory.Build.props" />
+    <Project Path="infra\Infra.AppHost\Infra.AppHost.csproj" />
+    <Project Path="infra\Infra.ServiceDefaults\Infra.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/Libs/">
+    <Project Path="libs/Six.Automerge.Drawing.Core/Six.Automerge.Drawing.Core.csproj" />
+    <Project Path="libs/Six.Automerge.Drawing.Server/Six.Automerge.Drawing.Server.csproj" />
+    <Project Path="libs/Six.Automerge.FFI/Six.Automerge.FFI.csproj" />
+    <Project Path="libs/Six.Automerge.Repo.Abstractions/Six.Automerge.Repo.Abstractions.csproj" />
+    <Project Path="libs/Six.Automerge.Repo.Network.SignalR.Abstractions/Six.Automerge.Repo.Network.SignalR.Abstractions.csproj" />
+    <Project Path="libs/Six.Automerge.Repo.Network.SignalR.Client/Six.Automerge.Repo.Network.SignalR.Client.csproj" />
+    <Project Path="libs/Six.Automerge.Repo.Network.SignalR.Server/Six.Automerge.Repo.Network.SignalR.Server.csproj" />
+    <Project Path="libs/Six.Automerge.Repo.Storage.FileSystem/Six.Automerge.Repo.Storage.FileSystem.csproj" />
+    <Project Path="libs/Six.Automerge.Repo/Six.Automerge.Repo.csproj" />
+    <Project Path="libs/Six.Automerge.SyncServer/Six.Automerge.SyncServer.csproj" />
+    <Project Path="libs/Six.Automerge.TaskBoard.Core/Six.Automerge.TaskBoard.Core.csproj" />
+    <Project Path="libs/Six.Automerge.TaskBoard.Server/Six.Automerge.TaskBoard.Server.csproj" />
+    <Project Path="libs/Six.Automerge.TextEditor.Core/Six.Automerge.TextEditor.Core.csproj" />
+    <Project Path="libs/Six.Automerge.TextEditor.Server/Six.Automerge.TextEditor.Server.csproj" />
+    <Project Path="libs/Six.Automerge/Six.Automerge.csproj" />
+    <File Path="libs\Directory.Build.props" />
+    <File Path="libs\Directory.Build.targets" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Six.Automerge.FFI.Tests.Unit/Six.Automerge.FFI.Tests.Unit.csproj" />
+    <Project Path="tests/Six.Automerge.Repo.Network.SignalR.Tests.Integration/Six.Automerge.Repo.Network.SignalR.Tests.Integration.csproj" />
+    <Project Path="tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Integration/Six.Automerge.Repo.Storage.FileSystem.Tests.Integration.csproj" />
+    <Project Path="tests/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit/Six.Automerge.Repo.Storage.FileSystem.Tests.Unit.csproj" />
+    <Project Path="tests/Six.Automerge.Repo.Tests.Unit/Six.Automerge.Repo.Tests.Unit.csproj" />
+    <Project Path="tests/Six.SignalR.TestServer/Six.SignalR.TestServer.csproj" />
+    <Project Path="tests/Six.Tests.AppHost/Six.Tests.AppHost.csproj" />
+    <Project Path="tests/DemoApp.Shared.Tests/DemoApp.Shared.Tests.csproj" />
+    <Project Path="tests/DemoApp.CollaborativeTaskBoard.Tests/DemoApp.CollaborativeTaskBoard.Tests.csproj" />
+    <Project Path="tests/DemoApp.CollaborativeDrawing.Tests/DemoApp.CollaborativeDrawing.Tests.csproj" />
+    <Project Path="tests/DemoApp.CollaborativeEditor.Tests/DemoApp.CollaborativeEditor.Tests.csproj" />
+    <File Path="tests\Directory.Build.props" />
+  </Folder>
+  <Folder Name="/_config/">
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+    <File Path=".gitignore" />
+    <File Path="docs\astro.config.mjs" />
+    <File Path="README.md" />
+  </Folder>
+</Solution>

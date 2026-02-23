@@ -1,0 +1,191 @@
+---
+title: "Rich Text: Update Spans"
+description: Modify rich text documents using the UpdateSpans read-modify-write pattern — change text, insert blocks, and preserve marks through minimal diffs
+---
+
+# Overview
+
+`UpdateSpans` lets you modify a document's rich text content through a **read-modify-write** pattern:
+
+1. **Read** the current spans with `GetSpans`
+2. **Modify** the span list — change text, add blocks, remove spans
+3. **Write** the modified spans back with `UpdateSpans`
+
+Automerge computes a minimal diff between the old and new spans, applying only the necessary operations. This means unchanged content is preserved exactly as-is, including its marks and history.
+
+# The Read-Modify-Write Pattern
+
+The basic workflow:
+
+```csharp
+// 1. Read current spans
+var spans = doc.GetSpans(textId);
+
+// 2. Modify — build a new span list
+var modified = new List<AutomergeSpan>(spans);
+modified.Add(new AutomergeBlockSpan("heading", Array.Empty<string>(), "{}"));
+modified.Add(new AutomergeTextSpan("New Section", Array.Empty<AutomergeMarkInfo>()));
+
+// 3. Write back
+doc.UpdateSpans(textId, modified);
+doc.Commit("added new section");
+```
+
+`UpdateSpans` accepts any `IReadOnlyList<AutomergeSpan>` — you can pass the original list (for a no-op), a modified copy, or an entirely new list.
+
+# No-Op Updates
+
+When you pass the same spans back unchanged, `UpdateSpans` detects no differences and makes no modifications. This is safe and efficient:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Commit("initial text");
+
+var spansBefore = doc.GetSpans(textId);
+
+// Update with identical content — no-op
+doc.UpdateSpans(textId, spansBefore);
+doc.Commit("update identical");
+
+var spansAfter = doc.GetSpans(textId);
+// spansAfter matches spansBefore exactly
+```
+
+This property makes `UpdateSpans` safe to use in scenarios where you're not sure if modifications were actually made — just write the spans back and let Automerge handle the diff.
+
+# Changing Text Content
+
+Replace text by constructing new `AutomergeTextSpan` objects with the desired content:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Hello World");
+doc.Commit("initial text");
+
+// Replace all text via UpdateSpans
+var newSpans = new AutomergeSpan[]
+{
+    new AutomergeTextSpan("Goodbye World", Array.Empty<AutomergeMarkInfo>())
+};
+
+doc.UpdateSpans(textId, newSpans);
+doc.Commit("update text");
+
+var text = doc.GetText(textId);
+// text == "Goodbye World"
+```
+
+The minimal diff algorithm computes the smallest set of splice operations needed to transform the old text into the new text.
+
+# Inserting Blocks
+
+Add block markers by inserting `AutomergeBlockSpan` objects into the span list:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "HelloWorld");
+doc.Commit("initial text");
+
+// Insert a paragraph block between "Hello" and "World"
+var newSpans = new AutomergeSpan[]
+{
+    new AutomergeTextSpan("Hello", Array.Empty<AutomergeMarkInfo>()),
+    new AutomergeBlockSpan("paragraph", Array.Empty<string>(), "{}"),
+    new AutomergeTextSpan("World", Array.Empty<AutomergeMarkInfo>())
+};
+
+doc.UpdateSpans(textId, newSpans);
+doc.Commit("insert block");
+
+var spans = doc.GetSpans(textId);
+// Contains an AutomergeBlockSpan between "Hello" and "World"
+
+var textContent = string.Join("", spans.OfType<AutomergeTextSpan>().Select(t => t.Text));
+// textContent == "HelloWorld" — text is preserved
+```
+
+This is an alternative to calling `SplitBlock` directly. `UpdateSpans` is useful when you're already working with the span list and want to make multiple changes at once.
+
+# Round-Trip: Read, Modify, Update, Read
+
+A common pattern is reading spans, appending new content, and writing back:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "First paragraph");
+
+// Create initial structure with a paragraph block
+var blockId = doc.SplitBlock(textId, 0);
+doc.PutString(blockId, "type", "paragraph");
+doc.Commit("initial structure");
+
+// Read current spans
+var originalSpans = doc.GetSpans(textId);
+
+// Append a heading and its text
+var modified = new List<AutomergeSpan>(originalSpans);
+modified.Add(new AutomergeBlockSpan("heading", Array.Empty<string>(), "{}"));
+modified.Add(new AutomergeTextSpan("Second heading", Array.Empty<AutomergeMarkInfo>()));
+
+// Write back
+doc.UpdateSpans(textId, modified);
+doc.Commit("added heading");
+
+// Verify the result
+var finalSpans = doc.GetSpans(textId);
+var blocks = finalSpans.OfType<AutomergeBlockSpan>().ToList();
+// At least 2 blocks: the original paragraph and the new heading
+
+var allText = string.Join("", finalSpans.OfType<AutomergeTextSpan>().Select(t => t.Text));
+// Contains both "First paragraph" and "Second heading"
+```
+
+# Preserving Marks
+
+When you pass spans with marks through `UpdateSpans`, the marks are preserved as long as the text content remains unchanged:
+
+```csharp
+var textId = doc.PutObject(root, "content", AutomergeContainerType.Text);
+doc.SpliceText(textId, 0, 0, "Bold text and plain");
+doc.Mark(textId, 0, 9, "bold", true);
+doc.Commit("initial with marks");
+
+// Read spans — should have bold "Bold text" and plain " and plain"
+var spans = doc.GetSpans(textId);
+
+// Write back unchanged — marks should survive
+doc.UpdateSpans(textId, spans);
+doc.Commit("update identical with marks");
+
+// Verify bold mark is still present
+var marks = doc.GetMarks(textId);
+var boldMark = marks.FirstOrDefault(m => m.Name == "bold");
+// boldMark is present with Start == 0, End == 9
+```
+
+This makes `UpdateSpans` safe for round-trip operations where you read, potentially modify some spans, and write back — marks on unmodified regions are not affected.
+
+# When to Use UpdateSpans vs. Direct APIs
+
+| Scenario | Recommended API |
+|----------|----------------|
+| Insert a single block | `SplitBlock` — simpler for one-off operations |
+| Remove a single block | `JoinBlock` — direct removal |
+| Replace text content | `UpdateSpans` — handles diff computation |
+| Add multiple blocks at once | `UpdateSpans` — batch operations in one call |
+| Read-modify-write workflow | `UpdateSpans` — designed for this pattern |
+| Programmatic document restructuring | `UpdateSpans` — full control over the span list |
+
+# API Reference
+
+| Method | Parameters | Description |
+|--------|-----------|-------------|
+| `doc.UpdateSpans(textId, spans)` | `AutomergeObjId textId, IReadOnlyList<AutomergeSpan> spans` | Apply a new span list with minimal diff |
+| `doc.GetSpans(textId)` | `AutomergeObjId textId` | Read current spans (the "read" step) |
+
+# Next Steps
+
+- [Blocks](/Six.Automerge/guides/rich-text/blocks/) — Create blocks directly with `SplitBlock` and `JoinBlock`.
+- [Spans](/Six.Automerge/guides/rich-text/spans/) — Understand the `AutomergeTextSpan` and `AutomergeBlockSpan` model.
+- [Concurrent Rich Text](/Six.Automerge/guides/rich-text/concurrent-rich-text/) — How span updates merge across multiple peers.

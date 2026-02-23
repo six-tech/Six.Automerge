@@ -1,0 +1,260 @@
+---
+title: Getting Started with Repo
+description: Set up a Repo with storage and network adapters, create and find documents, and manage the Repo lifecycle
+---
+
+# Installation
+
+Add the Repo package and any adapters you need:
+
+```bash
+dotnet add package Six.Automerge.Repo
+dotnet add package Six.Automerge.Repo.Storage.FileSystem   # optional: file-based persistence
+dotnet add package Six.Automerge.Repo.Network.SignalR.Client # optional: SignalR networking
+```
+
+For testing or prototyping, the core `Six.Automerge.Repo` package includes in-memory adapters for both
+storage and networking.
+
+# Creating a Repo
+
+A Repo needs a `RepoConfig` that specifies at minimum how to store documents. Here is a minimal setup
+with in-memory storage and no networking:
+
+```csharp
+using Six.Automerge.Repository;
+using Six.Automerge.Repository.Storage;
+
+var repo = new Repo(new RepoConfig
+{
+  Storage = new InMemoryStorageAdapter()
+});
+```
+
+For production use, configure file-system storage and one or more network adapters:
+
+```csharp
+using Six.Automerge.Repository;
+using Six.Automerge.Repository.Storage.FileSystem;
+using Six.Automerge.Repository.Network;
+
+var networkAdapter = new InMemoryNetworkAdapter();
+
+var repo = new Repo(new RepoConfig
+{
+  PeerId = PeerId.Generate(),
+  Storage = new FileSystemStorageAdapter("./data/automerge"),
+  NetworkAdapters = [networkAdapter],
+  SaveDebounceRate = 100 // milliseconds (default)
+});
+```
+
+# RepoConfig Options
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `PeerId` | `PeerId?` | Auto-generated | Unique identity for this peer |
+| `Storage` | `IStorageAdapter?` | `null` | Storage backend. If null, documents are ephemeral |
+| `NetworkAdapters` | `IReadOnlyList<INetworkAdapter>?` | `null` | Network transports for peer sync |
+| `IsEphemeral` | `bool` | `false` | If true, sync state is not persisted |
+| `SaveDebounceRate` | `int` | `100` | Debounce rate for saves (milliseconds) |
+| `ShareConfig` | `ShareConfig?` | Allow all | Controls which documents are shared with which peers |
+| `Denylist` | `ISet<string>?` | `null` | Document IDs that should never be synced |
+| `IdFactory` | `Func<...>?` | `null` | Custom async document ID generator |
+
+# Creating Documents
+
+Use `Create<T>()` to create a new document. The Repo generates a `DocumentId` automatically and
+returns a `DocHandle<T>`:
+
+```csharp
+var handle = repo.Create<AutomergeDocument>();
+
+// The handle is immediately ready
+await handle.ChangeAsync(doc =>
+{
+  var root = doc.RootId;
+  doc.PutString(root, "title", "My Document");
+  doc.PutBoolean(root, "published", false);
+}, message: "Initial setup");
+
+Console.WriteLine($"Document ID: {handle.DocumentId}");
+```
+
+You can also create a document with a specific ID:
+
+```csharp
+var handle = repo.Create<AutomergeDocument>("my-known-document-id");
+```
+
+Or use `CreateAsync<T>()` if you configured a custom `IdFactory`:
+
+```csharp
+var handle = await repo.CreateAsync<AutomergeDocument>();
+```
+
+# Finding Documents
+
+Use `Find<T>()` to locate an existing document. The Repo checks three sources in order:
+
+1. **In-memory cache** — returns immediately if already loaded
+2. **Storage** — loads from the configured storage adapter
+3. **Network** — requests the document from connected peers
+
+```csharp
+var handle = await repo.Find<AutomergeDocument>("existing-document-id");
+
+if(handle is null)
+{
+  Console.WriteLine("Document not found in storage or network");
+  return;
+}
+
+await handle.WhenReadyAsync();
+var doc = handle.Doc();
+var json = doc.HydrateJson();
+```
+
+`Find` returns `null` if the document cannot be loaded within the timeout period (default: 10 seconds).
+You can specify a custom timeout:
+
+```csharp
+var handle = await repo.Find<AutomergeDocument>(
+  "remote-document-id",
+  timeout: TimeSpan.FromSeconds(30));
+```
+
+# Deleting Documents
+
+```csharp
+repo.Delete("document-id");
+```
+
+This removes the document from the in-memory cache, marks the handle as deleted, and asynchronously
+removes it from storage. The `DocumentDeleted` event fires after the deletion.
+
+# Cloning Documents
+
+Create a copy of a document with a new identity:
+
+```csharp
+var original = repo.Create<AutomergeDocument>();
+await original.ChangeAsync(doc =>
+{
+  doc.PutString(doc.RootId, "title", "Template");
+});
+
+var clone = repo.Clone(original);
+// clone has a new DocumentId but the same content
+```
+
+# Exporting and Importing
+
+Export a document as binary for external transfer:
+
+```csharp
+byte[]? data = await repo.Export("document-id");
+```
+
+Import binary data into the Repo:
+
+```csharp
+byte[] externalData = /* received from another system */;
+var handle = repo.Import<AutomergeDocument>(externalData);
+```
+
+# Flushing Pending Saves
+
+The Repo debounces saves to avoid excessive I/O. If you need to ensure all data is persisted
+(for example, before shutting down), call `Flush`:
+
+```csharp
+await repo.Flush(); // flush all documents
+await repo.Flush(["doc-1", "doc-2"]); // flush specific documents
+```
+
+# Subscribing to Events
+
+The Repo raises events when documents or peers change state:
+
+```csharp
+repo.DocumentLoaded += (sender, args) =>
+{
+  Console.WriteLine($"Document loaded: {args.DocumentId}");
+};
+
+repo.PeerConnected += (sender, args) =>
+{
+  Console.WriteLine($"Peer connected: {args.PeerId}");
+};
+
+repo.DocumentDeleted += (sender, args) =>
+{
+  Console.WriteLine($"Document deleted: {args.DocumentId}");
+};
+```
+
+# Connecting Peers
+
+To synchronize documents between Repos, connect their network adapters. Here is an example using
+in-memory adapters for testing:
+
+```csharp
+var adapterA = new InMemoryNetworkAdapter();
+var adapterB = new InMemoryNetworkAdapter();
+
+var repoA = new Repo(new RepoConfig
+{
+  Storage = new InMemoryStorageAdapter(),
+  NetworkAdapters = [adapterA]
+});
+
+var repoB = new Repo(new RepoConfig
+{
+  Storage = new InMemoryStorageAdapter(),
+  NetworkAdapters = [adapterB]
+});
+
+// Establish bidirectional connection
+adapterA.ConnectTo(adapterB);
+
+// Create a document on repoA
+var handleA = repoA.Create<AutomergeDocument>();
+await handleA.ChangeAsync(doc =>
+{
+  doc.PutString(doc.RootId, "message", "Hello from A");
+});
+
+// Find it on repoB (loads via network sync)
+var handleB = await repoB.Find<AutomergeDocument>(handleA.DocumentId);
+```
+
+# Shutting Down
+
+Always shut down the Repo when you are done. This flushes pending saves and disposes all resources:
+
+```csharp
+await repo.Shutdown();
+```
+
+Alternatively, dispose the Repo directly (this does not flush pending saves):
+
+```csharp
+repo.Dispose();
+```
+
+# Memory Management
+
+For long-running applications, you can evict documents from memory while keeping them in storage:
+
+```csharp
+await repo.RemoveFromCache("document-id");
+// Document is flushed to storage, then removed from memory
+// Next Find() call will reload it from storage
+```
+
+# Next Steps
+
+- [Doc Handles](/Six.Automerge/repo/doc-handles/) — Understand the DocHandle state machine and events
+- [Storage Adapters](/Six.Automerge/repo/storage/) — Configure persistence backends
+- [Network Adapters](/Six.Automerge/repo/network/) — Set up peer-to-peer communication

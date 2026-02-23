@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Sdk Name="Aspire.AppHost.Sdk" Version="13.1.1"/>
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting" Version="13.1.1"/>
+        <PackageReference Include="Aspire.Hosting.AppHost" Version="13.1.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\apps\DemoApp.CollaborativeEditor\DemoApp.CollaborativeEditor.csproj" />        
+        <ProjectReference Include="..\..\apps\DemoApp.CollaborativeDrawing\DemoApp.CollaborativeDrawing.csproj" />
+        <ProjectReference Include="..\..\apps\DemoApp.CollaborativeTaskBoard\DemoApp.CollaborativeTaskBoard.csproj" />
+        <ProjectReference Include="..\..\apps\Server.Api\Server.Api.csproj" />        
+    </ItemGroup>
+
+</Project>

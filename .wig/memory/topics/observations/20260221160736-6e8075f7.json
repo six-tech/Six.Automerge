@@ -1,0 +1,12 @@
+{
+  "id": "20260221160736-6e8075f7",
+  "created": "2026-02-21T16:07:36.2742706Z",
+  "runSlug": "rust-compilation-and-artefacts-currently-we-a",
+  "contentHash": "5A71CA510004A20D",
+  "type": "observation",
+  "tags": [
+    "msbuild",
+    "native-libs",
+    "project-references"
+  ]
+}

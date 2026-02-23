@@ -1,0 +1,234 @@
+name: Build, Test & Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Semantic version (e.g. 1.2.3 or 1.0.0-preview.1)'
+        required: true
+        type: string
+      feed:
+        description: 'NuGet feed target'
+        required: true
+        type: choice
+        default: pack-only
+        options:
+          - pack-only
+          - local
+          - dev
+          - staging
+          - prod
+      create_release:
+        description: 'Create a GitHub release with native artifacts'
+        required: true
+        type: boolean
+        default: true
+
+env:
+  DOTNET_VERSION: '10.0.100-preview.6'
+
+permissions:
+  contents: write
+  packages: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Build native Rust FFI library for all 6 platform targets
+  # ---------------------------------------------------------------------------
+  build-native:
+    name: Build Native (${{ matrix.target_os }}-${{ matrix.target_arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target_os: windows
+            target_arch: x64
+            runner: windows-latest
+          - target_os: windows
+            target_arch: arm64
+            runner: windows-latest
+          - target_os: linux
+            target_arch: x64
+            runner: ubuntu-latest
+          - target_os: linux
+            target_arch: arm64
+            runner: ubuntu-latest
+          - target_os: macos
+            target_arch: x64
+            runner: macos-13
+          - target_os: macos
+            target_arch: arm64
+            runner: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: preview
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cross-compilation tools (Linux ARM64)
+        if: matrix.target_os == 'linux' && matrix.target_arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Build native library
+        run: >-
+          dotnet scripts/build-native.cs --
+          --target-os ${{ matrix.target_os }}
+          --target-arch ${{ matrix.target_arch }}
+          --force
+          --verbose
+
+      - name: Upload native artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.target_os }}-${{ matrix.target_arch }}
+          path: artefacts-rust/${{ matrix.target_os }}-${{ matrix.target_arch }}/
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Verify that committed codegen output matches a fresh generation
+  # ---------------------------------------------------------------------------
+  verify-codegen:
+    name: Verify Codegen
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: preview
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run codegen
+        run: >-
+          dotnet scripts/build-native.cs --
+          --run-codegen
+          --force
+          --verbose
+
+      - name: Verify no diff in generated bindings
+        run: |
+          if ! git diff --exit-code libs/Six.Automerge.FFI/generated/Interop.g.cs; then
+            echo "::error::Generated Interop.g.cs is out of date. Run 'dotnet scripts/build-native.cs -- --run-codegen' locally and commit the result."
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Build .NET solution and run the full test suite
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test
+    needs: [build-native]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: preview
+
+      - name: Verify Docker
+        run: |
+          docker --version
+          docker info
+          sudo systemctl start docker || true
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Download native artifact (linux-x64)
+        uses: actions/download-artifact@v4
+        with:
+          name: native-linux-x64
+          path: artefacts-rust/linux-x64/
+
+      - name: Build
+        run: dotnet build --configuration Release -p:SkipRustBuild=true
+
+      - name: Run tests
+        run: dotnet scripts/tests-run.cs
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Pack NuGet packages, create GitHub release, and publish
+  # ---------------------------------------------------------------------------
+  release:
+    name: Release
+    needs: [build-native, verify-codegen, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: preview
+
+      - name: Download all native artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: native-*
+          merge-multiple: true
+          path: artefacts-rust-download/
+
+      - name: Restructure artifact directories
+        run: |
+          mkdir -p artefacts-rust
+          for platform_dir in artefacts-rust-download/*/; do
+            if [ -d "$platform_dir" ]; then
+              dir_name=$(basename "$platform_dir")
+              cp -r "$platform_dir" "artefacts-rust/$dir_name"
+            fi
+          done
+          # If files were merged flat (no subdirs), detect from filenames
+          if [ -z "$(ls -d artefacts-rust/*/ 2>/dev/null)" ]; then
+            for file in artefacts-rust-download/*; do
+              if [ -f "$file" ]; then
+                filename=$(basename "$file")
+                # Extract platform from filename: libsix_automerge-{os}-{arch}.{ext}
+                platform=$(echo "$filename" | sed -n 's/.*-\(windows\|linux\|macos\)-\(x64\|arm64\)\..*/\1-\2/p')
+                if [ -n "$platform" ]; then
+                  mkdir -p "artefacts-rust/$platform"
+                  cp "$file" "artefacts-rust/$platform/"
+                fi
+              fi
+            done
+          fi
+          echo "Artifact structure:"
+          find artefacts-rust -type f | head -20
+
+      - name: Run publish pipeline
+        run: >-
+          dotnet scripts/publish.cs --
+          --version ${{ inputs.version }}
+          --feed ${{ inputs.feed }}
+          --skip-native-build
+          --skip-tests
+          ${{ inputs.create_release && '--create-release' || '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUGET_FEED_LOCAL_URL: ${{ secrets.NUGET_FEED_LOCAL_URL }}
+          NUGET_FEED_DEV_URL: ${{ secrets.NUGET_FEED_DEV_URL }}
+          NUGET_FEED_DEV_PAT: ${{ secrets.NUGET_FEED_DEV_PAT }}
+          NUGET_FEED_STAGING_URL: ${{ secrets.NUGET_FEED_STAGING_URL }}
+          NUGET_FEED_STAGING_PAT: ${{ secrets.NUGET_FEED_STAGING_PAT }}
+          NUGET_FEED_PRODUCTION_URL: ${{ secrets.NUGET_FEED_PRODUCTION_URL }}
+          NUGET_FEED_PRODUCTION_PAT: ${{ secrets.NUGET_FEED_PRODUCTION_PAT }}

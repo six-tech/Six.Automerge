@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Six.Automerge.Repo.Abstractions</RootNamespace>
+  </PropertyGroup>
+</Project>

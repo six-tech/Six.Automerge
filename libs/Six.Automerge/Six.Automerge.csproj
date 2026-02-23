@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RootNamespace>Six.Automerge</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Six.Toolkit.Automerge.FFI.Tests.Unit" />
+        <InternalsVisibleTo Include="Six.Automerge.FFI.Tests.Unit" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\Six.Automerge.FFI\Six.Automerge.FFI.csproj" />
+    </ItemGroup>
+
+</Project>

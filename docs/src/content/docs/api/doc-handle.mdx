@@ -1,0 +1,399 @@
+---
+title: DocHandle
+description: API reference for IDocHandle interface, DocHandle class, HandleState enum, and document handle lifecycle
+---
+
+# Overview
+
+`DocHandle<T>` is the primary way to interact with documents managed by a `Repo`. It wraps an `AutomergeDocument` with a lifecycle state machine, change events, thread-safe access, and sync coordination. Handles are obtained from `Repo.Create`, `Repo.Find`, `Repo.Clone`, or `Repo.Import`.
+
+```csharp
+using Six.Automerge.Repository;
+
+var handle = repo.Create<object>();
+handle.Change(doc =>
+{
+  doc.PutString(doc.RootId, "title", "Hello");
+});
+var document = handle.Doc();
+```
+
+**Namespace:** `Six.Automerge.Repository`
+
+# HandleState
+
+```csharp
+public enum HandleState
+```
+
+The lifecycle state of a document handle.
+
+| Value | Description |
+|-------|-------------|
+| `Idle` | Initial state before any loading begins |
+| `Loading` | Document is being loaded from storage |
+| `Requesting` | Document is being requested from the network |
+| `Ready` | Document is loaded and ready for use |
+| `Unloaded` | Document has been unloaded from memory |
+| `Deleted` | Document has been deleted |
+| `Unavailable` | Document could not be found from any source |
+
+**State transitions:**
+
+```
+Idle → Loading → Ready
+Idle → Loading → Requesting → Ready
+Ready → Unloaded → Loading (reload)
+Ready → Deleted
+Requesting → Unavailable
+```
+
+# IDocHandle
+
+```csharp
+public interface IDocHandle : IDisposable
+```
+
+Non-generic interface for document handles. Allows storing handles with different type parameters in the same collection (e.g., the repo's handle cache).
+
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `DocumentId` | `DocumentId` | The unique identifier for this document |
+| `State` | `HandleState` | The current lifecycle state |
+| `IsReady` | `bool` | True when `State` is `Ready` |
+| `IsUnloaded` | `bool` | True when `State` is `Unloaded` |
+| `IsDeleted` | `bool` | True when `State` is `Deleted` |
+| `IsUnavailable` | `bool` | True when `State` is `Unavailable` |
+| `IsReadOnly` | `bool` | True if the handle is a fixed-heads view |
+| `Heads` | `IReadOnlyList of string` | Current document heads |
+
+## Lifecycle Methods
+
+| Method | Description |
+|--------|-------------|
+| `Begin()` | Transitions from `Idle` to `Loading` |
+| `Initialize(document, isNewDocument)` | Initializes with a document, transitions to `Ready` |
+| `DoneLoading()` | Transitions from `Loading`/`Requesting` to `Ready` |
+| `Request()` | Transitions from `Loading` to `Requesting` |
+| `MarkUnavailable()` | Transitions to `Unavailable` |
+| `Unload()` | Transitions to `Unloaded`, releases document |
+| `Reload()` | Transitions from `Unloaded` to `Loading` |
+| `Delete()` | Transitions to `Deleted` |
+
+## Async Operations
+
+### WhenReadyAsync
+
+```csharp
+Task WhenReadyAsync(CancellationToken cancellationToken = default)
+```
+
+Waits for the document to become ready. Completes immediately if already ready.
+
+## Document Access
+
+### GetDocument
+
+```csharp
+AutomergeDocument? GetDocument()
+```
+
+Gets the underlying Automerge document. Returns null if not available.
+
+# DocHandle of T
+
+```csharp
+public sealed class DocHandle<T> : IDocHandle
+```
+
+Generic document handle with typed view projection.
+
+## Constructor
+
+```csharp
+public DocHandle(
+  DocumentId documentId,
+  DocHandleOptions<T>? options = null,
+  AutomergeDocument? document = null)
+```
+
+Typically you do not construct handles directly — use `Repo.Create` or `Repo.Find` instead.
+
+# Document Access
+
+## Doc
+
+```csharp
+public T Doc()
+```
+
+Gets the typed document view synchronously. Throws if the document is not ready.
+
+**Returns:** The projected document view of type `T`.
+
+**Exceptions:**
+- `InvalidOperationException` — When the document is not ready.
+
+## DocAsync
+
+```csharp
+public async ValueTask<T> DocAsync(CancellationToken cancellationToken = default)
+```
+
+Gets the typed document view, waiting for it to become ready if necessary.
+
+## ReadAsync (with result)
+
+```csharp
+public async ValueTask<TResult> ReadAsync<TResult>(
+  Func<AutomergeDocument, TResult> reader,
+  CancellationToken cancellationToken = default)
+```
+
+Reads from the document with a lock. The reader function receives the raw `AutomergeDocument`.
+
+**Returns:** The value returned by the reader function.
+
+## ReadAsync (void)
+
+```csharp
+public async ValueTask ReadAsync(
+  Action<AutomergeDocument> reader,
+  CancellationToken cancellationToken = default)
+```
+
+Reads from the document with a lock (no return value).
+
+# Mutation
+
+## Change
+
+```csharp
+public DocLocalChange<T>? Change(
+  Action<AutomergeDocument> mutation,
+  string? message = null,
+  long? timestampMillis = null,
+  CancellationToken cancellationToken = default)
+```
+
+Makes a change to the document. Acquires a lock, applies the mutation, commits, and fires change events.
+
+**Parameters:**
+- `mutation` — An action that modifies the `AutomergeDocument`.
+- `message` — Optional commit message.
+- `timestampMillis` — Optional timestamp.
+
+**Returns:** A `DocLocalChange<T>` with the change hash and binary data, or null if the mutation produced no operations.
+
+```csharp
+var change = handle.Change(doc =>
+{
+  doc.PutString(doc.RootId, "status", "active");
+}, "update status");
+```
+
+## ChangeAsync
+
+```csharp
+public async ValueTask<DocLocalChange<T>?> ChangeAsync(
+  Action<AutomergeDocument> mutation,
+  string? message = null,
+  long? timestampMillis = null,
+  CancellationToken cancellationToken = default)
+```
+
+Async version of `Change`.
+
+## ChangeAt
+
+```csharp
+public IReadOnlyList<byte[]> ChangeAt(
+  IReadOnlyList<string> heads,
+  Action<AutomergeDocument> mutation)
+```
+
+Makes a change as if at the specified heads, creating a concurrent branch. Forks the document at the given heads, applies the mutation, commits, then merges back.
+
+**Parameters:**
+- `heads` — The heads to fork at.
+- `mutation` — The mutation to apply.
+
+**Returns:** Binary change data from the concurrent branch.
+
+**Exceptions:**
+- `ArgumentNullException` — When `heads` or `mutation` is null.
+- `ArgumentException` — When `heads` is empty.
+- `InvalidOperationException` — When the handle is not ready or is read-only.
+
+## Merge
+
+```csharp
+public void Merge(DocHandle<T> other)
+```
+
+Merges another handle's document into this one.
+
+## ApplyRemoteChangesAsync
+
+```csharp
+public async ValueTask ApplyRemoteChangesAsync(
+  IEnumerable<byte[]> changes,
+  CancellationToken cancellationToken = default)
+```
+
+Applies binary changes received from a remote peer.
+
+# History
+
+## GetHeads
+
+```csharp
+public IReadOnlyList<string> GetHeads()
+```
+
+Gets the current document heads.
+
+## History
+
+```csharp
+public IReadOnlyList<IReadOnlyList<string>> History()
+```
+
+Gets the full topological change history as a list of head snapshots.
+
+## Diff
+
+```csharp
+public IReadOnlyList<AutomergePatch> Diff(
+  IReadOnlyList<string> fromHeads, IReadOnlyList<string> toHeads)
+```
+
+Computes patches between two points in history.
+
+## Metadata
+
+```csharp
+public DecodedChange? Metadata(string? changeHash = null)
+```
+
+Gets metadata for a specific change. If `changeHash` is null, uses the first current head.
+
+## View
+
+```csharp
+public DocHandle<T> View(IReadOnlyList<string> heads)
+```
+
+Creates a read-only view of the document at the specified heads. The returned handle is independent and read-only (`IsReadOnly` is true).
+
+# Events
+
+## Ready
+
+```csharp
+public event EventHandler<DocHandleReadyEventArgs<T>>? Ready
+```
+
+Raised when the document becomes ready.
+
+## Changed
+
+```csharp
+public event EventHandler<DocHandleChangeEventArgs<T>>? Changed
+```
+
+Raised when the document changes (local or remote). The `DocHandleChangeEventArgs<T>` contains the handle, projected document, `IsLocal` flag, and optional change data.
+
+## HeadsChanged
+
+```csharp
+public event EventHandler<DocHandleHeadsChangedEventArgs<T>>? HeadsChanged
+```
+
+Raised when the document heads change.
+
+## Deleted
+
+```csharp
+public event EventHandler<DocHandleDeletedEventArgs<T>>? Deleted
+```
+
+Raised when the document is deleted.
+
+## Unavailable
+
+```csharp
+public event EventHandler<DocHandleUnavailableEventArgs<T>>? Unavailable
+```
+
+Raised when the document is unavailable.
+
+## EphemeralMessageReceived
+
+```csharp
+public event EventHandler<DocHandleEphemeralMessageEventArgs<T>>? EphemeralMessageReceived
+```
+
+Raised when an ephemeral message is received from a peer.
+
+# Sync Operations
+
+## Broadcast
+
+```csharp
+public void Broadcast(object? payload)
+```
+
+Sends an ephemeral message to all peers.
+
+## DrainLocalChanges
+
+```csharp
+public IReadOnlyList<byte[]> DrainLocalChanges()
+```
+
+Drains all pending local changes. Returns binary change data and clears the internal buffer.
+
+# Supporting Types
+
+## DocLocalChange
+
+```csharp
+public sealed record DocLocalChange<T>(
+  DocHandle<T> Handle,
+  string ChangeHash,
+  IReadOnlyList<byte[]> Changes)
+```
+
+Result of a successful `Change` operation.
+
+## DocHandleOptions
+
+```csharp
+public sealed record DocHandleOptions<T>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `IsNew` | `bool` | `false` | Whether this is a newly created document |
+| `Heads` | `IReadOnlyList of string?` | `null` | Fixed heads for read-only views |
+| `Timeout` | `TimeSpan` | 10 seconds | Timeout for `WhenReadyAsync` |
+| `ViewFactory` | `Func of AutomergeDocument, T?` | `null` | Projection function |
+
+## SyncInfo
+
+```csharp
+public sealed record SyncInfo(
+  IReadOnlyList<string> LastHeads,
+  DateTimeOffset LastUpdated)
+```
+
+Sync state metadata for a storage peer.
+
+# See Also
+
+- [Repo](/Six.Automerge/api/repo/) — Repository that creates and manages handles
+- [Doc Handles Guide](/Six.Automerge/repo/doc-handles/) — Conceptual guide
+- [AutomergeDocument](/Six.Automerge/api/automerge-document/) — The underlying document class

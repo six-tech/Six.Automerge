@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">    
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.3.6"/>
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.6"/>
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo\Six.Automerge.Repo.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Network.SignalR.Client\Six.Automerge.Repo.Network.SignalR.Client.csproj" />
+        <ProjectReference Include="..\..\libs\Six.Automerge.Repo.Storage.FileSystem\Six.Automerge.Repo.Storage.FileSystem.csproj" />
+    </ItemGroup>
+
+</Project>

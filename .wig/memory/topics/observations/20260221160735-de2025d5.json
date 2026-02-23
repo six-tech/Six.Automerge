@@ -1,0 +1,12 @@
+{
+  "id": "20260221160735-de2025d5",
+  "created": "2026-02-21T16:07:35.8726694Z",
+  "runSlug": "rust-compilation-and-artefacts-currently-we-a",
+  "contentHash": "1D73CBE925726778",
+  "type": "observation",
+  "tags": [
+    "build-scripts",
+    "spectre-console",
+    "formatting"
+  ]
+}

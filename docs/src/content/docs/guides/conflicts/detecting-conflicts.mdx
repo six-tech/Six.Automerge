@@ -1,0 +1,234 @@
+---
+title: "Detecting Conflicts"
+description: Use GetAll and GetAllAtHeads to find conflicting values when multiple peers write to the same key or index
+---
+
+# Overview
+
+Automerge automatically resolves conflicts by picking a deterministic winner, but the losing values are preserved. The `GetAll` family of methods lets you detect when conflicts exist and retrieve all competing values.
+
+A key has a conflict when `GetAll` returns more than one value.
+
+# GetAll for Map Keys
+
+Use `GetAll(objectId, key)` to retrieve all values for a map key:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+doc1.PutString(doc1.RootId, "color", "white");
+doc1.Commit("base");
+
+using var doc2 = doc1.Fork();
+
+// Concurrent writes to the same key
+doc1.PutString(doc1.RootId, "color", "red");
+doc1.Commit("peer 1");
+
+doc2.PutString(doc2.RootId, "color", "blue");
+doc2.Commit("peer 2");
+
+doc1.Merge(doc2);
+
+// Detect the conflict
+var values = doc1.GetAll(doc1.RootId, "color");
+
+if(values.Count > 1)
+{
+    Console.WriteLine($"Conflict detected: {values.Count} values");
+    foreach(var v in values)
+    {
+        Console.WriteLine($"  {v.Scalar!.StringValue} (op: {v.OperationId})");
+    }
+}
+```
+
+## No Conflict Case
+
+When only one peer has written to a key, `GetAll` returns a single value:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+doc.PutString(doc.RootId, "key", "value");
+doc.Commit("init");
+
+var values = doc.GetAll(doc.RootId, "key");
+// values.Count == 1 — no conflict
+```
+
+# GetAll for List Indices
+
+The list overload `GetAll(listId, index)` works the same way for list elements:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+var list = doc1.PutObject(doc1.RootId, "items", AutomergeContainerType.List);
+doc1.ListInsertString(list, 0, "original");
+doc1.Commit("base");
+
+using var doc2 = doc1.Fork();
+
+// Both peers modify the same index
+doc1.ListPutString(list, 0, "from peer 1");
+doc1.Commit("peer 1");
+
+doc2.ListPutString(list, 0, "from peer 2");
+doc2.Commit("peer 2");
+
+doc1.Merge(doc2);
+
+var values = doc1.GetAll(list, 0);
+// values.Count == 2 — conflict at index 0
+```
+
+:::note
+List conflicts at the same index are less common than map conflicts. They happen when two peers use `ListPut` on the same index. Concurrent `ListInsert` operations at different positions don't conflict — they merge cleanly.
+:::
+
+# Three-Way Conflicts
+
+Conflicts aren't limited to two values. Any number of peers can write concurrently:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+doc1.PutString(doc1.RootId, "val", "base");
+doc1.Commit("base");
+
+using var doc2 = doc1.Fork();
+using var doc3 = doc1.Fork();
+
+doc1.PutString(doc1.RootId, "val", "one");
+doc1.Commit("c1");
+
+doc2.PutString(doc2.RootId, "val", "two");
+doc2.Commit("c2");
+
+doc3.PutString(doc3.RootId, "val", "three");
+doc3.Commit("c3");
+
+doc1.Merge(doc2);
+doc1.Merge(doc3);
+
+var values = doc1.GetAll(doc1.RootId, "val");
+// values.Count == 3 — all three concurrent values
+```
+
+# Mixed Type Conflicts
+
+Conflicts can involve different value types or even container types:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+doc1.PutString(doc1.RootId, "data", "text");
+doc1.Commit("base");
+
+using var doc2 = doc1.Fork();
+
+// One peer writes a string, the other creates a map
+doc1.PutString(doc1.RootId, "data", "plain text");
+doc1.Commit("string value");
+
+doc2.PutObject(doc2.RootId, "data", AutomergeContainerType.Map);
+doc2.Commit("object value");
+
+doc1.Merge(doc2);
+
+var values = doc1.GetAll(doc1.RootId, "data");
+foreach(var v in values)
+{
+    if(v.IsObject)
+    {
+        Console.WriteLine($"Container: {v.ObjectType} (id: {v.ObjectId})");
+    }
+    else
+    {
+        Console.WriteLine($"Scalar: {v.Scalar!.StringValue}");
+    }
+}
+```
+
+# GetAllAtHeads — Historical Conflict Detection
+
+`GetAllAtHeads` lets you check for conflicts at a specific point in history. This is useful for inspecting conflicts that have since been resolved:
+
+```csharp
+using var doc1 = AutomergeDocument.Create();
+doc1.PutString(doc1.RootId, "key", "base");
+doc1.Commit("base");
+
+using var doc2 = doc1.Fork();
+
+doc1.PutString(doc1.RootId, "key", "red");
+doc1.Commit("c1");
+
+doc2.PutString(doc2.RootId, "key", "blue");
+doc2.Commit("c2");
+
+doc1.Merge(doc2);
+
+// Capture the heads while the conflict exists
+var conflictHeads = doc1.GetHeads();
+
+// Resolve the conflict
+doc1.PutString(doc1.RootId, "key", "resolved");
+doc1.Commit("resolve");
+
+// Current state: no conflict
+var current = doc1.GetAll(doc1.RootId, "key");
+// current.Count == 1 ("resolved")
+
+// Historical state: conflict still visible
+var historical = doc1.GetAllAtHeads(doc1.RootId, "key", conflictHeads);
+// historical.Count == 2 ("red" and "blue")
+```
+
+## GetAllAtHeads with List Indices
+
+The list overload works identically:
+
+```csharp
+var historicalListValues = doc1.GetAllAtHeads(listId, 0, conflictHeads);
+```
+
+# Checking for Conflicts Across a Document
+
+To scan an entire document for conflicts, iterate over keys and check `GetAll` for each:
+
+```csharp
+void ReportConflicts(AutomergeDocument doc, AutomergeObjectId objectId)
+{
+    var keys = doc.MapKeys(objectId);
+
+    foreach(var key in keys)
+    {
+        var values = doc.GetAll(objectId, key);
+        if(values.Count > 1)
+        {
+            Console.WriteLine($"Conflict on \"{key}\": {values.Count} values");
+        }
+    }
+}
+```
+
+# Resolving Detected Conflicts
+
+Once you detect a conflict, resolve it by writing a definitive value:
+
+```csharp
+var values = doc.GetAll(doc.RootId, "color");
+
+if(values.Count > 1)
+{
+    // Pick application-specific resolution
+    var resolved = PickBestValue(values);
+    doc.PutString(doc.RootId, "color", resolved);
+    doc.Commit("resolved conflict");
+}
+```
+
+After the commit, `GetAll` returns a single value, and the resolution syncs to all peers.
+
+# Next Steps
+
+- [Conflict Values](/Six.Automerge/guides/conflicts/conflict-values/) — Understand the `AutomergeConflictValue` model and build resolution strategies
+- [Understanding Conflicts](/Six.Automerge/guides/conflicts/understanding-conflicts/) — Learn when and why conflicts occur
+- [Time Travel](/Six.Automerge/guides/history/time-travel/) — Read document state at any historical point

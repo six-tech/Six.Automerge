@@ -1,0 +1,410 @@
+---
+title: Patches
+description: API reference for AutomergePatch, AutomergePatchAction, and related diff types
+---
+
+# Overview
+
+Patches describe the differences between two points in a document's history. They are returned by `AutomergeDocument.Diff` and `DiffIncremental`. Each patch targets a specific object in the document tree and describes what changed.
+
+```csharp
+using Six.Automerge;
+
+var before = doc.GetHeads();
+doc.PutString(root, "status", "active");
+doc.Commit("update");
+var after = doc.GetHeads();
+
+var patches = doc.Diff(before, after);
+foreach(var patch in patches)
+{
+  Console.WriteLine($"{patch.Action.Kind} on {patch.ObjectId}");
+}
+```
+
+# AutomergePatch
+
+```csharp
+public sealed class AutomergePatch
+```
+
+Describes a single change in a diff result.
+
+**Namespace:** `Six.Automerge`
+
+## Properties
+
+### ObjectId
+
+```csharp
+public AutomergeObjectId ObjectId { get; }
+```
+
+The object that was modified.
+
+### Path
+
+```csharp
+public IReadOnlyList<AutomergePatchPathElement> Path { get; }
+```
+
+The path from the root to the modified object. Each element contains an `ObjectId` and `Prop` describing the traversal step. An empty path means the root object itself was modified.
+
+### Action
+
+```csharp
+public AutomergePatchAction Action { get; }
+```
+
+The details of what changed. See `AutomergePatchAction` below.
+
+# AutomergePatchAction
+
+```csharp
+public sealed class AutomergePatchAction
+```
+
+Details of a specific change within a patch.
+
+**Namespace:** `Six.Automerge`
+
+## Properties
+
+### Kind
+
+```csharp
+public AutomergePatchActionKind Kind { get; }
+```
+
+The type of change. See `AutomergePatchActionKind` below.
+
+### Key
+
+```csharp
+public string? Key { get; }
+```
+
+The map key affected. Non-null for `PutMap`, `DeleteMap`, and `Conflict` actions on maps.
+
+### Index
+
+```csharp
+public ulong Index { get; }
+```
+
+The list/text index affected. Used for `PutSeq`, `Insert`, `SpliceText`, `DeleteSeq`, and `Increment` actions on sequences.
+
+### Value
+
+```csharp
+public AutomergeValue? Value { get; }
+```
+
+The new value for `PutMap` and `PutSeq` actions. Contains either a scalar value or a container type reference.
+
+### ValueObjectId
+
+```csharp
+public AutomergeObjectId? ValueObjectId { get; }
+```
+
+The object ID when the value is a container (Map, List, or Text).
+
+### Conflict
+
+```csharp
+public bool Conflict { get; }
+```
+
+Whether this action involves a conflict (concurrent writes to the same key/index).
+
+### Inserted
+
+```csharp
+public IReadOnlyList<AutomergeInsertEntry> Inserted { get; }
+```
+
+The entries inserted for `Insert` actions. Each entry contains a value, optional object ID, and conflict flag.
+
+### Text
+
+```csharp
+public string? Text { get; }
+```
+
+The text content for `SpliceText` actions.
+
+### ActiveMarks
+
+```csharp
+public IReadOnlyList<AutomergeMarkData> ActiveMarks { get; }
+```
+
+Marks active at the splice position for `SpliceText` actions. Each entry has a `Name` and `Value`.
+
+### Marks
+
+```csharp
+public IReadOnlyList<AutomergeMarkSpan> Marks { get; }
+```
+
+Mark changes for `Mark` actions. Each entry has `Start`, `End`, `Name`, and `Value`.
+
+### Prop
+
+```csharp
+public AutomergeProp? Prop { get; }
+```
+
+The property reference for deletion actions. Contains `Kind` (Map or Seq), `Key`, and `Index`.
+
+### Length
+
+```csharp
+public ulong Length { get; }
+```
+
+The number of elements affected (for bulk operations like `SpliceText` and `Insert`).
+
+### IncrementValue
+
+```csharp
+public long IncrementValue { get; }
+```
+
+The delta for `Increment` actions on counters.
+
+# AutomergePatchActionKind
+
+```csharp
+public enum AutomergePatchActionKind
+```
+
+| Value | Description |
+|-------|-------------|
+| `PutMap` | A value was set on a map key. Fields: `Key`, `Value`, `ValueObjectId`, `Conflict` |
+| `PutSeq` | A value was set at a list index. Fields: `Index`, `Value`, `ValueObjectId`, `Conflict` |
+| `Insert` | Elements were inserted into a list. Fields: `Index`, `Inserted` |
+| `SpliceText` | Text was inserted. Fields: `Index`, `Text`, `ActiveMarks` |
+| `Increment` | A counter was incremented. Fields: `Key` or `Index`, `IncrementValue` |
+| `Conflict` | A conflict exists on a key/index. Fields: `Key` or `Index` |
+| `DeleteMap` | A map key was deleted. Fields: `Key` |
+| `DeleteSeq` | A list element was deleted. Fields: `Index`, `Length` |
+| `Mark` | Marks were changed on text. Fields: `Marks` |
+
+# AutomergePatchPathElement
+
+```csharp
+public sealed class AutomergePatchPathElement
+```
+
+One step in the path from the root to a changed object.
+
+## Properties
+
+### ObjectId
+
+```csharp
+public AutomergeObjectId ObjectId { get; }
+```
+
+The container traversed at this step.
+
+### Prop
+
+```csharp
+public AutomergeProp Prop { get; }
+```
+
+The property used to enter the container. See `AutomergeProp`.
+
+# AutomergeProp
+
+```csharp
+public sealed class AutomergeProp
+```
+
+Identifies a property within a container.
+
+## Properties
+
+### Kind
+
+```csharp
+public AutomergePropKind Kind { get; }
+```
+
+Whether this is a map key (`Map`) or a sequence index (`Seq`).
+
+### Key
+
+```csharp
+public string? Key { get; }
+```
+
+The map key. Non-null when `Kind` is `Map`.
+
+### Index
+
+```csharp
+public ulong Index { get; }
+```
+
+The sequence index. Used when `Kind` is `Seq`.
+
+# AutomergePropKind
+
+```csharp
+public enum AutomergePropKind
+```
+
+| Value | Description |
+|-------|-------------|
+| `Map` | A map key property |
+| `Seq` | A sequence index property |
+
+# AutomergeInsertEntry
+
+```csharp
+public sealed class AutomergeInsertEntry
+```
+
+An element inserted during an `Insert` patch action.
+
+## Properties
+
+### Value
+
+```csharp
+public AutomergeValue Value { get; }
+```
+
+The inserted value (scalar or container reference).
+
+### ObjectId
+
+```csharp
+public AutomergeObjectId? ObjectId { get; }
+```
+
+The object ID if the inserted value is a container.
+
+### Conflict
+
+```csharp
+public bool Conflict { get; }
+```
+
+Whether this insertion conflicts with a concurrent operation.
+
+# AutomergeValue
+
+```csharp
+public sealed class AutomergeValue
+```
+
+Wraps either a scalar value or a container type reference.
+
+## Properties
+
+### Type
+
+```csharp
+public AutomergeValueType Type { get; }
+```
+
+Whether this is a `Scalar` or `Object`.
+
+### Scalar
+
+```csharp
+public AutomergeScalarValue? Scalar { get; }
+```
+
+The scalar value. Non-null when `Type` is `Scalar`.
+
+### ObjectType
+
+```csharp
+public AutomergeContainerType? ObjectType { get; }
+```
+
+The container type (Map, List, Text). Non-null when `Type` is `Object`.
+
+# Supporting Types
+
+## AutomergeValueType
+
+```csharp
+public enum AutomergeValueType
+```
+
+| Value | Description |
+|-------|-------------|
+| `Scalar` | A scalar value (string, int, bool, etc.) |
+| `Object` | A container reference (Map, List, Text) |
+
+## AutomergeMarkData
+
+```csharp
+public sealed class AutomergeMarkData
+```
+
+A mark name-value pair active at a splice position.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Name` | `string` | The mark name |
+| `Value` | `AutomergeScalarValue` | The mark value |
+
+## AutomergeMarkSpan
+
+```csharp
+public sealed class AutomergeMarkSpan
+```
+
+A mark change within a `Mark` patch action.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Start` | `ulong` | Inclusive start index |
+| `End` | `ulong` | Exclusive end index |
+| `Name` | `string` | The mark name |
+| `Value` | `AutomergeScalarValue` | The mark value |
+
+# Complete Example
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+// Make initial changes
+doc.PutString(root, "title", "Draft");
+var tasks = doc.PutObject(root, "tasks", AutomergeContainerType.List);
+doc.ListInsertString(tasks, 0, "Task A");
+doc.Commit("initial");
+var v1 = doc.GetHeads();
+
+// Make more changes
+doc.PutString(root, "title", "Final");
+doc.ListInsertString(tasks, 1, "Task B");
+doc.ListRemove(tasks, 0);
+doc.Commit("revisions");
+var v2 = doc.GetHeads();
+
+// Diff the two versions
+var patches = doc.Diff(v1, v2);
+foreach(var patch in patches)
+{
+  var pathStr = string.Join(".", patch.Path.Select(p =>
+    p.Prop.Kind == AutomergePropKind.Map ? p.Prop.Key : $"[{p.Prop.Index}]"));
+
+  Console.WriteLine($"{patch.Action.Kind} at {pathStr}");
+}
+```
+
+# See Also
+
+- [AutomergeDocument — Diff](/Six.Automerge/api/automerge-document/#diff) — Computing diffs
+- [Diffing Guide](/Six.Automerge/guides/history/diffing/) — Conceptual guide to diffing
+- [AutomergeScalarValue](/Six.Automerge/api/automerge-marks/#automergescalarvalue) — Scalar value types

@@ -1,0 +1,318 @@
+---
+title: Storage
+description: API reference for IStorageAdapter, StorageAdapterBase, StorageKey, Chunk, ChunkInfo, and ChunkType
+---
+
+# Overview
+
+Storage adapters persist Automerge documents and sync state to durable backends. The `IStorageAdapter` interface defines the contract; `StorageAdapterBase` provides a convenience base class. Data is organized using hierarchical `StorageKey` values, and operations work with `Chunk` objects.
+
+```csharp
+using Six.Automerge.Repository.Storage;
+
+public class MyStorageAdapter : StorageAdapterBase
+{
+  public override Task<byte[]?> Load(StorageKey key) { /* ... */ }
+  public override Task Save(StorageKey key, byte[] data) { /* ... */ }
+  public override Task Remove(StorageKey key) { /* ... */ }
+  public override Task<IReadOnlyList<Chunk>> LoadRange(StorageKey keyPrefix) { /* ... */ }
+  public override Task RemoveRange(StorageKey keyPrefix) { /* ... */ }
+}
+```
+
+**Namespace:** `Six.Automerge.Repository.Storage`
+
+# IStorageAdapter
+
+```csharp
+public interface IStorageAdapter
+```
+
+Interface for storage adapters that persist Automerge documents and sync state. Implementations must be thread-safe.
+
+## Load
+
+```csharp
+Task<byte[]?> Load(StorageKey key)
+```
+
+Loads data for a single storage key.
+
+**Returns:** The data if found; `null` if the key does not exist. Should return null rather than throwing on missing keys.
+
+## Save
+
+```csharp
+Task Save(StorageKey key, byte[] data)
+```
+
+Saves data for a single storage key. Replaces existing data if the key already exists.
+
+## Remove
+
+```csharp
+Task Remove(StorageKey key)
+```
+
+Removes data for a single storage key. Succeeds silently if the key does not exist.
+
+## LoadRange
+
+```csharp
+Task<IReadOnlyList<Chunk>> LoadRange(StorageKey keyPrefix)
+```
+
+Loads all chunks whose keys start with the given prefix. Use `StorageKey.StartsWith` to match keys.
+
+**Returns:** All matching chunks. Empty list if no matches.
+
+```csharp
+// Load all data for a document (snapshots + incrementals + sync state)
+var prefix = new StorageKey(new[] { documentId });
+var chunks = await adapter.LoadRange(prefix);
+```
+
+## RemoveRange
+
+```csharp
+Task RemoveRange(StorageKey keyPrefix)
+```
+
+Removes all keys matching a prefix. Succeeds silently if no matches.
+
+## GetChunkInfo
+
+```csharp
+Task<IReadOnlyList<ChunkInfo>> GetChunkInfo(StorageKey keyPrefix)
+```
+
+Gets metadata about chunks without loading the full data. Used by the storage subsystem for compaction decisions.
+
+**Returns:** Metadata for matching chunks (key and size). Empty list if no matches.
+
+# StorageAdapterBase
+
+```csharp
+public abstract class StorageAdapterBase : IStorageAdapter
+```
+
+Abstract base class providing a default `GetChunkInfo` implementation that loads the full range and extracts metadata. Override for more efficient implementations.
+
+## Abstract Methods
+
+All methods from `IStorageAdapter` except `GetChunkInfo` are abstract and must be implemented.
+
+## Virtual Methods
+
+### GetChunkInfo
+
+```csharp
+public virtual async Task<IReadOnlyList<ChunkInfo>> GetChunkInfo(StorageKey keyPrefix)
+```
+
+Default implementation: calls `LoadRange` and extracts metadata. Override this for backends that can return size information without loading data.
+
+# StorageKey
+
+```csharp
+public readonly record struct StorageKey
+```
+
+A hierarchical storage key with components joined by forward slashes. Supports prefix-based filtering for range operations.
+
+## Properties
+
+### Components
+
+```csharp
+public IReadOnlyList<string> Components { get; init; }
+```
+
+The hierarchical components of this key.
+
+## Constructor
+
+```csharp
+public StorageKey(IReadOnlyList<string> components)
+```
+
+Creates a key from a list of components.
+
+## Factory Methods
+
+### DocumentSnapshot
+
+```csharp
+public static StorageKey DocumentSnapshot(string documentId, string snapshotHash)
+```
+
+Creates a key for a document snapshot. Format: `[documentId, "snapshot", snapshotHash]`.
+
+### DocumentIncremental
+
+```csharp
+public static StorageKey DocumentIncremental(string documentId, string changeHash)
+```
+
+Creates a key for an incremental change. Format: `[documentId, "incremental", changeHash]`.
+
+### DocumentSyncState
+
+```csharp
+public static StorageKey DocumentSyncState(string documentId, string storageId)
+```
+
+Creates a key for sync state. Format: `[documentId, "sync-state", storageId]`.
+
+### Generic
+
+```csharp
+public static StorageKey Generic(string @namespace, string key)
+```
+
+Creates a generic key. Format: `[@namespace, key]`.
+
+## Methods
+
+### StartsWith
+
+```csharp
+public bool StartsWith(StorageKey prefix)
+```
+
+Whether this key starts with the given prefix. Used for range filtering.
+
+```csharp
+var key = StorageKey.DocumentSnapshot("doc123", "abc");
+var prefix = new StorageKey(new[] { "doc123" });
+key.StartsWith(prefix); // true
+```
+
+### ToDebugString
+
+```csharp
+public string ToDebugString()
+```
+
+Returns a human-readable string with components joined by `/`.
+
+```csharp
+var key = StorageKey.DocumentSnapshot("doc123", "abc");
+key.ToDebugString(); // "doc123/snapshot/abc"
+```
+
+# Chunk
+
+```csharp
+public sealed record Chunk(StorageKey Key, byte[] Data)
+```
+
+A chunk of data retrieved from storage.
+
+## Properties
+
+### Key
+
+```csharp
+public StorageKey Key { get; }
+```
+
+The storage key for this chunk.
+
+### Data
+
+```csharp
+public byte[] Data { get; }
+```
+
+The binary data.
+
+### Type
+
+```csharp
+public ChunkType Type { get; }
+```
+
+The chunk type, derived from the key. See `ChunkType`.
+
+## Static Methods
+
+### ChunkTypeFromKey
+
+```csharp
+public static ChunkType ChunkTypeFromKey(StorageKey key)
+```
+
+Determines the chunk type from a storage key by examining the second component.
+
+**Exceptions:**
+- `ArgumentException` — When the key has fewer than 2 components or an unknown type.
+
+# ChunkInfo
+
+```csharp
+public sealed record ChunkInfo(StorageKey Key, int Size)
+```
+
+Metadata about a stored chunk without the actual data.
+
+## Properties
+
+### Key
+
+```csharp
+public StorageKey Key { get; }
+```
+
+The storage key.
+
+### Size
+
+```csharp
+public int Size { get; }
+```
+
+The data size in bytes.
+
+### Type
+
+```csharp
+public ChunkType Type { get; }
+```
+
+The chunk type, derived from the key.
+
+# ChunkType
+
+```csharp
+public enum ChunkType
+```
+
+| Value | Description |
+|-------|-------------|
+| `Snapshot` | Full document snapshot |
+| `Incremental` | Incremental changes since a previous state |
+| `SyncState` | Sync state for a peer connection |
+
+# Key Hierarchy
+
+Storage keys follow a hierarchical structure:
+
+```
+documentId/
+  snapshot/hash         — Full document snapshots
+  incremental/hash      — Incremental change data
+  sync-state/storageId  — Sync state per peer
+```
+
+The storage subsystem uses this structure to:
+1. Load all data for a document with a single prefix query
+2. Compact multiple incremental chunks into a snapshot
+3. Persist and restore sync state for reconnection
+
+# See Also
+
+- [Repo](/Six.Automerge/api/repo/) — Repository that uses storage adapters
+- [Storage Adapters Guide](/Six.Automerge/repo/storage/) — Conceptual guide
+- [InMemory Adapter](/Six.Automerge/repo/storage/in-memory/) — Built-in in-memory implementation
+- [FileSystem Adapter](/Six.Automerge/repo/storage/file-system/) — File-based implementation

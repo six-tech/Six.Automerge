@@ -1,0 +1,212 @@
+---
+title: "Object Graph Navigation"
+description: Navigate the Automerge object graph with Parents and PathToObject to find where objects live in the document tree
+---
+
+# Overview
+
+Automerge documents form a tree of nested containers (maps, lists, text). Every object has a unique `AutomergeObjectId`. The object graph navigation APIs let you walk from any object back up to the root, answering "where does this object live in the document?"
+
+# Parents
+
+`Parents` returns the ancestor chain from the root down to the given object. Each element in the chain describes how to reach the next level — via a map key or list index.
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var level1 = doc.PutObject(root, "level1", AutomergeContainerType.Map);
+var level2 = doc.PutObject(level1, "level2", AutomergeContainerType.Map);
+var level3 = doc.PutObject(level2, "level3", AutomergeContainerType.Map);
+doc.PutString(level3, "value", "deep");
+doc.Commit("nested");
+
+var path = doc.Parents(level3);
+// Path: root["level1"] -> level1["level2"] -> level2["level3"]
+Console.WriteLine($"Depth: {path.Count}"); // 3
+```
+
+The returned list contains `AutomergePathElement` instances, ordered from the root downward.
+
+# AutomergePathElement
+
+Path elements come in two types:
+
+**`AutomergeMapPathElement`** — Reached via a map key:
+- `ObjectId` — The parent object's ID
+- `Key` — The map key used to reach the child
+
+**`AutomergeListPathElement`** — Reached via a list index:
+- `ObjectId` — The parent list's ID
+- `Index` — The index within the list
+
+Use pattern matching to handle both types:
+
+```csharp
+foreach(var element in path)
+{
+    switch(element)
+    {
+        case AutomergeMapPathElement mapElem:
+            Console.WriteLine($"Map key: {mapElem.Key} (parent: {mapElem.ObjectId})");
+            break;
+        case AutomergeListPathElement listElem:
+            Console.WriteLine($"List index: {listElem.Index} (parent: {listElem.ObjectId})");
+            break;
+    }
+}
+```
+
+# Maps in the Path
+
+When an object is nested inside maps, each path element is an `AutomergeMapPathElement`:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var data = doc.PutObject(root, "data", AutomergeContainerType.Map);
+var inner = doc.PutObject(data, "inner", AutomergeContainerType.Map);
+doc.PutString(inner, "value", "test");
+doc.Commit("nested");
+
+var path = doc.Parents(inner);
+// [0] root -> "data" (AutomergeMapPathElement)
+// [1] data -> "inner" (AutomergeMapPathElement)
+
+var first = (AutomergeMapPathElement)path[0];
+Console.WriteLine(first.Key); // "data"
+
+var second = (AutomergeMapPathElement)path[1];
+Console.WriteLine(second.Key); // "inner"
+```
+
+# Lists in the Path
+
+When an object lives inside a list, the corresponding path element is an `AutomergeListPathElement`:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "items", AutomergeContainerType.List);
+doc.ListInsertObject(list, 0, AutomergeContainerType.Map);
+var nested = doc.ListInsertObject(list, 1, AutomergeContainerType.Map);
+doc.PutString(nested, "key", "val");
+doc.Commit("list with objects");
+
+var path = doc.Parents(nested);
+// [0] root -> "items" (AutomergeMapPathElement)
+// [1] list -> index 1 (AutomergeListPathElement)
+
+var first = (AutomergeMapPathElement)path[0];
+Console.WriteLine(first.Key); // "items"
+
+var second = (AutomergeListPathElement)path[1];
+Console.WriteLine(second.Index); // 1
+```
+
+# Root-Level Objects
+
+Objects directly under the root have a single-element path:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var child = doc.PutObject(root, "child", AutomergeContainerType.Map);
+doc.Commit("single level");
+
+var path = doc.Parents(child);
+Console.WriteLine(path.Count); // 1
+
+var elem = (AutomergeMapPathElement)path[0];
+Console.WriteLine(elem.Key); // "child"
+```
+
+# PathToObject
+
+`PathToObject` returns the visible path to an object. For objects that are currently reachable in the document tree, it returns the same result as `Parents`:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var a = doc.PutObject(root, "a", AutomergeContainerType.Map);
+var b = doc.PutObject(a, "b", AutomergeContainerType.Map);
+doc.PutString(b, "c", "value");
+doc.Commit("nested");
+
+var path = doc.PathToObject(b);
+// Same as doc.Parents(b) for visible objects
+
+var first = (AutomergeMapPathElement)path[0];
+Console.WriteLine(first.Key); // "a"
+
+var second = (AutomergeMapPathElement)path[1];
+Console.WriteLine(second.Key); // "b"
+```
+
+# Parents vs PathToObject
+
+The key difference between `Parents` and `PathToObject` is how they handle deleted objects:
+
+- **`Parents`** — Returns the full ancestor chain, including objects that may have been replaced or hidden by conflicts
+- **`PathToObject`** — Returns the **visible** path only. Returns an empty list if the object has been deleted or is unreachable
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var list = doc.PutObject(root, "list", AutomergeContainerType.List);
+var obj = doc.ListInsertObject(list, 0, AutomergeContainerType.Map);
+doc.PutString(obj, "val", "test");
+doc.Commit("created");
+
+// Delete the list item (makes the object invisible)
+doc.ListRemove(list, 0);
+doc.Commit("deleted");
+
+var path = doc.PathToObject(obj);
+Console.WriteLine(path.Count); // 0 - object is no longer visible
+```
+
+Use `PathToObject` when you need to verify an object is still reachable in the document tree.
+
+# Verifying Path Consistency
+
+For visible objects, both APIs return the same path:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+var root = doc.RootId;
+
+var map = doc.PutObject(root, "data", AutomergeContainerType.Map);
+var inner = doc.PutObject(map, "inner", AutomergeContainerType.Map);
+doc.PutString(inner, "value", "test");
+doc.Commit("nested");
+
+var parents = doc.Parents(inner);
+var pathTo = doc.PathToObject(inner);
+
+// For visible objects, these are identical
+for(int i = 0; i < parents.Count; i++)
+{
+    var p = (AutomergeMapPathElement)parents[i];
+    var t = (AutomergeMapPathElement)pathTo[i];
+    Console.WriteLine($"{p.Key} == {t.Key}"); // true
+}
+```
+
+# Use Cases
+
+- **Breadcrumb navigation** — Build a UI breadcrumb from the path elements
+- **Change tracking** — When you receive a patch, use the object ID to find where it lives in the tree
+- **Conflict resolution** — Understand the context of a conflicting value by examining its location
+- **Debugging** — Print the full path to understand document structure
+
+# Next Steps
+
+- [Container Types](/Six.Automerge/guides/object-graph/container-types/) — Identify and work with different container types in the object graph
+- [Nested Maps](/Six.Automerge/guides/maps/nested-maps/) — Working with nested map hierarchies
+- [Advanced Queries](/Six.Automerge/guides/maps/advanced-queries/) — Range queries and iteration over maps

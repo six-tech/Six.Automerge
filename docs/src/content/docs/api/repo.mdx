@@ -1,0 +1,362 @@
+---
+title: Repo
+description: API reference for the Repo class — the central repository managing document lifecycle, storage, and network sync
+---
+
+# Overview
+
+`Repo` is the main entry point for managing Automerge documents with pluggable storage and network adapters. It handles document creation, discovery, persistence (with debounced saves), and synchronization across peers.
+
+The class implements `IDisposable`. Always dispose the repo when done.
+
+```csharp
+using Six.Automerge.Repository;
+using Six.Automerge.Repository.Storage;
+using Six.Automerge.Repository.Network;
+
+var repo = new Repo(new RepoConfig
+{
+  Storage = new InMemoryStorageAdapter(),
+  NetworkAdapters = [adapter]
+});
+```
+
+**Namespace:** `Six.Automerge.Repository`
+
+# Constructor
+
+```csharp
+public Repo(RepoConfig config)
+```
+
+Creates a new repository with the specified configuration.
+
+**Parameters:**
+- `config` — The repository configuration. See `RepoConfig`.
+
+**Exceptions:**
+- `ArgumentNullException` — When `config` is null.
+
+# RepoConfig
+
+```csharp
+public sealed record RepoConfig
+```
+
+Configuration for creating a `Repo` instance.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `PeerId` | `PeerId?` | Auto-generated | Unique identifier for this peer |
+| `Storage` | `IStorageAdapter?` | `null` | Storage adapter for persistence. If null, documents are ephemeral |
+| `NetworkAdapters` | `IReadOnlyList of INetworkAdapter?` | `null` | Network adapters for peer communication |
+| `IsEphemeral` | `bool` | `false` | If true, sync state is not persisted |
+| `SaveDebounceRate` | `int` | `100` | Debounce rate for saves in milliseconds |
+| `ShareConfig` | `ShareConfig?` | Allow all | Document sharing policies |
+| `Denylist` | `ISet of string?` | `null` | Document IDs that should never be synced |
+| `IdFactory` | `Func?` | `null` | Custom document ID factory for `CreateAsync` |
+
+# Properties
+
+## PeerId
+
+```csharp
+public PeerId PeerId { get; }
+```
+
+The peer ID of this repository. Auto-generated if not specified in config.
+
+## Peers
+
+```csharp
+public IReadOnlyList<PeerId> Peers { get; }
+```
+
+The list of currently connected peers.
+
+## Handles
+
+```csharp
+public IReadOnlyDictionary<string, IDocHandle> Handles { get; }
+```
+
+A read-only snapshot of all cached document handles, keyed by document ID.
+
+# Document Lifecycle — Create
+
+## Create
+
+```csharp
+public DocHandle<T> Create<T>(T? initialValue = default)
+```
+
+Creates a new document with a randomly generated document ID.
+
+**Type Parameters:**
+- `T` — The document content type.
+
+**Parameters:**
+- `initialValue` — Optional initial value for the document.
+
+**Returns:** A `DocHandle<T>` for the newly created document (already in `Ready` state).
+
+**Exceptions:**
+- `ObjectDisposedException` — When the repo has been disposed.
+
+```csharp
+var handle = repo.Create<object>();
+handle.Change(doc =>
+{
+  doc.PutString(doc.RootId, "title", "My Document");
+});
+```
+
+## Create (with document ID)
+
+```csharp
+public DocHandle<T> Create<T>(string documentId, T? initialValue = default)
+```
+
+Creates a new document with a specific document ID.
+
+**Parameters:**
+- `documentId` — The document ID to use. Must be a valid Base58Check-encoded ID.
+- `initialValue` — Optional initial value.
+
+**Exceptions:**
+- `ArgumentException` — When `documentId` is null, whitespace, or invalid.
+- `InvalidOperationException` — When a document with this ID already exists.
+
+## CreateAsync
+
+```csharp
+public async Task<DocHandle<T>> CreateAsync<T>(T? initialValue = default)
+```
+
+Creates a new document asynchronously. Uses the `IdFactory` from config if configured, otherwise falls back to random ID generation.
+
+**Returns:** A task resolving to the new `DocHandle<T>`.
+
+# Document Lifecycle — Find
+
+## Find
+
+```csharp
+public async Task<DocHandle<T>?> Find<T>(string documentId, TimeSpan? timeout = null)
+```
+
+Finds an existing document by loading from storage or requesting from the network.
+
+**Type Parameters:**
+- `T` — The document content type.
+
+**Parameters:**
+- `documentId` — The document ID to find.
+- `timeout` — Maximum time to wait for network response. Default: 10 seconds.
+
+**Returns:** A `DocHandle<T>` if found, or `null` if the document does not exist and could not be loaded within the timeout.
+
+**Exceptions:**
+- `ArgumentException` — When `documentId` is null, whitespace, or invalid.
+
+**Behavior:**
+1. Checks the in-memory handle cache
+2. Attempts to load from storage
+3. If not in storage, requests from connected peers
+4. Returns `null` on timeout
+
+```csharp
+var handle = await repo.Find<object>("4NMNnkMhL8jXrdJ9jamS58PAVdXu");
+if(handle is not null)
+{
+  var doc = handle.Doc();
+  // Work with document
+}
+```
+
+# Document Lifecycle — Delete
+
+## Delete
+
+```csharp
+public void Delete(string documentId)
+```
+
+Deletes a document from the repository. Removes it from the cache, unregisters from the synchronizer, marks the handle as deleted, and fires a background storage deletion.
+
+**Parameters:**
+- `documentId` — The document ID to delete.
+
+**Exceptions:**
+- `ArgumentException` — When `documentId` is null or whitespace.
+
+If the document does not exist, this method returns silently.
+
+# Document Lifecycle — Clone
+
+## Clone
+
+```csharp
+public DocHandle<T> Clone<T>(DocHandle<T> source)
+```
+
+Creates a new document as a copy of an existing document. The clone gets a new document ID and is registered as an independent document.
+
+**Parameters:**
+- `source` — The source handle to clone.
+
+**Returns:** A `DocHandle<T>` for the cloned document.
+
+**Exceptions:**
+- `ArgumentNullException` — When `source` is null.
+
+```csharp
+var original = repo.Create<object>();
+// ... make changes to original ...
+var copy = repo.Clone(original);
+// copy is independent with its own document ID
+```
+
+# Import and Export
+
+## Export
+
+```csharp
+public async Task<byte[]?> Export(string documentId)
+```
+
+Exports a document as binary data (full Automerge save format).
+
+**Returns:** The binary document data, or `null` if not found.
+
+## Import
+
+```csharp
+public DocHandle<T> Import<T>(byte[] data, string? documentId = null)
+```
+
+Imports a document from binary data. If no document ID is provided, a new one is generated.
+
+**Parameters:**
+- `data` — Binary Automerge document data.
+- `documentId` — Optional document ID. If null, auto-generated.
+
+**Returns:** A `DocHandle<T>` for the imported document.
+
+**Exceptions:**
+- `ArgumentException` — When `data` is null or empty.
+- `InvalidOperationException` — When a document with the given ID already exists.
+
+# Persistence
+
+## Flush
+
+```csharp
+public async Task Flush(IEnumerable<string>? documentIds = null)
+```
+
+Flushes pending debounced saves. If `documentIds` is null, flushes all documents.
+
+**Parameters:**
+- `documentIds` — Optional list of specific document IDs to flush.
+
+## RemoveFromCache
+
+```csharp
+public async Task RemoveFromCache(string documentId)
+```
+
+Removes a document from the in-memory cache without deleting from storage. Flushes pending saves first. Useful for memory management with large document sets.
+
+## Shutdown
+
+```csharp
+public async Task Shutdown()
+```
+
+Gracefully shuts down the repository. Flushes all pending saves, then disposes all resources.
+
+# Events
+
+## DocumentLoaded
+
+```csharp
+public event EventHandler<DocumentEventArgs>? DocumentLoaded
+```
+
+Raised when a document is loaded and ready. The `DocumentEventArgs` contains `DocumentId` and `Handle`.
+
+## DocumentDeleted
+
+```csharp
+public event EventHandler<DocumentDeletedEventArgs>? DocumentDeleted
+```
+
+Raised when a document is deleted. The `DocumentDeletedEventArgs` contains `DocumentId`.
+
+## DocumentUnavailable
+
+```csharp
+public event EventHandler<DocumentUnavailableEventArgs>? DocumentUnavailable
+```
+
+Raised when a document is unavailable from all peers.
+
+## PeerConnected
+
+```csharp
+public event EventHandler<PeerEventArgs>? PeerConnected
+```
+
+Raised when a peer connects. The `PeerEventArgs` contains `PeerId` and `Metadata`.
+
+## PeerDisconnected
+
+```csharp
+public event EventHandler<PeerEventArgs>? PeerDisconnected
+```
+
+Raised when a peer disconnects.
+
+# Dispose
+
+```csharp
+public void Dispose()
+```
+
+Disposes the repository: cancels pending saves, disposes the synchronizer, network subsystem, storage subsystem, all document handles, and internal locks.
+
+# ShareConfig
+
+```csharp
+public sealed record ShareConfig
+```
+
+Controls which documents are shared with which peers.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `Announce` | `Func of PeerId, DocumentId?, Task of bool?` | Allow all | Whether to announce a document to a peer |
+| `Access` | `Func of PeerId, DocumentId, Task of bool?` | Allow all | Whether a peer can access a document |
+
+```csharp
+var repo = new Repo(new RepoConfig
+{
+  ShareConfig = new ShareConfig
+  {
+    Access = async (peerId, docId) =>
+    {
+      // Only allow specific peers
+      return peerId.ToString().StartsWith("trusted-");
+    }
+  }
+});
+```
+
+# See Also
+
+- [DocHandle](/Six.Automerge/api/doc-handle/) — Document handle API
+- [Storage Adapters](/Six.Automerge/api/storage/) — Pluggable persistence
+- [Network Adapters](/Six.Automerge/api/network/) — Pluggable transport
+- [Identifiers](/Six.Automerge/api/identifiers/) — DocumentId, PeerId, and related types
+- [Repo Getting Started](/Six.Automerge/repo/getting-started/) — Guide to using the repository layer

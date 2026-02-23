@@ -1,0 +1,235 @@
+---
+title: "Sync Protocol"
+description: Learn how the Automerge sync protocol works and how to synchronize documents between two peers
+---
+
+# Overview
+
+Automerge uses a sync protocol to exchange changes between documents efficiently. The protocol minimizes network traffic by sending only the differences between documents. It handles network interruptions gracefully and works with any transport layer.
+
+# How It Works
+
+The sync protocol follows a request-response pattern. Each peer maintains a sync state tracking what the other peer knows. The protocol exchanges messages in rounds:
+
+1. Peer A generates a sync message based on what Peer B knows
+2. Peer A sends the message to Peer B
+3. Peer B receives the message and updates its document
+4. Peer B generates a response message
+5. Peer B sends its message to Peer A
+6. Repeat until both peers have no more messages to send
+
+When both `GenerateSyncMessage` calls return `null`, the sync is complete and both documents are identical.
+
+# Creating Sync State
+
+Each document needs a sync state for each peer it syncs with:
+
+```csharp
+using var doc = AutomergeDocument.Create();
+using var syncState = doc.CreateSyncState();
+```
+
+Sync states are disposable resources. Always use `using` statements for proper cleanup. Each sync state tracks what one specific peer knows, so you need a separate sync state per peer.
+
+# Generating Sync Messages
+
+Use `GenerateSyncMessage` to produce a message to send to the peer:
+
+```csharp
+var message = doc.GenerateSyncMessage(syncState);
+
+if(message == null)
+{
+    Console.WriteLine("No changes to send");
+}
+else
+{
+    Console.WriteLine($"Message size: {message.Length} bytes");
+    // Send message to peer over your transport layer
+}
+```
+
+The method returns `null` when there is nothing more to send. This signals the sync is complete from this peer's side.
+
+# Receiving Sync Messages
+
+Use `ReceiveSyncMessage` to apply incoming messages from a peer:
+
+```csharp
+byte[] incomingMessage = GetMessageFromPeer();
+
+if(incomingMessage != null && incomingMessage.Length > 0)
+{
+    doc.ReceiveSyncMessage(syncState, incomingMessage);
+    Console.WriteLine("Applied changes from peer");
+}
+```
+
+This updates the document with changes from the peer and updates the sync state to reflect what the peer knows.
+
+# Basic Two-Peer Sync
+
+Here is a complete sync between two documents:
+
+```csharp
+using Six.Automerge;
+
+// Alice creates a document
+using var alice = AutomergeDocument.Create();
+var aliceRoot = alice.RootId;
+alice.PutString(aliceRoot, "title", "Project Plan");
+alice.PutString(aliceRoot, "owner", "Alice");
+alice.Commit("Alice: Initial draft");
+
+// Bob creates a document
+using var bob = AutomergeDocument.Create();
+var bobRoot = bob.RootId;
+bob.PutString(bobRoot, "status", "draft");
+bob.PutString(bobRoot, "priority", "high");
+bob.Commit("Bob: Add metadata");
+
+// Create sync states
+using var aliceSyncState = alice.CreateSyncState();
+using var bobSyncState = bob.CreateSyncState();
+
+// Sync loop
+bool hasMoreMessages = true;
+int roundCount = 0;
+int maxRounds = 10;
+
+while(hasMoreMessages && roundCount < maxRounds)
+{
+    hasMoreMessages = false;
+
+    // Alice generates message for Bob
+    var aliceMessage = alice.GenerateSyncMessage(aliceSyncState);
+    if(aliceMessage != null)
+    {
+        bob.ReceiveSyncMessage(bobSyncState, aliceMessage);
+        hasMoreMessages = true;
+    }
+
+    // Bob generates message for Alice
+    var bobMessage = bob.GenerateSyncMessage(bobSyncState);
+    if(bobMessage != null)
+    {
+        alice.ReceiveSyncMessage(aliceSyncState, bobMessage);
+        hasMoreMessages = true;
+    }
+
+    roundCount++;
+}
+
+// Both documents now contain all changes
+var aliceJson = alice.HydrateJson();
+var bobJson = bob.HydrateJson();
+// Both have: title, owner, status, priority
+```
+
+# Sync Helper Function
+
+Extract the sync loop into a reusable function:
+
+```csharp
+void SyncDocuments(
+    AutomergeDocument doc1,
+    AutomergeDocument doc2,
+    AutomergeSyncState state1,
+    AutomergeSyncState state2,
+    int maxRounds = 10)
+{
+    for(int i = 0; i < maxRounds; i++)
+    {
+        var msg1 = doc1.GenerateSyncMessage(state1);
+        var msg2 = doc2.GenerateSyncMessage(state2);
+
+        if(msg1 == null && msg2 == null)
+        {
+            // Both sides have nothing to send; sync complete
+            break;
+        }
+
+        if(msg1 != null)
+        {
+            doc2.ReceiveSyncMessage(state2, msg1);
+        }
+
+        if(msg2 != null)
+        {
+            doc1.ReceiveSyncMessage(state1, msg2);
+        }
+    }
+}
+```
+
+Usage:
+
+```csharp
+using var alice = AutomergeDocument.Create();
+using var bob = AutomergeDocument.Create();
+using var aliceSync = alice.CreateSyncState();
+using var bobSync = bob.CreateSyncState();
+
+// ... make changes to documents ...
+
+SyncDocuments(alice, bob, aliceSync, bobSync);
+```
+
+# Incremental Synchronization
+
+The sync protocol is incremental. After the initial sync, subsequent syncs only send new changes:
+
+```csharp
+using var alice = AutomergeDocument.Create();
+using var bob = AutomergeDocument.Create();
+using var aliceSync = alice.CreateSyncState();
+using var bobSync = bob.CreateSyncState();
+
+// Initial sync
+var aliceRoot = alice.RootId;
+alice.PutString(aliceRoot, "version", "1.0");
+alice.Commit("v1.0");
+
+SyncDocuments(alice, bob, aliceSync, bobSync);
+// Bob now has version 1.0
+
+// Alice makes more changes
+alice.PutString(aliceRoot, "version", "1.1");
+alice.Commit("v1.1");
+
+// Sync again - only the new change transfers
+SyncDocuments(alice, bob, aliceSync, bobSync);
+// Bob now has version 1.1
+```
+
+The sync state remembers what each peer knows, so only deltas transfer.
+
+# Error Handling
+
+Wrap sync operations in try-catch to handle invalid messages:
+
+```csharp
+try
+{
+    doc.ReceiveSyncMessage(syncState, message);
+}
+catch(AutomergeException ex)
+{
+    Console.WriteLine($"Sync error: {ex.Message}");
+    // Possibly reset sync state and retry
+    syncState.Reset();
+}
+```
+
+# Best Practices
+
+- **One sync state per peer** — Create a separate sync state for each peer you sync with. Never reuse a sync state across different peers.
+- **Limit sync rounds** — Always set a maximum number of rounds to prevent infinite loops in case of bugs.
+- **Dispose sync states** — Always use `using` statements. Sync states hold native resources.
+- **Handle errors gracefully** — Catch `AutomergeException` and consider resetting sync state on failure.
+
+# Next Steps
+
+- [Multi-Peer Sync](/Six.Automerge/guides/sync/multi-peer-sync/) — Sync documents across three or more peers
+- [Sync State Management](/Six.Automerge/guides/sync/sync-state-management/) — Persist and manage sync state across sessions
+- [Advanced Sync](/Six.Automerge/guides/sync/advanced-sync/) — Bundles, differential changes, and dependency tracking
